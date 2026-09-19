@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { getProjectsByEmail, getAllProjects } from "@/lib/projects";
-import { createSession, findSessionByToken } from "@/lib/sessions";
+import { signPortalToken, verifyPortalToken } from "@/lib/jwt";
 
 export async function POST(req: NextRequest) {
   try {
@@ -29,23 +29,22 @@ export async function POST(req: NextRequest) {
     }
 
     const projectId = projects[0].id;
-    const session = await createSession(email, projectId);
+    const token = await signPortalToken({ email, projectId });
 
-    // Set cookie (best-effort on serverless; we also return a signed-style
-    // token via query so the magic-link "click" can be simulated)
-    cookies().set("ch_session", session.token, {
+    // Set cookie (best-effort; works in dev, may not persist on serverless)
+    cookies().set("ch_session", token, {
       httpOnly: true,
       sameSite: "lax",
       path: "/",
-      maxAge: 60 * 60 * 24 * 7, // 7 days
+      maxAge: 60 * 60 * 24 * 7,
     });
 
     return NextResponse.json({
       ok: true,
       email,
       projectId,
-      token: session.token,
-      magicLink: `/portal/${projectId}?token=${session.token}`,
+      token,
+      magicLink: `/portal/${projectId}?token=${token}`,
       confirmed: true,
     });
   } catch (e: any) {
@@ -54,36 +53,34 @@ export async function POST(req: NextRequest) {
 }
 
 export async function GET(req: NextRequest) {
+  // Verify JWT — works across serverless instances (stateless)
   const tokenParam = req.nextUrl.searchParams.get("token");
-  if (tokenParam) {
-    const session = await findSessionByToken(tokenParam);
-    if (session) {
-      cookies().set("ch_session", tokenParam, {
-        httpOnly: true,
-        sameSite: "lax",
-        path: "/",
-        maxAge: 60 * 60 * 24 * 7,
-      });
-      return NextResponse.json({
-        authenticated: true,
-        email: session.email,
-        projectId: session.projectId,
-      });
-    }
-  }
+  const cookieToken = cookies().get("ch_session")?.value;
+  const token = tokenParam || cookieToken;
 
-  const token = cookies().get("ch_session")?.value;
   if (!token) {
     return NextResponse.json({ authenticated: false }, { status: 401 });
   }
-  const session = await findSessionByToken(token);
-  if (!session) {
+
+  const payload = await verifyPortalToken(token);
+  if (!payload) {
     return NextResponse.json({ authenticated: false }, { status: 401 });
   }
+
+  // If accessed via ?token=, also set cookie so subsequent requests work
+  if (tokenParam && !cookieToken) {
+    cookies().set("ch_session", tokenParam, {
+      httpOnly: true,
+      sameSite: "lax",
+      path: "/",
+      maxAge: 60 * 60 * 24 * 7,
+    });
+  }
+
   return NextResponse.json({
     authenticated: true,
-    email: session.email,
-    projectId: session.projectId,
+    email: payload.email,
+    projectId: payload.projectId,
   });
 }
 

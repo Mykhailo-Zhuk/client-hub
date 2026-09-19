@@ -4,7 +4,7 @@ import { ExternalLink, Github, Calendar, Activity, Sparkles } from "lucide-react
 import Link from "next/link";
 import { getProjectById } from "@/lib/projects";
 import { getCommentsByProject } from "@/lib/comments";
-import { findSessionByToken } from "@/lib/sessions";
+import { verifyPortalToken } from "@/lib/jwt";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Reveal } from "@/components/ui/reveal";
@@ -27,13 +27,14 @@ export default async function PortalPage({
   params: { projectId: string };
   searchParams: { token?: string };
 }) {
-  // Verify session — support both cookie (persistent) and ?token= (magic-link click on serverless)
+  // Stateless JWT auth — works across serverless instances
   let token = cookies().get("ch_session")?.value;
   if (!token && searchParams.token) {
     token = searchParams.token;
   }
   if (!token) redirect(`/login?redirect=/portal/${params.projectId}`);
-  const session = await findSessionByToken(token);
+
+  const session = await verifyPortalToken(token);
   if (!session) redirect(`/login?redirect=/portal/${params.projectId}`);
 
   const project = getProjectById(params.projectId);
@@ -48,7 +49,6 @@ export default async function PortalPage({
 
   return (
     <section className="mx-auto max-w-5xl px-4 py-10 sm:py-14">
-      {/* Top bar */}
       <div className="mb-6 flex items-center justify-between gap-2">
         <Link
           href="/"
@@ -95,7 +95,6 @@ export default async function PortalPage({
         </div>
       </Reveal>
 
-      {/* Project cover */}
       {project.cover && (
         <Reveal delay={0.05}>
           <div
@@ -106,7 +105,6 @@ export default async function PortalPage({
       )}
 
       <div className="mt-8 grid gap-6 lg:grid-cols-3">
-        {/* Left: timeline / comments */}
         <div className="lg:col-span-2 space-y-6">
           <Reveal>
             <Card className="p-6">
@@ -125,7 +123,10 @@ export default async function PortalPage({
                   const meta = commentTypeMeta[c.type] || commentTypeMeta.general;
                   const Icon = meta.icon;
                   return (
-                    <div key={c.id} className="flex gap-3 border-l-2 border-border pl-4">
+                    <div
+                      key={c.id}
+                      className="flex gap-3 border-l-2 border-border pl-4"
+                    >
                       <div className="-ml-[22px] mt-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-background ring-2 ring-border">
                         <Icon size={10} className={meta.color} />
                       </div>
@@ -148,7 +149,6 @@ export default async function PortalPage({
             </Card>
           </Reveal>
 
-          {/* Agent add comment (visible because portal is for client + agent preview) */}
           <Reveal delay={0.05}>
             <Card className="p-6">
               <h2 className="text-sm font-semibold">Post update</h2>
@@ -162,7 +162,6 @@ export default async function PortalPage({
           </Reveal>
         </div>
 
-        {/* Right: project meta */}
         <div className="space-y-4">
           <Reveal delay={0.1}>
             <Card className="p-5">
@@ -177,7 +176,9 @@ export default async function PortalPage({
               {dayPercent !== null && (
                 <div className="mt-4">
                   <div className="flex justify-between text-xs text-muted-foreground">
-                    <span>Day {project.dayCurrent} / {project.dayTotal}</span>
+                    <span>
+                      Day {project.dayCurrent} / {project.dayTotal}
+                    </span>
                     <span>{Math.round(dayPercent)}%</span>
                   </div>
                   <div className="mt-1 h-1.5 w-full overflow-hidden rounded-full bg-muted">

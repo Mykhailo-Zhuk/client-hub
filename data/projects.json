@@ -1,0 +1,48 @@
+[
+  {
+    "id": "iron-master",
+    "client": "СТО IRON MASTER",
+    "clientEmail": "client@iron-master.example",
+    "title": "СТО IRON MASTER — MVP",
+    "description": "Повноцінний сайт мережі СТО з Google-style формою запису, admin panel, real-time bookings. Next.js 14 + Zod + Tailwind.",
+    "status": "active",
+    "progress": 40,
+    "dayCurrent": 12,
+    "dayTotal": 30,
+    "startDate": "2026-09-01",
+    "estimatedEnd": "2026-10-01",
+    "tags": ["Next.js", "SaaS", "Booking", "Tailwind"],
+    "github": "https://github.com/Mykhailo-Zhuk/mvp-iron-master",
+    "demo": "https://mvp-iron-master.vercel.app/",
+    "cover": "https://images.unsplash.com/photo-1486754735734-325b5831c3ad?w=1200&h=800&fit=crop"
+  },
+  {
+    "id": "spa-canada",
+    "client": "Spa Wellness Toronto",
+    "clientEmail": "client@spa-canada.example",
+    "title": "Spa Booking Website (Canada)",
+    "description": "MVP для спа-салону в Канаді з booking системою, послугами, галереєю, локалізацією. Next.js 14 + i18n.",
+    "status": "active",
+    "progress": 35,
+    "dayCurrent": 5,
+    "dayTotal": 14,
+    "startDate": "2026-09-15",
+    "estimatedEnd": "2026-09-29",
+    "tags": ["Next.js", "Spa", "Booking", "i18n"],
+    "github": "https://github.com/Mykhailo-Zhuk/mvp-spa-booking-website-canada",
+    "demo": "https://mvp-spa-booking-website-canada.vercel.app/",
+    "cover": "https://images.unsplash.com/photo-1540555700478-4be289fbecef?w=1200&h=800&fit=crop"
+  },
+  {
+    "id": "vlob-landing",
+    "client": "VLOB Kids Coding",
+    "title": "VLOB Landing — Kids Coding Course",
+    "status": "completed",
+    "progress": 100,
+    "startDate": "2026-08-01",
+    "completedDate": "2026-08-20",
+    "tags": ["Next.js", "Landing", "Education"],
+    "github": "https://github.com/Mykhailo-Zhuk/vlob-landing",
+    "demo": "https://vlob-landing.vercel.app/"
+  }
+]

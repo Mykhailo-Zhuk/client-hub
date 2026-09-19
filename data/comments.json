@@ -1,0 +1,58 @@
+[
+  {
+    "id": "c1",
+    "projectId": "iron-master",
+    "type": "status_update",
+    "message": "Deploy fixed — going live in 10 min",
+    "author": "Agent",
+    "timestamp": "2026-09-19T15:30:00Z"
+  },
+  {
+    "id": "c2",
+    "projectId": "iron-master",
+    "type": "milestone",
+    "message": "Google-style booking form готовий",
+    "author": "Agent",
+    "timestamp": "2026-09-19T14:15:00Z"
+  },
+  {
+    "id": "c3",
+    "projectId": "iron-master",
+    "type": "bug_fix",
+    "message": "Theme toggle Sun/Moon swapped",
+    "author": "Agent",
+    "timestamp": "2026-09-19T13:00:00Z"
+  },
+  {
+    "id": "c4",
+    "projectId": "iron-master",
+    "type": "deploy",
+    "message": "Vercel deploy passed",
+    "author": "Agent",
+    "timestamp": "2026-09-19T12:00:00Z"
+  },
+  {
+    "id": "c5",
+    "projectId": "spa-canada",
+    "type": "milestone",
+    "message": "i18n setup complete — EN/FR locales",
+    "author": "Agent",
+    "timestamp": "2026-09-19T11:30:00Z"
+  },
+  {
+    "id": "c6",
+    "projectId": "spa-canada",
+    "type": "status_update",
+    "message": "Services list seeded — 12 treatments ready",
+    "author": "Agent",
+    "timestamp": "2026-09-19T10:00:00Z"
+  },
+  {
+    "id": "c7",
+    "projectId": "spa-canada",
+    "type": "general",
+    "message": "Gallery section design approved by client",
+    "author": "Agent",
+    "timestamp": "2026-09-18T18:00:00Z"
+  }
+]

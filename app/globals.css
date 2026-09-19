@@ -1,0 +1,107 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 240 10% 3.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 240 10% 3.9%;
+    --border: 240 5.9% 90%;
+    --muted: 240 4.8% 95.9%;
+    --muted-foreground: 240 3.8% 46.1%;
+    --accent: 252 95% 68%;
+    --accent-foreground: 0 0% 98%;
+    --success: 142 76% 36%;
+    --warning: 38 92% 50%;
+  }
+
+  .dark {
+    --background: 240 10% 3.9%;
+    --foreground: 0 0% 98%;
+    --card: 240 10% 5.5%;
+    --card-foreground: 0 0% 98%;
+    --border: 240 3.7% 15.9%;
+    --muted: 240 5.9% 10%;
+    --muted-foreground: 240 5% 64.9%;
+    --accent: 252 95% 68%;
+    --accent-foreground: 0 0% 98%;
+    --success: 142 76% 56%;
+    --warning: 38 92% 60%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
+    -webkit-font-smoothing: antialiased;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .bg-grid-pattern {
+    background-image:
+      linear-gradient(to right, rgb(0 0 0 / 0.04) 1px, transparent 1px),
+      linear-gradient(to bottom, rgb(0 0 0 / 0.04) 1px, transparent 1px);
+    background-size: 24px 24px;
+  }
+
+  .dark .bg-grid-pattern {
+    background-image:
+      linear-gradient(to right, rgb(255 255 255 / 0.04) 1px, transparent 1px),
+      linear-gradient(to bottom, rgb(255 255 255 / 0.04) 1px, transparent 1px);
+  }
+
+  .line-clamp-3 {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+::selection {
+  background: hsl(var(--accent) / 0.3);
+}
+
+.prose-comment h1,
+.prose-comment h2,
+.prose-comment h3 {
+  font-weight: 600;
+  margin-top: 0.75em;
+  margin-bottom: 0.25em;
+}
+.prose-comment h1 { font-size: 1.25rem; }
+.prose-comment h2 { font-size: 1.1rem; }
+.prose-comment h3 { font-size: 1rem; }
+.prose-comment p { margin: 0.4em 0; }
+.prose-comment code {
+  background: hsl(var(--muted));
+  padding: 0.1em 0.3em;
+  border-radius: 0.25rem;
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 0.85em;
+}
+.prose-comment ul, .prose-comment ol {
+  margin: 0.4em 0;
+  padding-left: 1.2em;
+}
+.prose-comment ul { list-style: disc; }
+.prose-comment ol { list-style: decimal; }
+.prose-comment a {
+  color: hsl(var(--accent));
+  text-decoration: underline;
+}

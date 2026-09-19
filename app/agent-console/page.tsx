@@ -57,7 +57,7 @@ export default function AgentConsolePage() {
   }
 
   return (
-    <section className="mx-auto max-w-6xl px-4 py-10 sm:py-14">
+    <section className="mx-auto w-full max-w-6xl overflow-x-hidden px-4 py-10 sm:py-14">
       <Reveal>
         <div className="flex items-center gap-3">
           <div className="flex h-10 w-10 items-center justify-center rounded-md bg-accent/10 text-accent">
@@ -167,7 +167,7 @@ export default function AgentConsolePage() {
               Preview · markdown
             </div>
             <div
-              className="prose-comment mt-3 text-sm"
+              className="prose-comment mt-3 max-w-full break-words text-sm"
               dangerouslySetInnerHTML={{ __html: preview }}
             />
           </Card>
@@ -175,14 +175,14 @@ export default function AgentConsolePage() {
       </div>
 
       <Reveal delay={0.15}>
-        <Card className="mt-6 p-5 text-xs text-muted-foreground">
+        <Card className="mt-6 overflow-x-hidden p-5 text-xs text-muted-foreground">
           <strong className="text-foreground">How it works:</strong> POST to{" "}
-          <code className="rounded bg-muted px-1">/api/comments</code> writes to{" "}
-          <code className="rounded bg-muted px-1">data/comments.json</code> and
+          <code className="break-all rounded bg-muted px-1">/api/comments</code> writes to{" "}
+          <code className="break-all rounded bg-muted px-1">data/comments.json</code> and
           fires{" "}
-          <code className="rounded bg-muted px-1">sendTelegramNotification()</code>{" "}
+          <code className="break-all rounded bg-muted px-1">sendTelegramNotification()</code>{" "}
           (mock log only — wire real{" "}
-          <code className="rounded bg-muted px-1">TELEGRAM_BOT_TOKEN</code> to
+          <code className="break-all rounded bg-muted px-1">TELEGRAM_BOT_TOKEN</code> to
           enable).
         </Card>
       </Reveal>

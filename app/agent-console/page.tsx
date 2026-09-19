@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useTransition } from "react";
 import { marked } from "marked";
-import { Send, Loader2, Sparkles, Bot } from "lucide-react";
+import { Send, Loader2, Sparkles, Bot, LogOut } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Reveal } from "@/components/ui/reveal";
 import type { Project } from "@/lib/types";
@@ -63,13 +63,22 @@ export default function AgentConsolePage() {
           <div className="flex h-10 w-10 items-center justify-center rounded-md bg-accent/10 text-accent">
             <Bot size={20} />
           </div>
-          <div>
+          <div className="flex-1">
             <h1 className="text-2xl font-bold tracking-tight">Agent console</h1>
             <p className="text-sm text-muted-foreground">
               Post markdown updates that flow into the client portal and trigger
               Telegram notifications.
             </p>
           </div>
+          <button
+            onClick={async () => {
+              await fetch("/api/agent-login", { method: "DELETE" });
+              window.location.href = "/login";
+            }}
+            className="inline-flex items-center gap-1.5 rounded-md border border-border bg-card px-3 py-1.5 text-xs text-muted-foreground hover:bg-muted hover:text-foreground"
+          >
+            <LogOut size={12} /> Sign out
+          </button>
         </div>
       </Reveal>
 

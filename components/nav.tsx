@@ -1,8 +1,14 @@
 import Link from "next/link";
+import { cookies } from "next/headers";
 import { Layers, Github, Terminal } from "lucide-react";
 import { ThemeToggle } from "./theme-toggle";
 
 export function Nav() {
+  // If a client session cookie is present, the user is logged in —
+  // hide the Login button and show a "Portal" shortcut instead.
+  const session = cookies().get("ch_session")?.value;
+  const isAuthed = Boolean(session);
+
   return (
     <header className="sticky top-0 z-40 w-full border-b border-border/60 bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <nav className="mx-auto flex h-14 max-w-6xl items-center justify-between px-4">
@@ -33,12 +39,21 @@ export function Nav() {
             <Github size={14} className="mr-1 inline" />
             Repo
           </a>
-          <Link
-            href="/login"
-            className="rounded-md bg-accent px-3 py-1.5 text-accent-foreground hover:opacity-90"
-          >
-            Client Login
-          </Link>
+          {isAuthed ? (
+            <Link
+              href="/login"
+              className="rounded-md px-3 py-1.5 text-muted-foreground hover:bg-muted hover:text-foreground"
+            >
+              Portal
+            </Link>
+          ) : (
+            <Link
+              href="/login"
+              className="rounded-md bg-accent px-3 py-1.5 text-accent-foreground hover:opacity-90"
+            >
+              Login
+            </Link>
+          )}
           <ThemeToggle className="ml-2" />
         </div>
       </nav>

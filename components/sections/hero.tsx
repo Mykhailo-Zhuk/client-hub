@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, Sparkles } from "lucide-react";
+import { ArrowRight, Sparkles, Terminal } from "lucide-react";
 import { Reveal } from "../ui/reveal";
 
 export function Hero() {
@@ -31,17 +31,18 @@ export function Hero() {
           </p>
         </Reveal>
         <Reveal delay={0.3}>
-          <div className="mt-8 flex flex-wrap gap-3">
+          <div className="mt-10 flex flex-col items-center gap-3">
             <Link
               href="/login"
-              className="inline-flex items-center gap-2 rounded-md bg-accent px-4 py-2 text-sm font-medium text-accent-foreground hover:opacity-90"
+              className="inline-flex items-center gap-2 rounded-md bg-accent px-5 py-2.5 text-sm font-medium text-accent-foreground shadow-sm hover:opacity-90"
             >
-              Open client portal <ArrowRight size={14} />
+              Choose your project <ArrowRight size={14} />
             </Link>
             <Link
               href="/agent-console"
-              className="inline-flex items-center gap-2 rounded-md border border-border bg-card px-4 py-2 text-sm font-medium hover:bg-muted"
+              className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground"
             >
+              <Terminal size={12} />
               Agent console
             </Link>
           </div>

@@ -12,6 +12,8 @@ import { formatDate } from "@/lib/utils";
 import { LogoutButton } from "../actions";
 import { ClientCommentsTimeline } from "../client-comments-timeline";
 import type { ClientComment } from "../client-comment-form";
+import { ProjectStats } from "./project-stats";
+import type { Comment } from "@/lib/types";
 
 export default async function PortalPage({
   params,
@@ -109,6 +111,12 @@ export default async function PortalPage({
           />
         </Reveal>
       )}
+
+      <Reveal delay={0.08}>
+        <div className="mt-8">
+          <ProjectStats project={project} comments={comments as unknown as Comment[]} />
+        </div>
+      </Reveal>
 
       <div className="mt-8 grid gap-6 lg:grid-cols-3">
         <div className="lg:col-span-2 space-y-6">

@@ -18,7 +18,6 @@ export async function POST(req: NextRequest) {
     // Find project by email, fallback to first active project for demo
     let projects = getProjectsByEmail(email);
     if (projects.length === 0) {
-      // Demo mode: any email works, default to first active project
       projects = getAllProjects().filter((p) => p.status === "active");
     }
 
@@ -32,7 +31,8 @@ export async function POST(req: NextRequest) {
     const projectId = projects[0].id;
     const session = await createSession(email, projectId);
 
-    // Set cookie (MVP mock - just store the token)
+    // Set cookie (best-effort on serverless; we also return a signed-style
+    // token via query so the magic-link "click" can be simulated)
     cookies().set("ch_session", session.token, {
       httpOnly: true,
       sameSite: "lax",
@@ -44,8 +44,8 @@ export async function POST(req: NextRequest) {
       ok: true,
       email,
       projectId,
-      magicLink: `/portal/${projectId}`,
-      // In MVP we auto-confirm; in real app would email a link
+      token: session.token,
+      magicLink: `/portal/${projectId}?token=${session.token}`,
       confirmed: true,
     });
   } catch (e: any) {
@@ -53,7 +53,25 @@ export async function POST(req: NextRequest) {
   }
 }
 
-export async function GET() {
+export async function GET(req: NextRequest) {
+  const tokenParam = req.nextUrl.searchParams.get("token");
+  if (tokenParam) {
+    const session = await findSessionByToken(tokenParam);
+    if (session) {
+      cookies().set("ch_session", tokenParam, {
+        httpOnly: true,
+        sameSite: "lax",
+        path: "/",
+        maxAge: 60 * 60 * 24 * 7,
+      });
+      return NextResponse.json({
+        authenticated: true,
+        email: session.email,
+        projectId: session.projectId,
+      });
+    }
+  }
+
   const token = cookies().get("ch_session")?.value;
   if (!token) {
     return NextResponse.json({ authenticated: false }, { status: 401 });

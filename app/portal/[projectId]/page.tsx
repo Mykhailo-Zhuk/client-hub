@@ -22,11 +22,16 @@ const commentTypeMeta: Record<string, { icon: any; color: string; label: string 
 
 export default async function PortalPage({
   params,
+  searchParams,
 }: {
   params: { projectId: string };
+  searchParams: { token?: string };
 }) {
-  // Verify session
-  const token = cookies().get("ch_session")?.value;
+  // Verify session — support both cookie (persistent) and ?token= (magic-link click on serverless)
+  let token = cookies().get("ch_session")?.value;
+  if (!token && searchParams.token) {
+    token = searchParams.token;
+  }
   if (!token) redirect(`/login?redirect=/portal/${params.projectId}`);
   const session = await findSessionByToken(token);
   if (!session) redirect(`/login?redirect=/portal/${params.projectId}`);

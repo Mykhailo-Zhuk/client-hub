@@ -25,7 +25,8 @@ export type CommentType =
   | "bug_fix"
   | "deploy"
   | "general"
-  | "feedback";
+  | "feedback"
+  | "client_reply";
 
 export interface Comment {
   id: string;

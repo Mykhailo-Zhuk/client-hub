@@ -12,6 +12,7 @@ const iconMap: Record<CommentType, typeof Activity> = {
   deploy: Rocket,
   general: MessageSquare,
   feedback: MessageSquare,
+  client_reply: MessageSquare,
 };
 
 const colorMap: Record<CommentType, string> = {
@@ -21,6 +22,7 @@ const colorMap: Record<CommentType, string> = {
   deploy: "text-emerald-500",
   general: "text-muted-foreground",
   feedback: "text-purple-500",
+  client_reply: "text-cyan-500",
 };
 
 export async function RecentUpdates() {

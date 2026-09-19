@@ -54,5 +54,21 @@
     "message": "Gallery section design approved by client",
     "author": "Agent",
     "timestamp": "2026-09-18T18:00:00Z"
+  },
+  {
+    "id": "c1789838026236",
+    "projectId": "iron-master",
+    "type": "client_reply",
+    "message": "Дякую за оновлення! Виглядає **круто** 🚀\n\n- Чудова робота\n- `npm run build` пройшов",
+    "author": "client@iron-master.example",
+    "timestamp": "2026-09-19T17:13:46.236Z"
+  },
+  {
+    "id": "c1789838026292",
+    "projectId": "iron-master",
+    "type": "general",
+    "message": "Should be marked as Agent",
+    "author": "Agent",
+    "timestamp": "2026-09-19T17:13:46.292Z"
   }
 ]

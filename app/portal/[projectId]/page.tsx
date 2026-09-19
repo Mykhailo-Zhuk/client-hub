@@ -1,6 +1,6 @@
 import { notFound, redirect } from "next/navigation";
 import { cookies } from "next/headers";
-import { ExternalLink, Github, Calendar, Activity, Sparkles } from "lucide-react";
+import { ExternalLink, Github, Calendar } from "lucide-react";
 import Link from "next/link";
 import { getProjectById } from "@/lib/projects";
 import { getCommentsByProject } from "@/lib/comments";
@@ -8,17 +8,10 @@ import { verifyPortalToken } from "@/lib/jwt";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Reveal } from "@/components/ui/reveal";
-import { formatDate, timeAgo } from "@/lib/utils";
-import { CommentForm, LogoutButton } from "../actions";
-
-const commentTypeMeta: Record<string, { icon: any; color: string; label: string }> = {
-  status_update: { icon: Activity, color: "text-blue-500", label: "Status" },
-  milestone: { icon: Sparkles, color: "text-accent", label: "Milestone" },
-  bug_fix: { icon: Activity, color: "text-amber-500", label: "Bug fix" },
-  deploy: { icon: Activity, color: "text-emerald-500", label: "Deploy" },
-  general: { icon: Activity, color: "text-muted-foreground", label: "Note" },
-  feedback: { icon: Activity, color: "text-purple-500", label: "Feedback" },
-};
+import { formatDate } from "@/lib/utils";
+import { LogoutButton } from "../actions";
+import { ClientCommentsTimeline } from "../client-comments-timeline";
+import type { ClientComment } from "../client-comment-form";
 
 export default async function PortalPage({
   params,
@@ -123,53 +116,16 @@ export default async function PortalPage({
             <Card className="p-6">
               <h2 className="text-lg font-semibold">Project timeline</h2>
               <p className="mt-1 text-sm text-muted-foreground">
-                All updates, milestones, and deploys in one stream.
+                All updates, milestones, and your replies in one stream.
               </p>
 
-              <div className="mt-6 space-y-4">
-                {comments.length === 0 && (
-                  <div className="text-sm text-muted-foreground">
-                    No updates yet — stay tuned.
-                  </div>
-                )}
-                {comments.map((c) => {
-                  const meta = commentTypeMeta[c.type] || commentTypeMeta.general;
-                  const Icon = meta.icon;
-                  return (
-                    <div
-                      key={c.id}
-                      className="flex gap-3 border-l-2 border-border pl-4"
-                    >
-                      <div className="-ml-[22px] mt-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-background ring-2 ring-border">
-                        <Icon size={10} className={meta.color} />
-                      </div>
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                          <span className={`font-medium ${meta.color}`}>
-                            {meta.label}
-                          </span>
-                          <span>·</span>
-                          <span>{timeAgo(c.timestamp)}</span>
-                          <span>·</span>
-                          <span>{c.author}</span>
-                        </div>
-                        <div className="mt-1 text-sm">{c.message}</div>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </Card>
-          </Reveal>
-
-          <Reveal delay={0.05}>
-            <Card className="p-6">
-              <h2 className="text-sm font-semibold">Post update</h2>
-              <p className="mt-0.5 text-xs text-muted-foreground">
-                Agent-only — posts to timeline and triggers Telegram.
-              </p>
-              <div className="mt-4">
-                <CommentForm projectId={project.id} />
+              <div className="mt-6">
+                <ClientCommentsTimeline
+                  projectId={project.id}
+                  clientEmail={project.clientEmail || session.email}
+                  token={token}
+                  initialComments={comments as unknown as ClientComment[]}
+                />
               </div>
             </Card>
           </Reveal>

@@ -27,15 +27,28 @@ export default async function PortalPage({
   params: { projectId: string };
   searchParams: { token?: string };
 }) {
-  // Stateless JWT auth — works across serverless instances
+  // Stateless JWT auth — works across serverless instances.
+  // Prefer the URL ?token= (always available from /api/auth's magicLink);
+  // fall back to cookie (best-effort). On Vercel serverless, the cookie
+  // set in /api/auth's response may not persist to the next request, so
+  // the URL token is the source of truth.
   let token = cookies().get("ch_session")?.value;
+  const source = token ? "cookie" : searchParams.token ? "url" : "none";
   if (!token && searchParams.token) {
     token = searchParams.token;
   }
-  if (!token) redirect(`/login?redirect=/portal/${params.projectId}`);
+  if (!token) {
+    console.log(`[portal/${params.projectId}] no token (source=${source}) → /login`);
+    redirect(`/login?redirect=/portal/${params.projectId}`);
+  }
 
   const session = await verifyPortalToken(token);
-  if (!session) redirect(`/login?redirect=/portal/${params.projectId}`);
+  if (!session) {
+    console.log(`[portal/${params.projectId}] invalid JWT (source=${source}) → /login`);
+    redirect(`/login?redirect=/portal/${params.projectId}`);
+  }
+
+  console.log(`[portal/${params.projectId}] auth OK email=${session.email} source=${source}`);
 
   const project = getProjectById(params.projectId);
   if (!project) notFound();

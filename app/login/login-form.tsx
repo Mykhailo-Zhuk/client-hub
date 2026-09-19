@@ -1,17 +1,14 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
 import { Mail, Loader2, ArrowRight } from "lucide-react";
 
 export function LoginForm() {
-  const router = useRouter();
-  const searchParams = useSearchParams();
   const [email, setEmail] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
 
-  async function onSubmit(e: React.FormEvent) {
+  function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
     if (!email.includes("@")) {
@@ -19,34 +16,50 @@ export function LoginForm() {
       return;
     }
     startTransition(async () => {
-      const res = await fetch("/api/auth", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ email }),
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        setError(data.error || "Login failed");
-        return;
+      console.log("[auth] submitting", email);
+      try {
+        const res = await fetch("/api/auth", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ email }),
+        });
+        const data = await res.json();
+        console.log("[auth] response", res.status, data);
+        if (!res.ok) {
+          setError(data.error || "Login failed");
+          return;
+        }
+        // Always follow server-provided magic link (token in URL).
+        // window.location.href forces a full navigation, so the token
+        // is preserved on the URL and the portal page can verify it
+        // via JWT. This avoids any client-router cookie quirks on
+        // serverless (Vercel) where cookies set in a route handler
+        // may not always persist to the next request.
+        if (data.magicLink) {
+          window.location.href = data.magicLink;
+        } else {
+          setError("Server did not return a magic link");
+        }
+      } catch (err: any) {
+        console.error("[auth] error", err);
+        setError(err?.message || "Network error");
       }
-      const target = searchParams.get("redirect") || `/portal/${data.projectId}`;
-      router.push(target);
     });
   }
 
   return (
-    <form onSubmit={onSubmit} className="space-y-4">
+    <form onSubmit={onSubmit} className="space-y-4" noValidate>
       <label className="block">
         <span className="text-sm font-medium">Email</span>
         <div className="mt-1.5 flex items-center gap-2 rounded-md border border-border bg-background px-3 focus-within:border-accent">
           <Mail size={14} className="text-muted-foreground" />
           <input
             type="email"
-            required
             placeholder="client@example.com"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             className="w-full bg-transparent py-2 text-sm outline-none placeholder:text-muted-foreground/60"
+            autoComplete="email"
           />
         </div>
       </label>

@@ -8,6 +8,8 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const { email } = body;
 
+    console.log("[api/auth] POST email=", email);
+
     if (!email || typeof email !== "string" || !email.includes("@")) {
       return NextResponse.json(
         { error: "Valid email required" },
@@ -15,39 +17,52 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Find project by email, fallback to first active project for demo
-    let projects = getProjectsByEmail(email);
-    if (projects.length === 0) {
-      projects = getAllProjects().filter((p) => p.status === "active");
+    // Find project by email. MVP: any email maps to first active project
+    // if no exact match found — keeps the demo accessible.
+    const matching = getProjectsByEmail(email);
+    let projectId: string | undefined;
+    if (matching.length > 0) {
+      projectId = matching[0].id;
+    } else {
+      const fallback = getAllProjects().find((p) => p.status === "active");
+      if (fallback) projectId = fallback.id;
     }
 
-    if (projects.length === 0) {
+    if (!projectId) {
       return NextResponse.json(
         { error: "No projects found" },
         { status: 404 }
       );
     }
 
-    const projectId = projects[0].id;
     const token = await signPortalToken({ email, projectId });
+    const magicLink = `/portal/${projectId}?token=${token}`;
 
-    // Set cookie (best-effort; works in dev, may not persist on serverless)
-    cookies().set("ch_session", token, {
-      httpOnly: true,
-      sameSite: "lax",
-      path: "/",
-      maxAge: 60 * 60 * 24 * 7,
-    });
+    // Best-effort cookie: works in dev, may not persist on serverless.
+    // The URL-based magic link is the source of truth.
+    try {
+      cookies().set("ch_session", token, {
+        httpOnly: true,
+        sameSite: "lax",
+        path: "/",
+        maxAge: 60 * 60 * 24 * 7,
+      });
+    } catch (cookieErr: any) {
+      console.warn("[api/auth] could not set cookie:", cookieErr?.message);
+    }
+
+    console.log("[api/auth] issued token for", projectId, "magicLink=", magicLink);
 
     return NextResponse.json({
       ok: true,
       email,
       projectId,
       token,
-      magicLink: `/portal/${projectId}?token=${token}`,
+      magicLink,
       confirmed: true,
     });
   } catch (e: any) {
+    console.error("[api/auth] error", e);
     return NextResponse.json({ error: e.message }, { status: 500 });
   }
 }
@@ -57,6 +72,8 @@ export async function GET(req: NextRequest) {
   const tokenParam = req.nextUrl.searchParams.get("token");
   const cookieToken = cookies().get("ch_session")?.value;
   const token = tokenParam || cookieToken;
+
+  console.log("[api/auth] GET token?", !!token, "from=", tokenParam ? "url" : "cookie");
 
   if (!token) {
     return NextResponse.json({ authenticated: false }, { status: 401 });
@@ -69,12 +86,16 @@ export async function GET(req: NextRequest) {
 
   // If accessed via ?token=, also set cookie so subsequent requests work
   if (tokenParam && !cookieToken) {
-    cookies().set("ch_session", tokenParam, {
-      httpOnly: true,
-      sameSite: "lax",
-      path: "/",
-      maxAge: 60 * 60 * 24 * 7,
-    });
+    try {
+      cookies().set("ch_session", tokenParam, {
+        httpOnly: true,
+        sameSite: "lax",
+        path: "/",
+        maxAge: 60 * 60 * 24 * 7,
+      });
+    } catch (cookieErr: any) {
+      console.warn("[api/auth] cookie set failed:", cookieErr?.message);
+    }
   }
 
   return NextResponse.json({
@@ -85,6 +106,10 @@ export async function GET(req: NextRequest) {
 }
 
 export async function DELETE() {
-  cookies().delete("ch_session");
+  try {
+    cookies().delete("ch_session");
+  } catch (cookieErr: any) {
+    console.warn("[api/auth] cookie delete failed:", cookieErr?.message);
+  }
   return NextResponse.json({ ok: true });
 }

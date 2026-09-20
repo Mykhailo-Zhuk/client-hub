@@ -135,4 +135,47 @@ export async function updateProjectStatus(
   await sb.from('projects').update({ status }).eq('id', id);
 }
 
+/**
+ * Insert a new project row. Throws if `id` already exists or Supabase rejects it.
+ * Returns the inserted id on success.
+ */
+export async function createProject(
+  row: Omit<SupabaseProjectRow, 'completed_date' | 'created_at' | 'updated_at'>
+): Promise<string> {
+  const sb = getSupabaseAdmin();
+  if (!sb) {
+    throw new Error('Supabase is not configured — cannot create project.');
+  }
+  const { data: existing, error: selErr } = await sb
+    .from('projects')
+    .select('id')
+    .eq('id', row.id)
+    .maybeSingle();
+  if (selErr) {
+    throw new Error(`Lookup failed: ${selErr.message}`);
+  }
+  if (existing) {
+    throw new Error(`Project with id "${row.id}" already exists`);
+  }
+  const { error } = await sb.from('projects').insert(row);
+  if (error) {
+    throw new Error(error.message);
+  }
+  return row.id;
+}
+
+/**
+ * Delete a project by id. Also cascades comments (FK on delete cascade).
+ */
+export async function deleteProject(id: string): Promise<void> {
+  const sb = getSupabaseAdmin();
+  if (!sb) {
+    throw new Error('Supabase is not configured — cannot delete project.');
+  }
+  const { error } = await sb.from('projects').delete().eq('id', id);
+  if (error) {
+    throw new Error(error.message);
+  }
+}
+
 export { isSupabaseConfigured };

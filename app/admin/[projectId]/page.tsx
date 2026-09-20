@@ -9,6 +9,7 @@ import { getCommentsByProjectAsync } from '@/lib/comments-db';
 import { timeAgo, formatDate } from '@/lib/utils';
 import { AdminCommentForm } from './comment-form';
 import { ProgressForm } from './progress-form';
+import { DeleteProjectButton } from './delete-button';
 
 export const dynamic = 'force-dynamic';
 
@@ -174,6 +175,16 @@ export default async function AdminProjectPage({
                   </dd>
                 </div>
               </dl>
+            </Card>
+          </Reveal>
+
+          <Reveal delay={0.08}>
+            <Card className="p-5">
+              <h2 className="mb-3 text-sm font-semibold text-red-500">Danger zone</h2>
+              <p className="mb-3 text-xs text-muted-foreground">
+                Permanently delete this project and all its updates. Cannot be undone.
+              </p>
+              <DeleteProjectButton projectId={project.id} />
             </Card>
           </Reveal>
         </div>

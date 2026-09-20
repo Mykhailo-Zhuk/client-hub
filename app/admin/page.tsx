@@ -36,6 +36,12 @@ export default async function AdminPage() {
           </div>
           <div className="flex items-center gap-2">
             <a
+              href="/admin/new"
+              className="inline-flex items-center gap-1.5 rounded-md bg-accent px-3 py-1.5 text-xs font-medium text-accent-foreground hover:opacity-90"
+            >
+              <Plus size={12} /> New Project
+            </a>
+            <a
               href="/agent-console"
               className="inline-flex items-center gap-1.5 rounded-md border border-border bg-background px-3 py-1.5 text-xs hover:bg-muted"
             >

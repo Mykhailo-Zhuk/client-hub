@@ -3,7 +3,7 @@ import { cookies } from "next/headers";
 import { ExternalLink, Github, Calendar } from "lucide-react";
 import Link from "next/link";
 import { getProjectById } from "@/lib/projects";
-import { getCommentsByProject } from "@/lib/comments";
+import { getCommentsByProjectAsync } from "@/lib/comments-db";
 import { verifyPortalToken } from "@/lib/jwt";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -48,7 +48,7 @@ export default async function PortalPage({
   const project = getProjectById(params.projectId);
   if (!project) notFound();
 
-  const comments = await getCommentsByProject(project.id);
+  const comments = await getCommentsByProjectAsync(project.id);
 
   const dayPercent =
     project.dayCurrent && project.dayTotal

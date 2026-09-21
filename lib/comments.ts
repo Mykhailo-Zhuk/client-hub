@@ -1,8 +1,17 @@
-import { promises as fs } from "fs";
-import * as path from "path";
+/**
+ * In-memory comment fallback (serverless-safe, no fs).
+ *
+ * The primary store is Supabase (`lib/comments-db.ts`). This module is
+ * loaded only as a fallback when Supabase env vars are not configured,
+ * so dev works out-of-the-box without external infrastructure.
+ *
+ * Notes:
+ *   - Comments live in `globalThis.__ch_comments` and persist across
+ *     warm invocations on the same lambda instance.
+ *   - On Vercel serverless each cold start starts with an empty store —
+ *     this is acceptable for local dev only.
+ */
 import type { Comment, CommentType } from "./types";
-
-const DATA_FILE = path.join(process.cwd(), "data", "comments.json");
 
 declare global {
   // eslint-disable-next-line no-var
@@ -15,26 +24,13 @@ function memStore(): Comment[] {
 }
 
 async function readComments(): Promise<Comment[]> {
-  try {
-    const raw = await fs.readFile(DATA_FILE, "utf-8");
-    const parsed = JSON.parse(raw) as Comment[];
-    // hydrate memory once
-    if (memStore().length === 0 && parsed.length > 0) {
-      memStore().push(...parsed);
-    }
-    return memStore().length > 0 ? memStore() : parsed;
-  } catch {
-    return memStore();
-  }
+  // No fs.readFile — serverless-safe pure memory.
+  return memStore();
 }
 
 async function writeComments(comments: Comment[]): Promise<void> {
+  // In-memory only — no fs.writeFile (which silently no-ops on Vercel).
   memStore().splice(0, memStore().length, ...comments);
-  try {
-    await fs.writeFile(DATA_FILE, JSON.stringify(comments, null, 2), "utf-8");
-  } catch {
-    // serverless: in-memory only
-  }
 }
 
 export async function getAllComments(): Promise<Comment[]> {

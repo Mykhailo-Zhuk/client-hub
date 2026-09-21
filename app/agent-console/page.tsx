@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useTransition } from "react";
-import { marked } from "marked";
+import { renderSafeMarkdown } from "@/lib/sanitize";
 import { Send, Loader2, Sparkles, Bot, LogOut } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Reveal } from "@/components/ui/reveal";
@@ -30,7 +30,7 @@ export default function AgentConsolePage() {
       });
   }, []);
 
-  const preview = marked.parse(markdown, { async: false }) as string;
+  const preview = renderSafeMarkdown(markdown);
 
   function publish() {
     if (!selectedId || !markdown.trim()) return;

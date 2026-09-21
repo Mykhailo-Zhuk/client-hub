@@ -1,11 +1,15 @@
-import { promises as fs } from "fs";
-import * as path from "path";
+/**
+ * In-memory session store. Serverless-safe (no fs writes).
+ *
+ * NOTE: With JWT-based magic links (`lib/jwt.ts`), sessions are stateless.
+ * This module is kept only for legacy callers (`lib/auth.ts`) that still
+ * look up sessions by token. Sessions don't persist across cold-starts on
+ * Vercel/serverless — that's by design: the JWT in the cookie / query string
+ * is the real source of truth.
+ */
 import type { Session } from "./types";
 import { generateToken } from "./utils";
 
-const DATA_FILE = path.join(process.cwd(), "data", "sessions.json");
-
-// In-memory store for serverless (Vercel) where /data is read-only
 declare global {
   // eslint-disable-next-line no-var
   var __ch_sessions: Session[] | undefined;
@@ -16,36 +20,9 @@ function memStore(): Session[] {
   return globalThis.__ch_sessions;
 }
 
-async function ensureFile(): Promise<void> {
-  try {
-    await fs.access(DATA_FILE);
-  } catch {
-    try {
-      await fs.mkdir(path.dirname(DATA_FILE), { recursive: true });
-      await fs.writeFile(DATA_FILE, "[]", "utf-8");
-    } catch {
-      // serverless: read-only fs, use memory only
-    }
-  }
-}
-
 async function readSessions(): Promise<Session[]> {
-  await ensureFile();
-  try {
-    const raw = await fs.readFile(DATA_FILE, "utf-8");
-    return JSON.parse(raw) as Session[];
-  } catch {
-    return memStore();
-  }
-}
-
-async function writeSessions(sessions: Session[]): Promise<void> {
-  memStore().splice(0, memStore().length, ...sessions);
-  try {
-    await fs.writeFile(DATA_FILE, JSON.stringify(sessions, null, 2), "utf-8");
-  } catch {
-    // serverless: keep in memory only
-  }
+  // No fs reads — serverless-safe pure memory.
+  return memStore();
 }
 
 export async function getAllSessions(): Promise<Session[]> {
@@ -64,7 +41,8 @@ export async function createSession(
     createdAt: new Date().toISOString(),
   };
   sessions.push(session);
-  await writeSessions(sessions);
+  // In-memory only — survives warm invocations on the same lambda instance.
+  // Do NOT persist to disk; fs is read-only on Vercel serverless.
   return session;
 }
 

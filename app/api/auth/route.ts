@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
-import { getProjectsByEmail, getAllProjects } from "@/lib/projects";
+import { getProjectsByEmailAsync, getProjectByIdAsync } from "@/lib/projects-db";
 import { signPortalToken, verifyPortalToken } from "@/lib/jwt";
 
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { email } = body;
+    const { email, projectId: providedProjectId } = body;
 
     console.log("[api/auth] POST email=", email);
 
@@ -17,22 +17,49 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Find project by email. MVP: any email maps to first active project
-    // if no exact match found — keeps the demo accessible.
-    const matching = getProjectsByEmail(email);
+    // SECURITY: require an EXACT email match against a known project
+    // (owner / contributor). No fallback to "first active project" — that
+    // turned the endpoint into an auth bypass for any visitor.
+    const matching = await getProjectsByEmailAsync(email);
+
     let projectId: string | undefined;
-    if (matching.length > 0) {
+    if (matching.length === 1) {
       projectId = matching[0].id;
-    } else {
-      const fallback = getAllProjects().find((p) => p.status === "active");
-      if (fallback) projectId = fallback.id;
+    } else if (matching.length > 1) {
+      // Multiple projects for the same email — require explicit projectId
+      // sent by the client (e.g. picked from a list of "your projects").
+      if (providedProjectId && typeof providedProjectId === "string") {
+        const owned = matching.find((p) => p.id === providedProjectId);
+        if (owned) {
+          projectId = owned.id;
+        } else {
+          return NextResponse.json(
+            { error: "Project does not belong to this email" },
+            { status: 403 }
+          );
+        }
+      } else {
+        return NextResponse.json(
+          {
+            error: "Multiple projects found — please specify projectId",
+            projectIds: matching.map((p) => ({ id: p.id, title: p.title })),
+          },
+          { status: 409 }
+        );
+      }
     }
 
     if (!projectId) {
       return NextResponse.json(
-        { error: "No projects found" },
+        { error: "No project found for this email" },
         { status: 404 }
       );
+    }
+
+    // Defensive sanity check: project must still exist & be active.
+    const project = await getProjectByIdAsync(projectId);
+    if (!project) {
+      return NextResponse.json({ error: "Project not found" }, { status: 404 });
     }
 
     const token = await signPortalToken({ email, projectId });

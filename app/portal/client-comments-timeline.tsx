@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { marked } from "marked";
+import { renderSafeMarkdown } from "@/lib/sanitize";
 import { Activity, Sparkles, Send, CheckCircle2 } from "lucide-react";
 import { ClientCommentForm, type ClientComment } from "./client-comment-form";
 import { timeAgo } from "@/lib/utils";
@@ -105,7 +105,7 @@ function CommentItem({
         <div
           className="prose-comment mt-1 text-sm break-words"
           dangerouslySetInnerHTML={{
-            __html: marked.parse(c.message, { async: false }) as string,
+            __html: renderSafeMarkdown(c.message),
           }}
         />
       </div>

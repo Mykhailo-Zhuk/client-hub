@@ -1,12 +1,23 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useSearchParams } from "next/navigation";
 import { KeyRound, Loader2, ArrowRight } from "lucide-react";
 
 export function AgentUnlockForm() {
   const [secret, setSecret] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
+  const searchParams = useSearchParams();
+
+  // Honor ?redirect= so /admin → /login?type=agent&redirect=/admin lands back at /admin
+  // instead of dropping the user into /agent-console.
+  function safeRedirectTarget(raw: string | null | undefined): string {
+    if (!raw) return "/agent-console";
+    // Only allow same-origin path-style redirects (start with "/" and not "//").
+    if (!raw.startsWith("/") || raw.startsWith("//")) return "/agent-console";
+    return raw;
+  }
 
   function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -27,8 +38,10 @@ export function AgentUnlockForm() {
           setError(data.error || "Invalid secret");
           return;
         }
-        // Cookie set on server. Redirect to console.
-        window.location.href = "/agent-console";
+        // Cookie set on server. Redirect to the originally requested page
+        // (or fall back to /agent-console).
+        const target = safeRedirectTarget(searchParams?.get("redirect"));
+        window.location.href = target;
       } catch (err: any) {
         setError(err?.message || "Network error");
       }

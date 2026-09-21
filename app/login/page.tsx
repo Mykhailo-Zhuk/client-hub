@@ -4,12 +4,13 @@ import { Card } from "@/components/ui/card";
 import { Sparkles, KeyRound } from "lucide-react";
 import { AgentUnlockForm } from "./agent-unlock-form";
 
-export default function LoginPage({
+export default async function LoginPage({
   searchParams,
 }: {
-  searchParams?: { type?: string; redirect?: string };
+  searchParams: Promise<{ type?: string; redirect?: string }>;
 }) {
-  const isAgent = searchParams?.type === "agent";
+  const params = await searchParams;
+  const isAgent = params?.type === "agent";
   return (
     <section className="mx-auto flex max-w-md flex-col gap-6 px-4 py-20">
       <div className="text-center">

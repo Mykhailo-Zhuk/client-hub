@@ -12,7 +12,12 @@ import { AGENT_SECRET, AGENT_COOKIE } from '@/lib/agent-auth';
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const agentToken = (await cookies()).get(AGENT_COOKIE)?.value;
   if (agentToken !== AGENT_SECRET) {
-    redirect('/login?type=agent&redirect=%2Fadmin');
+    // Build the redirect target with proper URL encoding so query values
+    // containing slashes (e.g. ?redirect=/admin) survive the round-trip.
+    const url = new URL('/login', 'http://placeholder');
+    url.searchParams.set('type', 'agent');
+    url.searchParams.set('redirect', '/admin');
+    redirect(url.pathname + url.search);
   }
   return <>{children}</>;
 }

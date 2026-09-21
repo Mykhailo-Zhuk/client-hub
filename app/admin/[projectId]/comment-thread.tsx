@@ -1,6 +1,6 @@
-import { Card } from '@/components/ui/card';
-import { renderSafeMarkdown } from '@/lib/sanitize';
-import { timeAgo } from '@/lib/utils';
+import { Card } from "@/components/ui/card";
+import { timeAgo } from "@/lib/utils";
+import ClientMarkdown from "./client-markdown";
 
 type Comment = {
   id: string;
@@ -11,6 +11,13 @@ type Comment = {
   parent_id?: string | null;
 };
 
+/**
+ * Server component (no "use client") — renders the structural shell and
+ * delegates markdown rendering to <ClientMarkdown /> so the heavy
+ * `isomorphic-dompurify` -> `jsdom` chain never loads during server render.
+ *
+ * See client-markdown.tsx for the full explanation.
+ */
 export default function CommentThread({
   comments,
 }: {
@@ -49,9 +56,9 @@ export default function CommentThread({
                 </div>
                 <span>{timeAgo(c.timestamp)}</span>
               </div>
-              <div
+              <ClientMarkdown
+                content={c.message}
                 className="mt-2 prose prose-sm dark:prose-invert max-w-none break-words"
-                dangerouslySetInnerHTML={{ __html: renderSafeMarkdown(c.message) }}
               />
             </Card>
             {kids.length > 0 && (
@@ -65,9 +72,9 @@ export default function CommentThread({
                         </span>
                         <span>{timeAgo(k.timestamp)}</span>
                       </div>
-                      <div
+                      <ClientMarkdown
+                        content={k.message}
                         className="mt-1 prose prose-sm dark:prose-invert max-w-none break-words"
-                        dangerouslySetInnerHTML={{ __html: renderSafeMarkdown(k.message) }}
                       />
                     </Card>
                   </li>

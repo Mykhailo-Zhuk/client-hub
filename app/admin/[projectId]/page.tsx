@@ -3,28 +3,102 @@ import Link from 'next/link';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Reveal } from '@/components/ui/reveal';
-import { ExternalLink, Github, ArrowLeft, Calendar } from 'lucide-react';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import {
+  ArrowLeft,
+  ExternalLink,
+  Github,
+} from 'lucide-react';
 import { getProjectByIdAsync } from '@/lib/projects-db';
 import { getCommentsByProjectAsync } from '@/lib/comments-db';
-import { timeAgo, formatDate } from '@/lib/utils';
-import { AdminCommentForm } from './comment-form';
-import { ProgressForm } from './progress-form';
+import { getProjectsAsync } from '@/lib/projects-db';
+import { isSupabaseConfigured, getSupabaseAdmin } from '@/lib/supabase';
+import ProjectList from '../project-list';
+import CommentThread from './comment-thread';
+import CommentEditor from './comment-editor';
+import ProjectStats from './project-stats';
+import ProjectSettingsForm from './project-settings-form';
 import { DeleteProjectButton } from './delete-button';
 
 export const dynamic = 'force-dynamic';
 
+type AdminProject = {
+  id: string;
+  title: string;
+  description?: string | null;
+  client_name: string;
+  client?: string;
+  client_email?: string | null;
+  status: 'active' | 'paused' | 'completed';
+  progress: number;
+  day_current?: number;
+  day_total?: number;
+  start_date?: string | null;
+  estimated_end?: string | null;
+  completed_date?: string | null;
+  demo?: string | null;
+  github?: string | null;
+  tags?: string[];
+};
+
 export default async function AdminProjectPage({
   params,
 }: {
-  params: { projectId: string };
+  params: Promise<{ projectId: string }>;
 }) {
-  const project = await getProjectByIdAsync(params.projectId);
+  const { projectId } = await params;
+
+  // Load sidebar list and the selected project in parallel.
+  const [project, allProjects] = await Promise.all([
+    getProjectByIdAsync(projectId),
+    getProjectsAsync(),
+  ]);
+
   if (!project) notFound();
+
+  // Hydrate Supabase columns that may not be in JSON fallback (demo/github/tags etc.).
+  let supabaseExtras: Partial<AdminProject> = {};
+  if (isSupabaseConfigured()) {
+    const sb = getSupabaseAdmin();
+    if (sb) {
+      const { data } = await sb
+        .from('projects')
+        .select(
+          'id, title, client_name, client_email, status, progress, day_current, day_total, start_date, demo, github'
+        )
+        .eq('id', projectId)
+        .maybeSingle();
+      if (data) {
+        supabaseExtras = data as Partial<AdminProject>;
+      }
+    }
+  }
+
+  const merged: AdminProject = {
+    ...(project as unknown as AdminProject),
+    ...supabaseExtras,
+  };
 
   const comments = await getCommentsByProjectAsync(project.id);
 
+  // Sidebar expects client/progress/status — adapt JSON shape.
+  const sidebarItems = allProjects.map((p) => ({
+    id: p.id,
+    title: p.title,
+    client: p.client,
+    status: p.status as 'active' | 'paused' | 'completed',
+    progress: p.progress,
+  }));
+
+  const statusColor =
+    merged.status === 'active'
+      ? 'bg-accent/10 text-accent'
+      : merged.status === 'completed'
+      ? 'bg-emerald-500/10 text-emerald-500'
+      : 'bg-amber-500/10 text-amber-500';
+
   return (
-    <section className="mx-auto max-w-5xl px-4 py-10 sm:py-14">
+    <section className="mx-auto max-w-6xl px-4 py-8 sm:py-12">
       <Reveal>
         <Link
           href="/admin"
@@ -32,162 +106,135 @@ export default async function AdminProjectPage({
         >
           <ArrowLeft size={12} /> Back to admin
         </Link>
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-          <div>
-            <Badge
-              className={
-                project.status === 'active'
-                  ? 'mb-2 bg-accent/10 text-accent'
-                  : project.status === 'completed'
-                  ? 'mb-2 bg-emerald-500/10 text-emerald-500'
-                  : 'mb-2 bg-amber-500/10 text-amber-500'
-              }
-            >
-              {project.status === 'active' ? 'In progress' : project.status}
-            </Badge>
-            <h1 className="text-3xl font-bold tracking-tight">{project.title}</h1>
-            <div className="mt-2 text-sm text-muted-foreground">
-              {project.client}
-              {project.clientEmail ? ` · ${project.clientEmail}` : ''}
-            </div>
-            {project.description && (
-              <p className="mt-3 max-w-2xl text-sm text-muted-foreground">
-                {project.description}
-              </p>
-            )}
-          </div>
-          <div className="flex gap-2">
-            {project.demo && (
-              <a
-                href={project.demo}
-                target="_blank"
-                rel="noreferrer"
-                className="inline-flex items-center gap-1.5 rounded-md border border-border bg-background px-3 py-1.5 text-xs hover:bg-muted"
-              >
-                <ExternalLink size={12} /> Demo
-              </a>
-            )}
-            {project.github && (
-              <a
-                href={project.github}
-                target="_blank"
-                rel="noreferrer"
-                className="inline-flex items-center gap-1.5 rounded-md border border-border bg-background px-3 py-1.5 text-xs hover:bg-muted"
-              >
-                <Github size={12} /> Repo
-              </a>
-            )}
-            <Link
-              href={`/portal/${project.id}`}
-              className="inline-flex items-center gap-1.5 rounded-md border border-border bg-background px-3 py-1.5 text-xs hover:bg-muted"
-            >
-              Client view →
-            </Link>
-          </div>
-        </div>
       </Reveal>
 
-      <div className="mt-8 grid gap-6 lg:grid-cols-3">
-        <div className="space-y-4 lg:col-span-2">
+      <div className="grid grid-cols-12 gap-6">
+        <aside className="col-span-12 lg:col-span-3">
+          <Card className="sticky top-4 p-3">
+            <ProjectList
+              projects={sidebarItems}
+              activeId={project.id}
+            />
+          </Card>
+        </aside>
+
+        <main className="col-span-12 space-y-4 lg:col-span-9">
           <Reveal>
-            <Card className="p-5">
-              <h2 className="mb-3 text-sm font-semibold">Publish update</h2>
-              <AdminCommentForm projectId={project.id} />
-            </Card>
-          </Reveal>
-
-          <Reveal delay={0.05}>
-            <Card className="p-5">
-              <h2 className="mb-3 text-sm font-semibold">
-                Activity ({comments.length})
-              </h2>
-              {comments.length === 0 ? (
-                <p className="text-xs text-muted-foreground">No updates yet.</p>
-              ) : (
-                <ol className="space-y-3">
-                  {comments.map((c) => (
-                    <li key={c.id} className="border-l-2 border-accent/30 pl-4">
-                      <div className="flex items-center justify-between text-xs text-muted-foreground">
-                        <span className="font-mono">{c.type}</span>
-                        <span>
-                          {c.author} · {timeAgo(c.timestamp)}
-                        </span>
-                      </div>
-                      <div className="mt-1 whitespace-pre-wrap text-sm">
-                        {c.message}
-                      </div>
-                    </li>
-                  ))}
-                </ol>
-              )}
-            </Card>
-          </Reveal>
-        </div>
-
-        <div className="space-y-4">
-          <Reveal>
-            <Card className="p-5">
-              <h2 className="mb-3 text-sm font-semibold">Project state</h2>
-              <ProgressForm
-                projectId={project.id}
-                initialProgress={project.progress}
-                initialStatus={project.status}
-              />
-            </Card>
-          </Reveal>
-
-          <Reveal delay={0.05}>
-            <Card className="p-5 text-xs">
-              <h2 className="mb-3 text-sm font-semibold">Meta</h2>
-              <dl className="space-y-1.5 text-muted-foreground">
-                <div className="flex justify-between">
-                  <dt>Started</dt>
-                  <dd className="text-foreground">{formatDate(project.startDate)}</dd>
+            <Card className="p-6">
+              <div className="flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-start">
+                <div className="flex-1">
+                  <div className="flex items-center gap-2">
+                    <Badge className={statusColor}>{merged.status}</Badge>
+                    <span className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                      {comments.length} update{comments.length === 1 ? '' : 's'}
+                    </span>
+                  </div>
+                  <h1 className="mt-2 text-2xl font-bold tracking-tight">
+                    {merged.title}
+                  </h1>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    {merged.client_name ?? merged.client}
+                    {merged.client_email ? ` · ${merged.client_email}` : ''}
+                  </p>
                 </div>
-                {project.estimatedEnd && (
-                  <div className="flex justify-between">
-                    <dt>Est. end</dt>
-                    <dd className="text-foreground">{formatDate(project.estimatedEnd)}</dd>
-                  </div>
-                )}
-                {project.completedDate && (
-                  <div className="flex justify-between">
-                    <dt>Completed</dt>
-                    <dd className="text-foreground">{formatDate(project.completedDate)}</dd>
-                  </div>
-                )}
-                {project.dayCurrent !== undefined && project.dayTotal ? (
-                  <div className="flex justify-between">
-                    <dt>Day</dt>
-                    <dd className="text-foreground">
-                      {project.dayCurrent} / {project.dayTotal}
-                    </dd>
+                <div className="flex gap-2">
+                  {merged.demo && (
+                    <a
+                      href={merged.demo}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-flex items-center gap-1.5 rounded-md border border-border bg-background px-3 py-1.5 text-xs hover:bg-muted"
+                    >
+                      <ExternalLink size={12} /> Demo
+                    </a>
+                  )}
+                  {merged.github && (
+                    <a
+                      href={merged.github}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-flex items-center gap-1.5 rounded-md border border-border bg-background px-3 py-1.5 text-xs hover:bg-muted"
+                    >
+                      <Github size={12} /> Repo
+                    </a>
+                  )}
+                  <Link
+                    href={`/portal/${project.id}`}
+                    className="inline-flex items-center gap-1.5 rounded-md border border-border bg-background px-3 py-1.5 text-xs hover:bg-muted"
+                  >
+                    Client view →
+                  </Link>
+                </div>
+              </div>
+
+              <div className="mt-5">
+                <div className="mb-1 flex items-center justify-between text-xs text-muted-foreground">
+                  <span>Progress</span>
+                  <span className="font-mono">{merged.progress}%</span>
+                </div>
+                <div className="h-2 overflow-hidden rounded-full bg-muted">
+                  <div
+                    className="h-full bg-accent transition-all"
+                    style={{ width: `${Math.min(100, Math.max(0, merged.progress))}%` }}
+                  />
+                </div>
+                {merged.day_current !== undefined && merged.day_total ? (
+                  <div className="mt-1 text-[10px] text-muted-foreground">
+                    Day {merged.day_current} / {merged.day_total}
                   </div>
                 ) : null}
-                <div className="flex justify-between">
-                  <dt>Tags</dt>
-                  <dd className="flex flex-wrap justify-end gap-1">
-                    {(project.tags ?? []).map((t) => (
-                      <Badge key={t} className="text-[10px]">
-                        {t}
-                      </Badge>
-                    ))}
-                  </dd>
-                </div>
-              </dl>
+              </div>
             </Card>
           </Reveal>
 
-          <Reveal delay={0.08}>
-            <Card className="p-5">
-              <h2 className="mb-3 text-sm font-semibold text-red-500">Danger zone</h2>
-              <p className="mb-3 text-xs text-muted-foreground">
-                Permanently delete this project and all its updates. Cannot be undone.
-              </p>
-              <DeleteProjectButton projectId={project.id} />
+          <Reveal delay={0.05}>
+            <Card className="p-4">
+              <Tabs defaultValue="comments">
+                <TabsList>
+                  <TabsTrigger value="comments">
+                    Comments ({comments.length})
+                  </TabsTrigger>
+                  <TabsTrigger value="overview">Overview</TabsTrigger>
+                  <TabsTrigger value="settings">Settings</TabsTrigger>
+                </TabsList>
+
+                <TabsContent value="comments">
+                  <CommentThread
+                    comments={comments.map((c) => ({
+                      id: c.id,
+                      type: c.type,
+                      author: c.author,
+                      message: c.message,
+                      timestamp: c.timestamp,
+                      parent_id: (c as { parent_id?: string | null }).parent_id ?? null,
+                    }))}
+                  />
+                  <div className="mt-4 border-t border-border pt-4">
+                    <h3 className="mb-2 text-sm font-semibold">New update</h3>
+                    <CommentEditor projectId={project.id} />
+                  </div>
+                </TabsContent>
+
+                <TabsContent value="overview">
+                  <ProjectStats project={merged} />
+                </TabsContent>
+
+                <TabsContent value="settings">
+                  <ProjectSettingsForm project={merged} />
+                  <div className="mt-6 border-t border-red-500/20 pt-4">
+                    <h3 className="mb-2 text-sm font-semibold text-red-500">
+                      Danger zone
+                    </h3>
+                    <p className="mb-3 text-xs text-muted-foreground">
+                      Permanently delete this project and all its updates.
+                    </p>
+                    <DeleteProjectButton projectId={project.id} />
+                  </div>
+                </TabsContent>
+              </Tabs>
             </Card>
           </Reveal>
-        </div>
+        </main>
       </div>
     </section>
   );

@@ -6,7 +6,7 @@ import { getProjectsAsync } from '@/lib/projects-db';
 import { getRecentCommentsAsync } from '@/lib/comments-db';
 import { isSupabaseConfigured } from '@/lib/supabase';
 import { timeAgo } from '@/lib/utils';
-import { Database, Plus, ArrowUpRight, Sparkles } from 'lucide-react';
+import { Database, Plus, ArrowUpRight } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
 
@@ -40,12 +40,6 @@ export default async function AdminPage() {
               className="inline-flex items-center gap-1.5 rounded-md bg-accent px-3 py-1.5 text-xs font-medium text-accent-foreground hover:opacity-90"
             >
               <Plus size={12} /> New Project
-            </a>
-            <a
-              href="/agent-console"
-              className="inline-flex items-center gap-1.5 rounded-md border border-border bg-background px-3 py-1.5 text-xs hover:bg-muted"
-            >
-              <Sparkles size={12} /> Agent console
             </a>
           </div>
         </div>
@@ -137,11 +131,7 @@ export default async function AdminPage() {
           </Reveal>
           {recent.length === 0 ? (
             <Card className="p-4 text-xs text-muted-foreground">
-              No updates yet. Post one from the{' '}
-              <Link href="/agent-console" className="text-accent hover:underline">
-                agent console
-              </Link>{' '}
-              or via <code className="rounded bg-muted px-1">/api/telegram</code>.
+              No updates yet. Open a project and post from the Comments tab, or use <code className="rounded bg-muted px-1">/api/telegram</code>.
             </Card>
           ) : (
             recent.map((c, i) => (

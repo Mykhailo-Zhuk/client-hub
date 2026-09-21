@@ -19,33 +19,36 @@ export default async function PortalPage({
   params,
   searchParams,
 }: {
-  params: { projectId: string };
-  searchParams: { token?: string };
+  params: Promise<{ projectId: string }>;
+  searchParams: Promise<{ token?: string }>;
 }) {
+  const { projectId } = await params;
+  const sp = await searchParams;
+
   // Stateless JWT auth — works across serverless instances.
   // Prefer the URL ?token= (always available from /api/auth's magicLink);
   // fall back to cookie (best-effort). On Vercel serverless, the cookie
   // set in /api/auth's response may not persist to the next request, so
   // the URL token is the source of truth.
   let token = (await cookies()).get("ch_session")?.value;
-  const source = token ? "cookie" : searchParams.token ? "url" : "none";
-  if (!token && searchParams.token) {
-    token = searchParams.token;
+  const source = token ? "cookie" : sp.token ? "url" : "none";
+  if (!token && sp.token) {
+    token = sp.token;
   }
   if (!token) {
-    console.log(`[portal/${params.projectId}] no token (source=${source}) → /login`);
-    redirect(`/login?redirect=/portal/${params.projectId}`);
+    console.log(`[portal/${projectId}] no token (source=${source}) → /login`);
+    redirect(`/login?redirect=/portal/${projectId}`);
   }
 
   const session = await verifyPortalToken(token);
   if (!session) {
-    console.log(`[portal/${params.projectId}] invalid JWT (source=${source}) → /login`);
-    redirect(`/login?redirect=/portal/${params.projectId}`);
+    console.log(`[portal/${projectId}] invalid JWT (source=${source}) → /login`);
+    redirect(`/login?redirect=/portal/${projectId}`);
   }
 
-  console.log(`[portal/${params.projectId}] auth OK email=${session.email} source=${source}`);
+  console.log(`[portal/${projectId}] auth OK email=${session.email} source=${source}`);
 
-  const project = getProjectById(params.projectId);
+  const project = getProjectById(projectId);
   if (!project) notFound();
 
   const comments = await getCommentsByProjectAsync(project.id);

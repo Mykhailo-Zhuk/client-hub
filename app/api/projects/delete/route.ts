@@ -2,16 +2,14 @@ import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { requireSupabaseAdmin, isSupabaseConfigured } from '@/lib/supabase';
 import { deleteProject } from '@/lib/projects-db';
-
-const AGENT_SECRET =
-  process.env.AGENT_PASSWORD || process.env.AGENT_SECRET || 'dev-agent-secret';
+import { AGENT_SECRET, AGENT_COOKIE } from '@/lib/agent-auth';
 
 /**
- * Delete a project (and cascade its comments). Gated by the `agent_token`
- * cookie — same gate as /admin and /api/projects/update.
+ * Delete a project (and cascade its comments). Gated by the agent cookie
+ * — same gate as /admin and /api/projects/update.
  */
 export async function POST(req: NextRequest) {
-  const agentToken = (await cookies()).get('agent_token')?.value;
+  const agentToken = (await cookies()).get(AGENT_COOKIE)?.value;
   if (agentToken !== AGENT_SECRET) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }

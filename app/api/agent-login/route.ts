@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
-
-// MVP-only secret. Mirrors the value in app/agent-console/layout.tsx.
-const AGENT_SECRET = process.env.AGENT_SECRET || "misha-zhuk-dev-2026";
+import { AGENT_SECRET, AGENT_COOKIE } from "@/lib/agent-auth";
 
 export async function POST(req: NextRequest) {
   try {
@@ -16,8 +14,8 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Set the agent_token cookie so /agent-console layout lets you in.
-    (await cookies()).set("agent_token", AGENT_SECRET, {
+    // Set the agent cookie so the gated layouts let you in.
+    (await cookies()).set(AGENT_COOKIE, AGENT_SECRET, {
       httpOnly: true,
       sameSite: "lax",
       path: "/",

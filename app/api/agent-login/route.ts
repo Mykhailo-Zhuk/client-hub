@@ -7,6 +7,17 @@ export async function POST(req: NextRequest) {
     const body = await req.json().catch(() => ({}));
     const secret = body?.secret;
 
+    // Debug logging — safe (no secret value printed). Will be removed once
+    // login is confirmed stable on Vercel.
+    console.log(
+      "[agent-login] NODE_ENV=%s hasEnv(AGENT_SECRET=%s, AGENT_PASSWORD=%s) resolvedLen=%d match=%s",
+      process.env.NODE_ENV,
+      Boolean(process.env.AGENT_SECRET),
+      Boolean(process.env.AGENT_PASSWORD),
+      AGENT_SECRET.length,
+      typeof secret === "string" && secret.length === AGENT_SECRET.length
+    );
+
     if (typeof secret !== "string" || secret !== AGENT_SECRET) {
       return NextResponse.json(
         { ok: false, error: "Invalid agent secret" },

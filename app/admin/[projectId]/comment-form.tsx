@@ -3,6 +3,7 @@
 import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { Send, Loader2 } from 'lucide-react';
+import { createCommentAction } from '@/app/actions';
 
 const TYPES = [
   ['update', 'Update'],
@@ -24,21 +25,21 @@ export function AdminCommentForm({ projectId }: { projectId: string }) {
     if (!message.trim()) return;
     setFeedback(null);
     startTransition(async () => {
-      // Use the unified comments endpoint — picks up Supabase when configured.
-      const res = await fetch('/api/comments', {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ projectId, type, message, author: 'Agent' }),
-      });
-      if (!res.ok) {
-        const d = await res.json().catch(() => ({}));
-        setFeedback(`❌ ${d.error ?? 'failed'}`);
-        return;
+      try {
+        // Server action bypasses /api/comments cookie path — avoids
+        // "Token does not match project" from stale ch_session cookies.
+        const d = await createCommentAction({
+          projectId,
+          type,
+          message,
+          author: 'Agent',
+        });
+        setFeedback(`✅ Published (${d.backend})`);
+        setMessage('');
+        router.refresh();
+      } catch (err) {
+        setFeedback(`❌ ${(err as Error).message ?? 'failed'}`);
       }
-      const d = await res.json();
-      setFeedback(`✅ Published (${d.backend ?? 'unknown'})`);
-      setMessage('');
-      router.refresh();
     });
   }
 

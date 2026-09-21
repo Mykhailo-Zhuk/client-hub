@@ -27,7 +27,10 @@ import { getSupabaseAdmin } from '@/lib/supabase';
 import { AGENT_SECRET, AGENT_COOKIE } from '@/lib/agent-auth';
 
 const OLLAMA_ENDPOINT = 'https://ollama.com/v1/chat/completions';
-const OLLAMA_MODEL = process.env.OLLAMA_MODEL || 'glm-5.2';
+// Default to the free-tier model (gemma4:31b); override via OLLAMA_MODEL env.
+// glm-5.2 is paid — kept as opt-in fallback for richer drafts.
+const OLLAMA_MODEL = process.env.OLLAMA_MODEL || 'gemma4:31b';
+const OLLAMA_FALLBACK_MODEL = process.env.OLLAMA_FALLBACK_MODEL || 'glm-5.2';
 
 type SupabaseCommentRow = {
   id: string;

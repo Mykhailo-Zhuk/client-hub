@@ -11,6 +11,7 @@ import {
   Eye,
   Pencil,
 } from 'lucide-react';
+import { createCommentAction } from '@/app/actions';
 
 const TYPES = [
   ['update', 'Update'],
@@ -40,25 +41,22 @@ export default function CommentEditor({ projectId }: { projectId: string }) {
     if (!message.trim()) return;
     setFeedback(null);
     startTransition(async () => {
-      const res = await fetch('/api/comments', {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({
+      try {
+        // Server action bypasses /api/comments cookie auth path —
+        // service_role key writes to Supabase directly, avoiding
+        // "Token does not match project" from stale ch_session cookies.
+        const d = await createCommentAction({
           projectId,
           type,
           message,
           author: 'Agent',
-        }),
-      });
-      if (!res.ok) {
-        const d = await res.json().catch(() => ({}));
-        setFeedback(`❌ ${d.error ?? 'failed'}`);
-        return;
+        });
+        setFeedback(`✅ Published (${d.backend})`);
+        setMessage('');
+        router.refresh();
+      } catch (err) {
+        setFeedback(`❌ ${(err as Error).message ?? 'failed'}`);
       }
-      const d = await res.json();
-      setFeedback(`✅ Published (${d.backend ?? 'unknown'})`);
-      setMessage('');
-      router.refresh();
     });
   }
 

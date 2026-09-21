@@ -49,6 +49,46 @@ export default async function AdminProjectPage({
 }) {
   const { projectId } = await params;
 
+  try {
+    return await renderAdminProject(projectId);
+  } catch (err) {
+    // DEBUG (2026-09-21 iron-master 500 incident): surface the actual
+    // exception so we can see the stack trace instead of the generic
+    // Next.js 500 page. Rasty is investigating.
+    const e = err as Error & { digest?: string };
+    console.error(`[admin/${projectId}] render failed:`, e);
+    return (
+      <section className="mx-auto max-w-4xl px-4 py-12">
+        <div className="rounded-lg border border-red-500/30 bg-red-500/5 p-6">
+          <h1 className="text-xl font-bold text-red-500">
+            Admin render crashed for <code>/admin/{projectId}</code>
+          </h1>
+          <p className="mt-2 text-sm text-muted-foreground">
+            Showing the actual exception instead of the Next.js 500 page.
+            Once the bug is fixed this branch should never run.
+          </p>
+          <div className="mt-4 space-y-1 rounded border border-border bg-background p-4 font-mono text-xs">
+            <div>
+              <span className="text-muted-foreground">name: </span>
+              <span className="text-red-400">{e.name}</span>
+            </div>
+            <div>
+              <span className="text-muted-foreground">message: </span>
+              <span className="text-red-400">{e.message}</span>
+            </div>
+            {e.stack ? (
+              <pre className="mt-2 max-h-[60vh] overflow-auto whitespace-pre-wrap break-all text-[11px] text-foreground/80">
+                {e.stack}
+              </pre>
+            ) : null}
+          </div>
+        </div>
+      </section>
+    );
+  }
+}
+
+async function renderAdminProject(projectId: string) {
   // Load sidebar list and the selected project in parallel.
   const [project, allProjects] = await Promise.all([
     getProjectByIdAsync(projectId),

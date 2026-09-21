@@ -1,4 +1,5 @@
 import { Card } from '@/components/ui/card';
+import { renderSafeMarkdown } from '@/lib/sanitize';
 import { timeAgo } from '@/lib/utils';
 
 type Comment = {
@@ -48,9 +49,10 @@ export default function CommentThread({
                 </div>
                 <span>{timeAgo(c.timestamp)}</span>
               </div>
-              <div className="mt-2 whitespace-pre-wrap text-sm leading-relaxed">
-                {c.message}
-              </div>
+              <div
+                className="mt-2 prose prose-sm dark:prose-invert max-w-none break-words"
+                dangerouslySetInnerHTML={{ __html: renderSafeMarkdown(c.message) }}
+              />
             </Card>
             {kids.length > 0 && (
               <ol className="ml-6 mt-2 space-y-2 border-l border-accent/30 pl-4">
@@ -63,7 +65,10 @@ export default function CommentThread({
                         </span>
                         <span>{timeAgo(k.timestamp)}</span>
                       </div>
-                      <div className="mt-1 whitespace-pre-wrap">{k.message}</div>
+                      <div
+                        className="mt-1 prose prose-sm dark:prose-invert max-w-none break-words"
+                        dangerouslySetInnerHTML={{ __html: renderSafeMarkdown(k.message) }}
+                      />
                     </Card>
                   </li>
                 ))}

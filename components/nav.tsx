@@ -3,10 +3,10 @@ import { cookies } from "next/headers";
 import { Layers, Github, Terminal } from "lucide-react";
 import { ThemeToggle } from "./theme-toggle";
 
-export function Nav() {
+export async function Nav() {
   // If a client session cookie is present, the user is logged in —
   // hide the Login button and show a "Portal" shortcut instead.
-  const session = cookies().get("ch_session")?.value;
+  const session = (await cookies()).get("ch_session")?.value;
   const isAuthed = Boolean(session);
 
   return (

@@ -68,7 +68,7 @@ export async function POST(req: NextRequest) {
     // Best-effort cookie: works in dev, may not persist on serverless.
     // The URL-based magic link is the source of truth.
     try {
-      cookies().set("ch_session", token, {
+      (await cookies()).set("ch_session", token, {
         httpOnly: true,
         sameSite: "lax",
         path: "/",
@@ -97,7 +97,7 @@ export async function POST(req: NextRequest) {
 export async function GET(req: NextRequest) {
   // Verify JWT — works across serverless instances (stateless)
   const tokenParam = req.nextUrl.searchParams.get("token");
-  const cookieToken = cookies().get("ch_session")?.value;
+  const cookieToken = (await cookies()).get("ch_session")?.value;
   const token = tokenParam || cookieToken;
 
   console.log("[api/auth] GET token?", !!token, "from=", tokenParam ? "url" : "cookie");
@@ -114,7 +114,7 @@ export async function GET(req: NextRequest) {
   // If accessed via ?token=, also set cookie so subsequent requests work
   if (tokenParam && !cookieToken) {
     try {
-      cookies().set("ch_session", tokenParam, {
+      (await cookies()).set("ch_session", tokenParam, {
         httpOnly: true,
         sameSite: "lax",
         path: "/",
@@ -134,7 +134,7 @@ export async function GET(req: NextRequest) {
 
 export async function DELETE() {
   try {
-    cookies().delete("ch_session");
+    (await cookies()).delete("ch_session");
   } catch (cookieErr: any) {
     console.warn("[api/auth] cookie delete failed:", cookieErr?.message);
   }

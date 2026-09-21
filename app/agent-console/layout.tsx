@@ -6,12 +6,12 @@ import { redirect } from "next/navigation";
 const AGENT_SECRET =
   process.env.AGENT_SECRET || "misha-zhuk-dev-2026";
 
-export default function AgentConsoleLayout({
+export default async function AgentConsoleLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const agentToken = cookies().get("agent_token")?.value;
+  const agentToken = (await cookies()).get("agent_token")?.value;
 
   if (agentToken !== AGENT_SECRET) {
     redirect("/login?type=agent");

@@ -27,7 +27,7 @@ export default async function PortalPage({
   // fall back to cookie (best-effort). On Vercel serverless, the cookie
   // set in /api/auth's response may not persist to the next request, so
   // the URL token is the source of truth.
-  let token = cookies().get("ch_session")?.value;
+  let token = (await cookies()).get("ch_session")?.value;
   const source = token ? "cookie" : searchParams.token ? "url" : "none";
   if (!token && searchParams.token) {
     token = searchParams.token;

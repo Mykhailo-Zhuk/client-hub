@@ -16,7 +16,7 @@ import { verifyPortalToken } from "./jwt";
  * first navigation, so subsequent server renders have it.
  */
 export async function requireSession(redirectTo: string): Promise<void> {
-  const token = cookies().get("ch_session")?.value;
+  const token = (await cookies()).get("ch_session")?.value;
   if (!token) {
     redirect(`/login?redirect=${encodeURIComponent(redirectTo)}`);
   }
@@ -30,7 +30,7 @@ export async function tryGetSession(): Promise<{
   email: string;
   projectId: string;
 } | null> {
-  const token = cookies().get("ch_session")?.value;
+  const token = (await cookies()).get("ch_session")?.value;
   if (!token) return null;
   const payload = await verifyPortalToken(token);
   return payload ? { email: payload.email, projectId: payload.projectId } : null;

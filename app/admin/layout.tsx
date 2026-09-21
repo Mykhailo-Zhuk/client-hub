@@ -8,8 +8,8 @@ import { redirect } from 'next/navigation';
 
 const AGENT_SECRET = process.env.AGENT_PASSWORD || process.env.AGENT_SECRET || 'dev-agent-secret';
 
-export default function AdminLayout({ children }: { children: React.ReactNode }) {
-  const agentToken = cookies().get('agent_token')?.value;
+export default async function AdminLayout({ children }: { children: React.ReactNode }) {
+  const agentToken = (await cookies()).get('agent_token')?.value;
   if (agentToken !== AGENT_SECRET) {
     redirect('/login?type=agent');
   }

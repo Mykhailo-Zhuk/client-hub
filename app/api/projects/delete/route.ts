@@ -11,7 +11,7 @@ const AGENT_SECRET =
  * cookie — same gate as /admin and /api/projects/update.
  */
 export async function POST(req: NextRequest) {
-  const agentToken = cookies().get('agent_token')?.value;
+  const agentToken = (await cookies()).get('agent_token')?.value;
   if (agentToken !== AGENT_SECRET) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }

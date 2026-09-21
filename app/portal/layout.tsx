@@ -20,7 +20,7 @@ export default async function PortalLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const token = cookies().get("ch_session")?.value;
+  const token = (await cookies()).get("ch_session")?.value;
   if (token) {
     const session = await verifyPortalToken(token);
     if (!session) {

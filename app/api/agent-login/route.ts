@@ -17,7 +17,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Set the agent_token cookie so /agent-console layout lets you in.
-    cookies().set("agent_token", AGENT_SECRET, {
+    (await cookies()).set("agent_token", AGENT_SECRET, {
       httpOnly: true,
       sameSite: "lax",
       path: "/",
@@ -35,7 +35,7 @@ export async function POST(req: NextRequest) {
 
 export async function DELETE() {
   try {
-    cookies().delete("agent_token");
+    (await cookies()).delete("agent_token");
   } catch {
     /* best-effort */
   }

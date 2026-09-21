@@ -10,7 +10,7 @@ const AGENT_SECRET = process.env.AGENT_PASSWORD || process.env.AGENT_SECRET || '
  * Gated by the agent_token cookie (same as /admin/layout).
  */
 export async function POST(req: NextRequest) {
-  const agentToken = cookies().get('agent_token')?.value;
+  const agentToken = (await cookies()).get('agent_token')?.value;
   if (agentToken !== AGENT_SECRET) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }

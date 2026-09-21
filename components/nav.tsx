@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { cookies } from "next/headers";
-import { Layers, Github, Terminal } from "lucide-react";
+import { Layers, Github } from "lucide-react";
 import { ThemeToggle } from "./theme-toggle";
 
 export async function Nav() {
@@ -22,13 +22,6 @@ export async function Nav() {
             className="hidden rounded-md px-3 py-1.5 text-muted-foreground hover:bg-muted hover:text-foreground sm:inline-block"
           >
             Admin
-          </Link>
-          <Link
-            href="/agent-console"
-            className="hidden rounded-md px-3 py-1.5 text-muted-foreground hover:bg-muted hover:text-foreground sm:inline-block"
-          >
-            <Terminal size={14} className="mr-1 inline" />
-            Agent
           </Link>
           <a
             href="https://github.com/Mykhailo-Zhuk/client-hub"

@@ -17,9 +17,6 @@ export function Footer() {
           <a href="/admin" className="hover:text-foreground">
             Admin
           </a>
-          <a href="/agent-console" className="hover:text-foreground">
-            Agent Console
-          </a>
           <a href="/login" className="hover:text-foreground">
             Client Login
           </a>

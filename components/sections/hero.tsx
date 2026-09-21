@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, Sparkles, Terminal } from "lucide-react";
+import { ArrowRight, Sparkles } from "lucide-react";
 import { Reveal } from "../ui/reveal";
 
 export function Hero() {
@@ -37,13 +37,6 @@ export function Hero() {
               className="inline-flex items-center gap-2 rounded-md bg-accent px-5 py-2.5 text-sm font-medium text-accent-foreground shadow-sm hover:opacity-90"
             >
               Choose your project <ArrowRight size={14} />
-            </Link>
-            <Link
-              href="/agent-console"
-              className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground"
-            >
-              <Terminal size={12} />
-              Agent console
             </Link>
           </div>
         </Reveal>

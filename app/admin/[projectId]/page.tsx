@@ -19,6 +19,7 @@ import CommentEditor from './comment-editor';
 import ProjectStats from './project-stats';
 import ProjectSettingsForm from './project-settings-form';
 import { DeleteProjectButton } from './delete-button';
+import { ClientPreviewButton } from './client-preview-button';
 
 export const dynamic = 'force-dynamic';
 
@@ -158,12 +159,7 @@ export default async function AdminProjectPage({
                       <Github size={12} /> Repo
                     </a>
                   )}
-                  <Link
-                    href={`/portal/${project.id}`}
-                    className="inline-flex items-center gap-1.5 rounded-md border border-border bg-background px-3 py-1.5 text-xs hover:bg-muted"
-                  >
-                    Client view →
-                  </Link>
+                  <ClientPreviewButton projectId={project.id} />
                 </div>
               </div>
 

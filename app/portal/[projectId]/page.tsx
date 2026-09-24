@@ -13,7 +13,9 @@ import { LogoutButton } from "../actions";
 import { ClientCommentsTimeline } from "../client-comments-timeline";
 import type { ClientComment } from "../client-comment-form";
 import { ProjectStats } from "./project-stats";
+import { ClientAttention } from "./client-attention";
 import type { Comment } from "@/lib/types";
+import { getSupabaseAdmin } from "@/lib/supabase";
 
 export default async function PortalPage({
   params,
@@ -52,6 +54,22 @@ export default async function PortalPage({
   if (!project) notFound();
 
   const comments = await getCommentsByProjectAsync(project.id);
+
+  // Fetch project requests for the client
+  let projectRequests: any[] = [];
+  try {
+    const sb = getSupabaseAdmin();
+    if (sb) {
+      const { data } = await sb
+        .from('project_requests')
+        .select('*')
+        .eq('project_id', project.id)
+        .order('created_at', { ascending: false });
+      if (data) projectRequests = data;
+    }
+  } catch (err) {
+    console.error(`[portal/${projectId}] failed to fetch requests:`, err);
+  }
 
   const dayPercent =
     project.dayCurrent && project.dayTotal
@@ -105,6 +123,8 @@ export default async function PortalPage({
           </div>
         </div>
       </Reveal>
+
+      <ClientAttention requests={projectRequests} />
 
       {project.cover && (
         <Reveal delay={0.05}>

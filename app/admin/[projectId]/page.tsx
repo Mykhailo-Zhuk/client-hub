@@ -20,6 +20,7 @@ import ProjectStats from './project-stats';
 import ProjectSettingsForm from './project-settings-form';
 import { DeleteProjectButton } from './delete-button';
 import { ClientPreviewButton } from './client-preview-button';
+import ClientRequestsManager from './client-requests';
 
 export const dynamic = 'force-dynamic';
 
@@ -122,7 +123,22 @@ async function renderAdminProject(projectId: string) {
 
   const comments = await getCommentsByProjectAsync(project.id);
 
-  // Sidebar expects client/progress/status — adapt JSON shape.
+  // Fetch project requests from Supabase
+  let projectRequests: any[] = [];
+  if (isSupabaseConfigured()) {
+    const sb = getSupabaseAdmin();
+    if (sb) {
+      const { data } = await sb
+        .from('project_requests')
+        .select('*')
+        .eq('project_id', project.id)
+        .order('created_at', { ascending: false });
+      if (data) projectRequests = data;
+    }
+  }
+
+  const hasPendingRequests = projectRequests.some(r => r.status === 'pending');
+
   const sidebarItems = allProjects.map((p) => ({
     id: p.id,
     title: p.title,
@@ -166,6 +182,11 @@ async function renderAdminProject(projectId: string) {
                 <div className="flex-1">
                   <div className="flex items-center gap-2">
                     <Badge className={statusColor}>{merged.status}</Badge>
+                    {hasPendingRequests && (
+                      <Badge className="bg-amber-500 text-white hover:bg-amber-600">
+                        Pending Requests
+                      </Badge>
+                    )}
                     <span className="text-[10px] uppercase tracking-wider text-muted-foreground">
                       {comments.length} update{comments.length === 1 ? '' : 's'}
                     </span>
@@ -230,6 +251,9 @@ async function renderAdminProject(projectId: string) {
                   <TabsTrigger value="comments">
                     Comments ({comments.length})
                   </TabsTrigger>
+                  <TabsTrigger value="requests">
+                    Requests
+                  </TabsTrigger>
                   <TabsTrigger value="overview">Overview</TabsTrigger>
                   <TabsTrigger value="settings">Settings</TabsTrigger>
                 </TabsList>
@@ -249,6 +273,13 @@ async function renderAdminProject(projectId: string) {
                     <h3 className="mb-2 text-sm font-semibold">New update</h3>
                     <CommentEditor projectId={project.id} />
                   </div>
+                </TabsContent>
+
+                <TabsContent value="requests">
+                  <ClientRequestsManager 
+                    projectId={project.id} 
+                    initialRequests={projectRequests} 
+                  />
                 </TabsContent>
 
                 <TabsContent value="overview">

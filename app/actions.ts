@@ -140,3 +140,36 @@ export async function createProjectAction(
 
   return { ok: true, id, backend: 'supabase' };
 }
+
+export interface CreateRequestInput {
+  projectId: string;
+  text: string;
+}
+
+export async function createRequestAction(input: CreateRequestInput): Promise<{ ok: true; id: string }> {
+  const { projectId, text } = input;
+  if (!projectId || !text) throw new Error('projectId and text are required');
+
+  const sb = requireSupabaseAdmin();
+  const { data, error } = await sb
+    .from('project_requests')
+    .insert({ project_id: projectId, text })
+    .select('id')
+    .single();
+
+  if (error || !data) throw new Error(error?.message ?? 'request insert failed');
+  return { ok: true, id: data.id };
+}
+
+export async function updateRequestStatusAction(requestId: string, status: 'pending' | 'fulfilled'): Promise<{ ok: true }> {
+  if (!requestId) throw new Error('requestId required');
+
+  const sb = requireSupabaseAdmin();
+  const { error } = await sb
+    .from('project_requests')
+    .update({ status })
+    .eq('id', requestId);
+
+  if (error) throw new Error(error.message);
+  return { ok: true };
+}

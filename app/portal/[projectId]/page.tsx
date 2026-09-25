@@ -124,7 +124,9 @@ export default async function PortalPage({
         </div>
       </Reveal>
 
-      <ClientAttention requests={projectRequests} />
+      <div className="mt-8">
+        <ClientAttention requests={projectRequests} />
+      </div>
 
       {project.cover && (
         <Reveal delay={0.05}>

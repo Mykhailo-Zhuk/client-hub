@@ -173,3 +173,21 @@ export async function updateRequestStatusAction(requestId: string, status: 'pend
   if (error) throw new Error(error.message);
   return { ok: true };
 }
+
+export async function submitRequestResponseAction(requestId: string, text: string): Promise<{ ok: true }> {
+  if (!requestId) throw new Error('requestId required');
+  if (!text) throw new Error('response text is required');
+
+  const sb = requireSupabaseAdmin();
+  const { error } = await sb
+    .from('project_requests')
+    .update({
+      response_text: text,
+      responded_at: new Date().toISOString(),
+      status: 'fulfilled',
+    })
+    .eq('id', requestId);
+
+  if (error) throw new Error(error.message);
+  return { ok: true };
+}

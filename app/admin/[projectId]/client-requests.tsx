@@ -1,9 +1,9 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Send, CheckCircle2, Clock } from 'lucide-react';
+import { Send, CheckCircle2, Clock, MessageSquare } from 'lucide-react';
 import { createRequestAction, updateRequestStatusAction } from '@/app/actions';
 
 interface Request {
@@ -11,6 +11,8 @@ interface Request {
   text: string;
   status: 'pending' | 'fulfilled';
   created_at: string;
+  response_text?: string;
+  responded_at?: string;
 }
 
 export default function ClientRequestsManager({ 
@@ -20,9 +22,16 @@ export default function ClientRequestsManager({
   projectId: string; 
   initialRequests: Request[];
 }) {
+  const [mounted, setMounted] = useState(false);
   const [requests, setRequests] = useState<Request[]>(initialRequests);
   const [newRequestText, setNewRequestText] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) return null;
 
   const handleCreateRequest = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -94,28 +103,41 @@ export default function ClientRequestsManager({
         ) : (
           <div className="grid gap-3">
             {requests.map((req) => (
-              <Card key={req.id} className="p-3 flex items-center justify-between gap-4">
-                <div className="flex items-start gap-3 overflow-hidden">
-                  <Badge className={`shrink-0 mt-1 ${req.status === 'pending' ? '' : 'bg-secondary text-secondary-foreground'}`}>
-                    {req.status === 'pending' ? (
-                      <span className="flex items-center gap-1">
-                        <Clock size={10} /> Pending
-                      </span>
-                    ) : (
-                      <span className="flex items-center gap-1 text-emerald-500">
-                        <CheckCircle2 size={10} /> Fulfilled
-                      </span>
-                    )}
-                  </Badge>
-                  <p className="text-sm truncate">{req.text}</p>
+              <Card key={req.id} className="p-3 flex flex-col gap-3">
+                <div className="flex items-center justify-between gap-4">
+                  <div className="flex items-start gap-3 overflow-hidden">
+                    <Badge className={`shrink-0 mt-1 ${req.status === 'pending' ? '' : 'bg-secondary text-secondary-foreground'}`}>
+                      {req.status === 'pending' ? (
+                        <span className="flex items-center gap-1">
+                          <Clock size={10} /> Waiting for client...
+                        </span>
+                      ) : (
+                        <span className="flex items-center gap-1 text-emerald-500">
+                          <CheckCircle2 size={10} /> Fulfilled
+                        </span>
+                      )}
+                    </Badge>
+                    <p className="text-sm truncate font-medium">{req.text}</p>
+                  </div>
+                  {req.status === 'pending' && (
+                    <button 
+                      onClick={() => handleMarkFulfilled(req.id)}
+                      className="text-xs rounded-md px-2 py-1 hover:bg-muted transition-colors"
+                    >
+                      Mark Fulfilled
+                    </button>
+                  )}
                 </div>
-                {req.status === 'pending' && (
-                  <button 
-                    onClick={() => handleMarkFulfilled(req.id)}
-                    className="text-xs rounded-md px-2 py-1 hover:bg-muted transition-colors"
-                  >
-                    Mark Fulfilled
-                  </button>
+                {req.response_text && (
+                  <div className="mt-2 p-2 rounded bg-muted/50 border-l-2 border-accent flex gap-2 text-sm">
+                    <MessageSquare size={14} className="shrink-0 mt-1 text-muted-foreground" />
+                    <div>
+                      <p className="text-foreground/90">{req.response_text}</p>
+                      <p className="text-[10px] text-muted-foreground mt-1">
+                        Replied at {new Date(req.responded_at!).toLocaleString()}
+                      </p>
+                    </div>
+                  </div>
                 )}
               </Card>
             ))}

@@ -13,6 +13,11 @@
 
 import { requireSupabaseAdmin } from '@/lib/supabase';
 import type { CommentType } from '@/lib/types';
+import {
+  createRequestAsync,
+  updateRequestStatusAsync,
+  submitRequestResponseAsync,
+} from '@/lib/requests-db';
 
 // Admin UI sends 'update'; it isn't a CommentType so we map → 'general' below.
 const ADMIN_TYPE_ALIASES: Record<string, CommentType> = {
@@ -150,44 +155,19 @@ export async function createRequestAction(input: CreateRequestInput): Promise<{ 
   const { projectId, text } = input;
   if (!projectId || !text) throw new Error('projectId and text are required');
 
-  const sb = requireSupabaseAdmin();
-  const { data, error } = await sb
-    .from('project_requests')
-    .insert({ project_id: projectId, text })
-    .select('id')
-    .single();
-
-  if (error || !data) throw new Error(error?.message ?? 'request insert failed');
-  return { ok: true, id: data.id };
+  return createRequestAsync(projectId, text);
 }
 
 export async function updateRequestStatusAction(requestId: string, status: 'pending' | 'fulfilled'): Promise<{ ok: true }> {
   if (!requestId) throw new Error('requestId required');
 
-  const sb = requireSupabaseAdmin();
-  const { error } = await sb
-    .from('project_requests')
-    .update({ status })
-    .eq('id', requestId);
-
-  if (error) throw new Error(error.message);
-  return { ok: true };
+  return updateRequestStatusAsync(requestId, status);
 }
 
 export async function submitRequestResponseAction(requestId: string, text: string): Promise<{ ok: true }> {
   if (!requestId) throw new Error('requestId required');
   if (!text) throw new Error('response text is required');
 
-  const sb = requireSupabaseAdmin();
-  const { error } = await sb
-    .from('project_requests')
-    .update({
-      response_text: text,
-      responded_at: new Date().toISOString(),
-      status: 'fulfilled',
-    })
-    .eq('id', requestId);
-
-  if (error) throw new Error(error.message);
-  return { ok: true };
+  return submitRequestResponseAsync(requestId, text);
 }
+

@@ -9,8 +9,10 @@ const config: Config = {
   theme: {
     extend: {
       fontFamily: {
-        sans: ["var(--font-geist-sans)", "system-ui", "sans-serif"],
+        sans: ["var(--font-lora)", "Georgia", "serif"],
         mono: ["var(--font-geist-mono)", "ui-monospace", "monospace"],
+        serif: ["var(--font-lora)", "Georgia", "serif"],
+        lora: ["var(--font-lora)", "Georgia", "serif"],
       },
       colors: {
         background: "hsl(var(--background))",

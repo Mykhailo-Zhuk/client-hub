@@ -1,7 +1,10 @@
+"use client";
+
 import type { Comment } from "@/lib/types";
 import type { Project } from "@/lib/types";
 import { Card } from "@/components/ui/card";
 import { Activity, CheckCircle2, Clock, MessageSquare } from "lucide-react";
+import { useLanguage } from "@/lib/i18n/context";
 
 interface StatsCardProps {
   project: Project;
@@ -18,6 +21,7 @@ function isoDay(iso: string): string {
 }
 
 export function ProjectStats({ project, comments }: StatsCardProps) {
+  const { t } = useLanguage();
   const now = new Date();
   const start = new Date(project.startDate);
   const daysElapsed = daysBetween(start, now);
@@ -73,7 +77,7 @@ export function ProjectStats({ project, comments }: StatsCardProps) {
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         <Card className="p-4">
           <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-            <Clock size={12} /> Days
+            <Clock size={12} /> {t("projectStats.days")}
           </div>
           <div className="mt-1 text-2xl font-bold tabular-nums">
             {daysElapsed}
@@ -85,7 +89,7 @@ export function ProjectStats({ project, comments }: StatsCardProps) {
         </Card>
         <Card className="p-4">
           <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-            <Activity size={12} /> Progress
+            <Activity size={12} /> {t("projectStats.progress")}
           </div>
           <div className="mt-1 text-2xl font-bold tabular-nums">
             {project.progress}
@@ -94,7 +98,7 @@ export function ProjectStats({ project, comments }: StatsCardProps) {
         </Card>
         <Card className="p-4">
           <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-            <CheckCircle2 size={12} /> Tasks
+            <CheckCircle2 size={12} /> {t("projectStats.tasks")}
           </div>
           <div className="mt-1 text-2xl font-bold tabular-nums">
             {tasksCompleted}
@@ -106,7 +110,7 @@ export function ProjectStats({ project, comments }: StatsCardProps) {
         </Card>
         <Card className="p-4">
           <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-            <MessageSquare size={12} /> Comments / 7d
+            <MessageSquare size={12} /> {t("projectStats.comments7d")}
           </div>
           <div className="mt-1 text-2xl font-bold tabular-nums">
             {commentsThisWeek}
@@ -118,18 +122,18 @@ export function ProjectStats({ project, comments }: StatsCardProps) {
       <Card className="p-5">
         <div className="flex items-center justify-between">
           <div>
-            <h3 className="text-sm font-semibold">Activity — last 30 days</h3>
+            <h3 className="text-sm font-semibold">{t("projectStats.activityTitle")}</h3>
             <p className="mt-0.5 text-xs text-muted-foreground">
-              Each square is one day. Darker = more updates.
+              {t("projectStats.activitySubtitle")}
             </p>
           </div>
           <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
-            Less
+            {t("projectStats.less")}
             <span className="h-3 w-3 rounded-sm bg-muted" />
             <span className="h-3 w-3 rounded-sm bg-accent/30" />
             <span className="h-3 w-3 rounded-sm bg-accent/60" />
             <span className="h-3 w-3 rounded-sm bg-accent" />
-            More
+            {t("projectStats.more")}
           </div>
         </div>
         <div
@@ -156,10 +160,10 @@ export function ProjectStats({ project, comments }: StatsCardProps) {
           })}
         </div>
         <div className="mt-3 text-xs text-muted-foreground">
-          {comments.length} total updates ·{" "}
+          {comments.length} {t("projectStats.totalUpdates")} ·{" "}
           {daysRemaining > 0
-            ? `${daysRemaining} day${daysRemaining === 1 ? "" : "s"} left`
-            : "On the home stretch"}
+            ? `${daysRemaining} ${daysRemaining === 1 ? t("projectStats.dayLeft") : t("projectStats.daysLeft")}`
+            : t("projectStats.homeStretch")}
         </div>
       </Card>
 
@@ -167,9 +171,9 @@ export function ProjectStats({ project, comments }: StatsCardProps) {
       <div className="grid gap-6 lg:grid-cols-2">
         {/* Milestones timeline */}
         <Card className="p-5">
-          <h3 className="text-sm font-semibold">Milestones</h3>
+          <h3 className="text-sm font-semibold">{t("projectStats.milestones")}</h3>
           <p className="mt-0.5 text-xs text-muted-foreground">
-            Project plan vs. today&apos;s progress.
+            {t("projectStats.milestonesSubtitle")}
           </p>
           <div className="mt-4 space-y-3">
             {phases.map((p, i) => {
@@ -226,40 +230,40 @@ export function ProjectStats({ project, comments }: StatsCardProps) {
           </div>
           <div className="mt-4 text-xs text-muted-foreground">
             {milestoneTypes.size > 0
-              ? `${milestoneTypes.size} milestone${milestoneTypes.size === 1 ? "" : "s"} reached`
-              : "First milestone pending"}
+              ? `${milestoneTypes.size} ${t("projectStats.milestonesReached")}`
+              : t("projectStats.firstMilestonePending")}
           </div>
         </Card>
 
         {/* Comments distribution */}
         <Card className="p-5">
-          <h3 className="text-sm font-semibold">Communication</h3>
+          <h3 className="text-sm font-semibold">{t("projectStats.communication")}</h3>
           <p className="mt-0.5 text-xs text-muted-foreground">
-            Agent vs. client updates.
+            {t("projectStats.communicationSubtitle")}
           </p>
           <div className="mt-4 flex items-center gap-6">
             <DonutChart agentPct={agentPct} clientPct={clientPct} />
             <div className="space-y-2 text-sm">
               <div className="flex items-center gap-2">
                 <span className="h-3 w-3 rounded-sm bg-accent" />
-                <span className="font-medium">Agent</span>
+                <span className="font-medium">{t("projectStats.agent")}</span>
                 <span className="ml-auto text-xs text-muted-foreground tabular-nums">
                   {agentCount} · {agentPct}%
                 </span>
               </div>
               <div className="flex items-center gap-2">
                 <span className="h-3 w-3 rounded-sm bg-emerald-500" />
-                <span className="font-medium">Client</span>
+                <span className="font-medium">{t("projectStats.client")}</span>
                 <span className="ml-auto text-xs text-muted-foreground tabular-nums">
                   {clientCount} · {clientPct}%
                 </span>
               </div>
               <div className="border-t border-border pt-2 text-xs text-muted-foreground">
                 {clientCount === 0
-                  ? "Awaiting your first reply."
+                  ? t("projectStats.awaitingFirstReply")
                   : clientCount >= agentCount * 0.3
-                  ? "Great back-and-forth balance."
-                  : "Agent leading the conversation."}
+                  ? t("projectStats.greatBalance")
+                  : t("projectStats.agentLeading")}
               </div>
             </div>
           </div>

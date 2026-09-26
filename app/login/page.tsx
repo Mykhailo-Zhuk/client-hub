@@ -3,12 +3,14 @@ import { LoginForm } from "./login-form";
 import { Card } from "@/components/ui/card";
 import { Sparkles, KeyRound } from "lucide-react";
 import { AgentUnlockForm } from "./agent-unlock-form";
+import { getServerTranslation } from "@/lib/i18n/server";
 
 export default async function LoginPage({
   searchParams,
 }: {
   searchParams: Promise<{ type?: string; redirect?: string }>;
 }) {
+  const { t } = await getServerTranslation();
   const params = await searchParams;
   const isAgent = params?.type === "agent";
   return (
@@ -17,11 +19,11 @@ export default async function LoginPage({
         <div className="mx-auto mb-4 inline-flex h-12 w-12 items-center justify-center rounded-full bg-accent/10 text-accent">
           <KeyRound size={20} />
         </div>
-        <h1 className="text-2xl font-bold tracking-tight">Track your project</h1>
+        <h1 className="text-2xl font-bold tracking-tight">{t("login.title")}</h1>
         <p className="mt-1 text-sm text-muted-foreground">
           {isAgent
-            ? "Enter the agent secret to access the console."
-            : "Enter your email to see real-time updates from your team."}
+            ? t("login.subtitleAgent")
+            : t("login.subtitleClient")}
         </p>
       </div>
       <Card className="p-6">

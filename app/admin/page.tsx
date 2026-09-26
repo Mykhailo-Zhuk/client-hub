@@ -2,18 +2,21 @@ import Link from 'next/link';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Reveal } from '@/components/ui/reveal';
+import ClientMarkdown from '@/components/client-markdown';
 import { getProjectsAsync } from '@/lib/projects-db';
 import { getRecentCommentsAsync } from '@/lib/comments-db';
 import { isSupabaseConfigured } from '@/lib/supabase';
 import { timeAgo } from '@/lib/utils';
 import { Database, Plus, ArrowUpRight } from 'lucide-react';
+import { getServerTranslation } from '@/lib/i18n/server';
 
 export const dynamic = 'force-dynamic';
 
 export default async function AdminPage() {
-  const [projects, recent] = await Promise.all([
+  const [projects, recent, { t, locale }] = await Promise.all([
     getProjectsAsync(),
     getRecentCommentsAsync(10),
+    getServerTranslation(),
   ]);
   const configured = isSupabaseConfigured();
 
@@ -22,9 +25,9 @@ export default async function AdminPage() {
       <Reveal>
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
-            <h1 className="text-2xl font-bold tracking-tight">Admin dashboard</h1>
+            <h1 className="text-2xl font-bold tracking-tight">{t('admin.dashboard')}</h1>
             <p className="text-sm text-muted-foreground">
-              {projects.length} projects · {recent.length} recent updates · backend:{' '}
+              {projects.length} {t('admin.projectsCount')} · {recent.length} {t('admin.recentUpdatesCount')} · backend:{' '}
               <span
                 className={
                   configured ? 'text-emerald-500' : 'text-amber-500'
@@ -39,7 +42,7 @@ export default async function AdminPage() {
               href="/admin/new"
               className="inline-flex items-center gap-1.5 rounded-md bg-accent px-3 py-1.5 text-xs font-medium text-accent-foreground hover:opacity-90"
             >
-              <Plus size={12} /> New Project
+              <Plus size={12} /> {t('admin.newProject')}
             </a>
           </div>
         </div>
@@ -68,7 +71,7 @@ export default async function AdminPage() {
       <div className="mt-8 grid gap-6 lg:grid-cols-3">
         <div className="lg:col-span-2 space-y-3">
           <Reveal>
-            <h2 className="text-lg font-semibold">Projects</h2>
+            <h2 className="text-lg font-semibold">{t('admin.projects')}</h2>
           </Reveal>
           {projects.map((p, i) => (
             <Reveal key={p.id} delay={i * 0.05}>
@@ -108,7 +111,7 @@ export default async function AdminPage() {
                       href={`/admin/${p.id}`}
                       className="inline-flex items-center gap-1 text-xs text-accent hover:underline"
                     >
-                      Manage <ArrowUpRight size={10} />
+                      {t('admin.manage')} <ArrowUpRight size={10} />
                     </Link>
                   </div>
                 </div>
@@ -127,22 +130,36 @@ export default async function AdminPage() {
 
         <div className="space-y-3">
           <Reveal>
-            <h2 className="text-lg font-semibold">Recent activity</h2>
+            <h2 className="text-lg font-semibold">{t('admin.recentActivity')}</h2>
           </Reveal>
           {recent.length === 0 ? (
             <Card className="p-4 text-xs text-muted-foreground">
-              No updates yet. Open a project and post from the Comments tab, or use <code className="rounded bg-muted px-1">/api/telegram</code>.
+              {t('admin.noUpdates')} <code className="rounded bg-muted px-1">/api/telegram</code>.
             </Card>
           ) : (
             recent.map((c, i) => (
               <Reveal key={c.id} delay={i * 0.04}>
                 <Card className="p-3">
                   <div className="flex items-start justify-between gap-2">
-                    <div className="flex-1 text-sm line-clamp-2">{c.message}</div>
-                    <ArrowUpRight size={12} className="mt-0.5 text-muted-foreground" />
+                    <ClientMarkdown
+                      content={c.message}
+                      className="prose-comment flex-1 text-sm line-clamp-2 break-words [&_p]:!m-0 [&_ul]:!m-0 [&_ol]:!m-0 [&_li]:!m-0"
+                    />
+                    <Link
+                      href={`/admin/${c.projectId}`}
+                      className="text-muted-foreground transition-colors hover:text-foreground"
+                      title={`Open ${c.projectId}`}
+                    >
+                      <ArrowUpRight size={12} className="mt-0.5" />
+                    </Link>
                   </div>
                   <div className="mt-1.5 text-xs text-muted-foreground">
-                    <span className="font-mono">{c.projectId}</span>
+                    <Link
+                      href={`/admin/${c.projectId}`}
+                      className="font-mono hover:text-foreground hover:underline"
+                    >
+                      {c.projectId}
+                    </Link>
                     {' · '}
                     {c.author} · {timeAgo(c.timestamp)}
                   </div>

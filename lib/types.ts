@@ -43,3 +43,13 @@ export interface Session {
   projectId: string;
   createdAt: string;
 }
+
+export interface ProjectRequest {
+  id: string;
+  project_id: string;
+  text: string;
+  status: 'pending' | 'fulfilled';
+  created_at: string;
+  response_text?: string | null;
+  responded_at?: string | null;
+}

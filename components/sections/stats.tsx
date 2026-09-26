@@ -1,14 +1,19 @@
+"use client";
+
 import { Card } from "../ui/card";
 import { Reveal } from "../ui/reveal";
-
-const stats = [
-  { label: "Active projects", value: "12" },
-  { label: "Happy clients", value: "47" },
-  { label: "Countries", value: "8" },
-  { label: "Shipped MVPs", value: "23" },
-];
+import { useLanguage } from "@/lib/i18n/context";
 
 export function Stats() {
+  const { t } = useLanguage();
+
+  const stats = [
+    { label: t("stats.activeProjects"), value: "12" },
+    { label: t("stats.happyClients"), value: "47" },
+    { label: t("stats.countries"), value: "8" },
+    { label: t("stats.shippedMvps"), value: "23" },
+  ];
+
   return (
     <section className="mx-auto max-w-6xl px-4 py-16">
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">

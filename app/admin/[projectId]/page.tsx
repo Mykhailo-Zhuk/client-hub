@@ -11,8 +11,11 @@ import {
 } from 'lucide-react';
 import { getProjectByIdAsync } from '@/lib/projects-db';
 import { getCommentsByProjectAsync } from '@/lib/comments-db';
+import { getRequestsByProjectAsync } from '@/lib/requests-db';
 import { getProjectsAsync } from '@/lib/projects-db';
 import { isSupabaseConfigured, getSupabaseAdmin } from '@/lib/supabase';
+import { getServerTranslation } from '@/lib/i18n/server';
+
 import ProjectList from '../project-list';
 import CommentThread from './comment-thread';
 import CommentEditor from './comment-editor';
@@ -91,9 +94,10 @@ export default async function AdminProjectPage({
 
 async function renderAdminProject(projectId: string) {
   // Load sidebar list and the selected project in parallel.
-  const [project, allProjects] = await Promise.all([
+  const [project, allProjects, { t, locale }] = await Promise.all([
     getProjectByIdAsync(projectId),
     getProjectsAsync(),
+    getServerTranslation(),
   ]);
 
   if (!project) notFound();
@@ -123,19 +127,9 @@ async function renderAdminProject(projectId: string) {
 
   const comments = await getCommentsByProjectAsync(project.id);
 
-  // Fetch project requests from Supabase
-  let projectRequests: any[] = [];
-  if (isSupabaseConfigured()) {
-    const sb = getSupabaseAdmin();
-    if (sb) {
-      const { data } = await sb
-        .from('project_requests')
-        .select('*')
-        .eq('project_id', project.id)
-        .order('created_at', { ascending: false });
-      if (data) projectRequests = data;
-    }
-  }
+  // Fetch project requests
+  const projectRequests = await getRequestsByProjectAsync(project.id);
+
 
   const hasPendingRequests = projectRequests.some(r => r.status === 'pending');
 
@@ -161,7 +155,7 @@ async function renderAdminProject(projectId: string) {
           href="/admin"
           className="mb-4 inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
         >
-          <ArrowLeft size={12} /> Back to admin
+          <ArrowLeft size={12} /> {t('admin.backToAdmin')}
         </Link>
       </Reveal>
 
@@ -184,11 +178,11 @@ async function renderAdminProject(projectId: string) {
                     <Badge className={statusColor}>{merged.status}</Badge>
                     {hasPendingRequests && (
                       <Badge className="bg-amber-500 text-white hover:bg-amber-600">
-                        Pending Requests
+                        {t('admin.pendingRequests')}
                       </Badge>
                     )}
                     <span className="text-[10px] uppercase tracking-wider text-muted-foreground">
-                      {comments.length} update{comments.length === 1 ? '' : 's'}
+                      {comments.length} {comments.length === 1 ? t('timeline.update') : t('timeline.updates')}
                     </span>
                   </div>
                   <h1 className="mt-2 text-2xl font-bold tracking-tight">
@@ -207,7 +201,7 @@ async function renderAdminProject(projectId: string) {
                       rel="noreferrer"
                       className="inline-flex items-center gap-1.5 rounded-md border border-border bg-background px-3 py-1.5 text-xs hover:bg-muted"
                     >
-                      <ExternalLink size={12} /> Demo
+                      <ExternalLink size={12} /> {t('portal.demo')}
                     </a>
                   )}
                   {merged.github && (
@@ -217,7 +211,7 @@ async function renderAdminProject(projectId: string) {
                       rel="noreferrer"
                       className="inline-flex items-center gap-1.5 rounded-md border border-border bg-background px-3 py-1.5 text-xs hover:bg-muted"
                     >
-                      <Github size={12} /> Repo
+                      <Github size={12} /> {t('portal.repo')}
                     </a>
                   )}
                   <ClientPreviewButton projectId={project.id} />
@@ -226,7 +220,7 @@ async function renderAdminProject(projectId: string) {
 
               <div className="mt-5">
                 <div className="mb-1 flex items-center justify-between text-xs text-muted-foreground">
-                  <span>Progress</span>
+                  <span>{t('portal.progress')}</span>
                   <span className="font-mono">{merged.progress}%</span>
                 </div>
                 <div className="h-2 overflow-hidden rounded-full bg-muted">
@@ -237,7 +231,7 @@ async function renderAdminProject(projectId: string) {
                 </div>
                 {merged.day_current !== undefined && merged.day_total ? (
                   <div className="mt-1 text-[10px] text-muted-foreground">
-                    Day {merged.day_current} / {merged.day_total}
+                    {t('portal.day')} {merged.day_current} / {merged.day_total}
                   </div>
                 ) : null}
               </div>
@@ -249,13 +243,13 @@ async function renderAdminProject(projectId: string) {
               <Tabs defaultValue="comments">
                 <TabsList>
                   <TabsTrigger value="comments">
-                    Comments ({comments.length})
+                    {t('admin.tabs.comments')} ({comments.length})
                   </TabsTrigger>
                   <TabsTrigger value="requests">
-                    Requests
+                    {t('admin.tabs.requests')}
                   </TabsTrigger>
-                  <TabsTrigger value="overview">Overview</TabsTrigger>
-                  <TabsTrigger value="settings">Settings</TabsTrigger>
+                  <TabsTrigger value="overview">{t('admin.tabs.overview')}</TabsTrigger>
+                  <TabsTrigger value="settings">{t('admin.tabs.settings')}</TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="comments">
@@ -270,7 +264,7 @@ async function renderAdminProject(projectId: string) {
                     }))}
                   />
                   <div className="mt-4 border-t border-border pt-4">
-                    <h3 className="mb-2 text-sm font-semibold">New update</h3>
+                    <h3 className="mb-2 text-sm font-semibold">{t('admin.newUpdate')}</h3>
                     <CommentEditor projectId={project.id} />
                   </div>
                 </TabsContent>
@@ -290,10 +284,10 @@ async function renderAdminProject(projectId: string) {
                   <ProjectSettingsForm project={merged} />
                   <div className="mt-6 border-t border-red-500/20 pt-4">
                     <h3 className="mb-2 text-sm font-semibold text-red-500">
-                      Danger zone
+                      {t('admin.dangerZone')}
                     </h3>
                     <p className="mb-3 text-xs text-muted-foreground">
-                      Permanently delete this project and all its updates.
+                      {t('admin.deleteWarning')}
                     </p>
                     <DeleteProjectButton projectId={project.id} />
                   </div>

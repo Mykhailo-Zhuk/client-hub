@@ -5,57 +5,59 @@ import { renderSafeMarkdown } from "@/lib/sanitize";
 import { Activity, Sparkles, Send, CheckCircle2 } from "lucide-react";
 import { ClientCommentForm, type ClientComment } from "./client-comment-form";
 import { timeAgo } from "@/lib/utils";
+import { useLanguage } from "@/lib/i18n/context";
+import type { TranslationKey } from "@/lib/i18n/types";
 
 const commentTypeMeta: Record<
   string,
-  { icon: any; color: string; label: string; bg: string; ring: string }
+  { icon: any; color: string; labelKey: TranslationKey; bg: string; ring: string }
 > = {
   status_update: {
     icon: Activity,
     color: "text-blue-500",
-    label: "Status",
+    labelKey: "timeline.type.status",
     bg: "border-blue-500/30",
     ring: "ring-blue-500/20",
   },
   milestone: {
     icon: Sparkles,
     color: "text-accent",
-    label: "Milestone",
+    labelKey: "timeline.type.milestone",
     bg: "border-accent/30",
     ring: "ring-accent/20",
   },
   bug_fix: {
     icon: Activity,
     color: "text-amber-500",
-    label: "Bug fix",
+    labelKey: "timeline.type.bugFix",
     bg: "border-amber-500/30",
     ring: "ring-amber-500/20",
   },
   deploy: {
     icon: Activity,
     color: "text-emerald-500",
-    label: "Deploy",
+    labelKey: "timeline.type.deploy",
     bg: "border-emerald-500/30",
     ring: "ring-emerald-500/20",
   },
   general: {
     icon: Activity,
     color: "text-muted-foreground",
-    label: "Note",
+    labelKey: "timeline.type.note",
     bg: "border-border",
     ring: "ring-border",
   },
   feedback: {
     icon: Activity,
     color: "text-purple-500",
-    label: "Feedback",
+    labelKey: "timeline.type.feedback",
     bg: "border-purple-500/30",
     ring: "ring-purple-500/20",
   },
   client_reply: {
     icon: Send,
     color: "text-cyan-500",
-    label: "You",
+    labelKey: "timeline.type.you",
     bg: "border-cyan-500/40 bg-cyan-500/5",
     ring: "ring-cyan-500/30",
   },
@@ -72,11 +74,11 @@ function CommentItem({
   onReplace?: (oldId: string, next: ClientComment) => void;
   onRemove?: (id: string) => void;
 }) {
+  const { t, locale } = useLanguage();
   const meta = commentTypeMeta[c.type] || commentTypeMeta.general;
   const Icon = meta.icon;
   const isMine = c.author.toLowerCase() === currentEmail.toLowerCase();
 
-  // Use a local state so the parent can replace pending with real later
   return (
     <div
       className={`flex gap-3 rounded-md border-l-2 pl-4 ${
@@ -89,16 +91,16 @@ function CommentItem({
       </div>
       <div className="flex-1 min-w-0">
         <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-          <span className={`font-medium ${meta.color}`}>{meta.label}</span>
+          <span className={`font-medium ${meta.color}`}>{t(meta.labelKey)}</span>
           <span>·</span>
           <span>
-            {c.pending ? "just now" : timeAgo(c.timestamp)}
+            {c.pending ? t("timeline.justNow") : timeAgo(c.timestamp, locale)}
           </span>
           <span>·</span>
           <span className="font-mono">{c.author}</span>
           {c.pending && (
             <span className="ml-auto inline-flex items-center gap-1 text-[10px] text-muted-foreground">
-              <CheckCircle2 size={10} /> sending...
+              <CheckCircle2 size={10} /> {t("timeline.sending")}
             </span>
           )}
         </div>
@@ -124,6 +126,8 @@ export function ClientCommentsTimeline({
   clientEmail: string;
   token?: string;
 }) {
+  const { t } = useLanguage();
+
   // Sort chronologically (newest first) — matches server behavior.
   const [comments, setComments] = useState<ClientComment[]>(
     [...initialComments].sort(
@@ -171,12 +175,12 @@ export function ClientCommentsTimeline({
     <div className="space-y-6">
       <div>
         <h3 className="mb-3 text-sm font-medium text-muted-foreground">
-          Timeline · {comments.length}{" "}
-          {comments.length === 1 ? "update" : "updates"}
+          {t("timeline.title")} · {comments.length}{" "}
+          {comments.length === 1 ? t("timeline.update") : t("timeline.updates")}
         </h3>
         {comments.length === 0 ? (
           <div className="text-sm text-muted-foreground">
-            No updates yet — stay tuned.
+            {t("timeline.noUpdatesYet")}
           </div>
         ) : (
           <div className="space-y-4">
@@ -189,10 +193,10 @@ export function ClientCommentsTimeline({
 
       <div className="rounded-lg border border-cyan-500/20 bg-cyan-500/5 p-4">
         <h3 className="text-sm font-semibold text-cyan-500">
-          Ваш коментар
+          {t("timeline.yourComment")}
         </h3>
         <p className="mt-0.5 text-xs text-muted-foreground">
-          Markdown підтримується. Агент побачить ваше повідомлення одразу.
+          {t("timeline.yourCommentHint")}
         </p>
         <div className="mt-3">
           <ClientCommentForm
@@ -206,3 +210,4 @@ export function ClientCommentsTimeline({
     </div>
   );
 }
+

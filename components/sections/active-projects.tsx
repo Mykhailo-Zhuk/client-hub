@@ -1,20 +1,25 @@
+"use client";
+
 import Link from "next/link";
-import { ExternalLink, Github } from "lucide-react";
+import { ArrowRight, ExternalLink, Github } from "lucide-react";
 import { getActiveProjects } from "@/lib/projects";
 import { Card } from "../ui/card";
 import { Badge } from "../ui/badge";
 import { Reveal } from "../ui/reveal";
+import { useLanguage } from "@/lib/i18n/context";
 
 export function ActiveProjects() {
+  const { t } = useLanguage();
   const projects = getActiveProjects();
+
   return (
     <section className="mx-auto max-w-6xl px-4 py-16">
       <Reveal>
         <div className="flex items-end justify-between gap-4">
           <div>
-            <h2 className="text-3xl font-bold tracking-tight">Active projects</h2>
+            <h2 className="text-3xl font-bold tracking-tight">{t("activeProjects.title")}</h2>
             <p className="mt-1 text-sm text-muted-foreground">
-              {projects.length} in flight · updated continuously
+              {projects.length} {t("activeProjects.subtitle")}
             </p>
           </div>
         </div>
@@ -56,11 +61,11 @@ export function ActiveProjects() {
                     <div className="mt-4">
                       <div className="flex items-center justify-between text-xs text-muted-foreground">
                         <span>
-                          Day {p.dayCurrent} / {p.dayTotal}
+                          {t("activeProjects.day")} {p.dayCurrent} / {p.dayTotal}
                         </span>
                         <span>
-                          {Math.round((p.dayCurrent / p.dayTotal) * 100)}%
-                          elapsed
+                          {Math.round((p.dayCurrent / p.dayTotal) * 100)}%{" "}
+                          {t("activeProjects.elapsed")}
                         </span>
                       </div>
                       <div className="mt-1 h-1.5 w-full overflow-hidden rounded-full bg-muted">
@@ -78,7 +83,7 @@ export function ActiveProjects() {
                     <Badge key={t}>{t}</Badge>
                   ))}
                 </div>
-                <div className="mt-5 flex gap-2">
+                <div className="mt-5 flex items-center gap-2">
                   {p.demo && (
                     <a
                       href={p.demo}
@@ -86,7 +91,8 @@ export function ActiveProjects() {
                       rel="noreferrer"
                       className="inline-flex items-center gap-1.5 rounded-md border border-border bg-background px-2.5 py-1 text-xs hover:bg-muted"
                     >
-                      <ExternalLink size={12} /> Demo
+                      <ExternalLink size={12} className="shrink-0" />
+                      <span>{t("activeProjects.demo")}</span>
                     </a>
                   )}
                   {p.github && (
@@ -96,14 +102,16 @@ export function ActiveProjects() {
                       rel="noreferrer"
                       className="inline-flex items-center gap-1.5 rounded-md border border-border bg-background px-2.5 py-1 text-xs hover:bg-muted"
                     >
-                      <Github size={12} /> Repo
+                      <Github size={12} className="shrink-0" />
+                      <span>{t("activeProjects.repo")}</span>
                     </a>
                   )}
                   <Link
                     href={`/portal/${p.id}`}
                     className="ml-auto inline-flex items-center gap-1.5 rounded-md bg-accent px-2.5 py-1 text-xs font-medium text-accent-foreground hover:opacity-90"
                   >
-                    Client portal →
+                    <span>{t("activeProjects.clientPortal")}</span>
+                    <ArrowRight size={12} className="shrink-0" />
                   </Link>
                 </div>
               </div>

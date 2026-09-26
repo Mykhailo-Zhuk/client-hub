@@ -1,9 +1,15 @@
+"use client";
+
+import { useLanguage } from "@/lib/i18n/context";
+
 export function Footer() {
+  const { t } = useLanguage();
+
   return (
     <footer className="border-t border-border/60 py-8 text-sm text-muted-foreground">
       <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-3 px-4 sm:flex-row">
         <div>
-          © {new Date().getFullYear()} Client Hub · MVP by{" "}
+          © {new Date().getFullYear()} Client Hub · {t("footer.builtBy")}{" "}
           <a
             href="https://zhuk.dev"
             target="_blank"
@@ -15,10 +21,10 @@ export function Footer() {
         </div>
         <div className="flex gap-4">
           <a href="/admin" className="hover:text-foreground">
-            Admin
+            {t("footer.admin")}
           </a>
           <a href="/login" className="hover:text-foreground">
-            Client Login
+            {t("footer.clientLogin")}
           </a>
         </div>
       </div>

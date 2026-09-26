@@ -8,7 +8,9 @@ create table if not exists project_requests (
   project_id text references projects(id) on delete cascade,
   text text not null,
   status text default 'pending', -- pending | fulfilled
-  created_at timestamptz default now()
+  created_at timestamptz default now(),
+  response_text text,
+  responded_at timestamptz
 );
 
 create index if not exists project_requests_project_id_idx on project_requests(project_id);

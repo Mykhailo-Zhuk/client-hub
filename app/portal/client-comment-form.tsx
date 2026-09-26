@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { Send, Loader2 } from "lucide-react";
+import { useLanguage } from "@/lib/i18n/context";
 
 export interface ClientComment {
   id: string;
@@ -24,6 +25,7 @@ export function ClientCommentForm({
   token?: string;
   onPosted: (c: ClientComment) => void;
 }) {
+  const { t } = useLanguage();
   const [message, setMessage] = useState("");
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
@@ -86,7 +88,7 @@ export function ClientCommentForm({
       <textarea
         value={message}
         onChange={(e) => setMessage(e.target.value)}
-        placeholder="Ваш коментар... (markdown підтримується)"
+        placeholder={t("commentForm.placeholder")}
         rows={3}
         className="w-full resize-none rounded-md border border-border bg-background px-3 py-2 text-sm outline-none focus:border-accent"
       />
@@ -97,7 +99,7 @@ export function ClientCommentForm({
       )}
       <div className="flex items-center justify-between gap-2">
         <div className="text-xs text-muted-foreground">
-          Ви ввійшли як <span className="font-mono">{author}</span>
+          {t("commentForm.loggedInAs")} <span className="font-mono">{author}</span>
         </div>
         <button
           type="submit"
@@ -106,11 +108,11 @@ export function ClientCommentForm({
         >
           {pending ? (
             <>
-              <Loader2 size={12} className="animate-spin" /> Надсилаємо...
+              <Loader2 size={12} className="animate-spin" /> {t("commentForm.sending")}
             </>
           ) : (
             <>
-              <Send size={12} /> Опублікувати
+              <Send size={12} /> {t("commentForm.publish")}
             </>
           )}
         </button>

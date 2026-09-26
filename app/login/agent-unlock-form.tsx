@@ -3,8 +3,10 @@
 import { useState, useTransition } from "react";
 import { useSearchParams } from "next/navigation";
 import { KeyRound, Loader2, ArrowRight } from "lucide-react";
+import { useLanguage } from "@/lib/i18n/context";
 
 export function AgentUnlockForm() {
+  const { t } = useLanguage();
   const [secret, setSecret] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
@@ -51,12 +53,12 @@ export function AgentUnlockForm() {
   return (
     <form onSubmit={onSubmit} className="space-y-4" noValidate>
       <label className="block">
-        <span className="text-sm font-medium">Agent secret</span>
+        <span className="text-sm font-medium">{t("login.agentUnlock")}</span>
         <div className="mt-1.5 flex items-center gap-2 rounded-md border border-border bg-background px-3 focus-within:border-accent">
           <KeyRound size={14} className="text-muted-foreground" />
           <input
             type="password"
-            placeholder="••••••••••••"
+            placeholder={t("login.enterPassword")}
             value={secret}
             onChange={(e) => setSecret(e.target.value)}
             className="w-full bg-transparent py-2 text-sm outline-none placeholder:text-muted-foreground/60"
@@ -76,11 +78,11 @@ export function AgentUnlockForm() {
       >
         {pending ? (
           <>
-            <Loader2 size={14} className="animate-spin" /> Unlocking...
+            <Loader2 size={14} className="animate-spin" /> {t("login.unlocking")}
           </>
         ) : (
           <>
-            Unlock console <ArrowRight size={14} />
+            {t("login.unlock")} <ArrowRight size={14} />
           </>
         )}
       </button>

@@ -11,7 +11,12 @@
     "dayTotal": 30,
     "startDate": "2026-09-01",
     "estimatedEnd": "2026-10-01",
-    "tags": ["Next.js", "SaaS", "Booking", "Tailwind"],
+    "tags": [
+      "Next.js",
+      "SaaS",
+      "Booking",
+      "Tailwind"
+    ],
     "github": "https://github.com/Mykhailo-Zhuk/mvp-iron-master",
     "demo": "https://mvp-iron-master.vercel.app/",
     "cover": "https://images.unsplash.com/photo-1486754735734-325b5831c3ad?w=1200&h=800&fit=crop"
@@ -28,10 +33,36 @@
     "dayTotal": 14,
     "startDate": "2026-09-15",
     "estimatedEnd": "2026-09-29",
-    "tags": ["Next.js", "Spa", "Booking", "i18n"],
+    "tags": [
+      "Next.js",
+      "Spa",
+      "Booking",
+      "i18n"
+    ],
     "github": "https://github.com/Mykhailo-Zhuk/mvp-spa-booking-website-canada",
     "demo": "https://mvp-spa-booking-website-canada.vercel.app/",
     "cover": "https://images.unsplash.com/photo-1540555700478-4be289fbecef?w=1200&h=800&fit=crop"
+  },
+  {
+    "id": "sashas-quilts",
+    "client": "Sasha's Quilts",
+    "clientEmail": "sashasquilts@gmail.com",
+    "title": "Sasha's Quilts — Handmade Quilts & Custom Textile Art",
+    "description": "An e-commerce showcase and portfolio platform for custom handmade quilts, textile art, and bespoke quilting commissions.",
+    "status": "active",
+    "progress": 90,
+    "dayCurrent": 56,
+    "dayTotal": 61,
+    "startDate": "2026-08-01",
+    "estimatedEnd": "2026-09-30",
+    "tags": [
+      "Etsy",
+      "Next.js",
+      "Wayforpay",
+      "E-commerce"
+    ],
+    "demo": "https://www.sashasquilts.com/",
+    "cover": "https://images.unsplash.com/photo-1584100936595-c0654b55a2e2?auto=format&fit=crop&w=1200&q=80"
   },
   {
     "id": "vlob-landing",
@@ -41,7 +72,11 @@
     "progress": 100,
     "startDate": "2026-08-01",
     "completedDate": "2026-08-20",
-    "tags": ["Next.js", "Landing", "Education"],
+    "tags": [
+      "Next.js",
+      "Landing",
+      "Education"
+    ],
     "github": "https://github.com/Mykhailo-Zhuk/vlob-landing",
     "demo": "https://vlob-landing.vercel.app/"
   }

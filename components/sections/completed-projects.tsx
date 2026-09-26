@@ -1,18 +1,23 @@
+"use client";
+
 import { CheckCircle2, ExternalLink, Github } from "lucide-react";
 import { getCompletedProjects } from "@/lib/projects";
 import { Card } from "../ui/card";
 import { Badge } from "../ui/badge";
 import { Reveal } from "../ui/reveal";
+import { useLanguage } from "@/lib/i18n/context";
 
 export function CompletedProjects() {
+  const { t } = useLanguage();
   const projects = getCompletedProjects();
   if (projects.length === 0) return null;
+
   return (
     <section className="mx-auto max-w-6xl px-4 py-16">
       <Reveal>
-        <h2 className="text-3xl font-bold tracking-tight">Completed</h2>
+        <h2 className="text-3xl font-bold tracking-tight">{t("completedProjects.title")}</h2>
         <p className="mt-1 text-sm text-muted-foreground">
-          Shipped and signed off
+          {t("completedProjects.subtitle")}
         </p>
       </Reveal>
       <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -21,7 +26,7 @@ export function CompletedProjects() {
             <Card className="p-5">
               <div className="flex items-center gap-2 text-xs font-medium text-emerald-500">
                 <CheckCircle2 size={14} />
-                Completed
+                {t("completedProjects.badge")}
               </div>
               <h3 className="mt-3 font-semibold">{p.title}</h3>
               <div className="mt-1 text-xs text-muted-foreground">
@@ -29,7 +34,7 @@ export function CompletedProjects() {
               </div>
               {p.completedDate && (
                 <div className="mt-2 text-xs text-muted-foreground">
-                  Shipped: {p.completedDate}
+                  {t("completedProjects.shipped")}: {p.completedDate}
                 </div>
               )}
               <div className="mt-3 flex flex-wrap gap-1.5">

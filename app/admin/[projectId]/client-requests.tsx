@@ -5,25 +5,20 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Send, CheckCircle2, Clock, MessageSquare } from 'lucide-react';
 import { createRequestAction, updateRequestStatusAction } from '@/app/actions';
+import type { ProjectRequest } from '@/lib/types';
+import { useLanguage } from '@/lib/i18n/context';
 
-interface Request {
-  id: string;
-  text: string;
-  status: 'pending' | 'fulfilled';
-  created_at: string;
-  response_text?: string;
-  responded_at?: string;
-}
 
 export default function ClientRequestsManager({ 
   projectId, 
   initialRequests = [] 
 }: { 
   projectId: string; 
-  initialRequests: Request[];
+  initialRequests: ProjectRequest[];
 }) {
+  const { t } = useLanguage();
   const [mounted, setMounted] = useState(false);
-  const [requests, setRequests] = useState<Request[]>(initialRequests);
+  const [requests, setRequests] = useState<ProjectRequest[]>(initialRequests);
   const [newRequestText, setNewRequestText] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -71,13 +66,12 @@ export default function ClientRequestsManager({
   return (
     <div className="space-y-6">
       <div className="rounded-lg bg-accent/5 border border-accent/20 p-3 text-sm text-muted-foreground">
-        Створіть запит, щоб клієнт побачив його у блоці 'Потрібна ваша увага' на своєму порталі. 
-        Після отримання інформації позначте запит як виконаний.
+        {t('requests.banner')}
       </div>
       <form onSubmit={handleCreateRequest} className="flex gap-2">
         <input 
           className="flex-1 rounded-md border border-border bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-accent"
-          placeholder="Enter a request for the client (e.g. 'Please send the logo file')" 
+          placeholder={t('requests.placeholder')} 
           value={newRequestText}
           onChange={(e) => setNewRequestText(e.target.value)}
           disabled={isSubmitting}
@@ -88,32 +82,32 @@ export default function ClientRequestsManager({
           className="inline-flex items-center justify-center rounded-md bg-accent px-3 py-2 text-sm font-medium text-accent-foreground hover:bg-accent/90 disabled:opacity-50"
         >
           <Send size={16} className="mr-2" />
-          Send
+          {t('requests.send')}
         </button>
       </form>
 
       <div className="space-y-3">
         <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">
-          Request History
+          {t('requests.history')}
         </h3>
         {requests.length === 0 ? (
           <div className="text-center py-8 text-sm text-muted-foreground border border-dashed rounded-lg">
-            No requests created yet.
+            {t('requests.noRequests')}
           </div>
         ) : (
           <div className="grid gap-3">
             {requests.map((req) => (
               <Card key={req.id} className="p-3 flex flex-col gap-3">
                 <div className="flex items-center justify-between gap-4">
-                  <div className="flex items-start gap-3 overflow-hidden">
-                    <Badge className={`shrink-0 mt-1 ${req.status === 'pending' ? '' : 'bg-secondary text-secondary-foreground'}`}>
+                  <div className="flex items-center gap-3 overflow-hidden min-w-0 flex-1">
+                    <Badge className={`shrink-0 ${req.status === 'pending' ? '' : 'bg-secondary text-secondary-foreground'}`}>
                       {req.status === 'pending' ? (
                         <span className="flex items-center gap-1">
-                          <Clock size={10} /> Waiting for client...
+                          <Clock size={10} /> {t('requests.waitingForClient')}
                         </span>
                       ) : (
                         <span className="flex items-center gap-1 text-emerald-500">
-                          <CheckCircle2 size={10} /> Fulfilled
+                          <CheckCircle2 size={10} /> {t('requests.fulfilled')}
                         </span>
                       )}
                     </Badge>
@@ -122,9 +116,9 @@ export default function ClientRequestsManager({
                   {req.status === 'pending' && (
                     <button 
                       onClick={() => handleMarkFulfilled(req.id)}
-                      className="text-xs rounded-md px-2 py-1 hover:bg-muted transition-colors"
+                      className="shrink-0 text-xs rounded-md px-2 py-1 hover:bg-muted transition-colors"
                     >
-                      Mark Fulfilled
+                      {t('requests.markFulfilled')}
                     </button>
                   )}
                 </div>
@@ -134,7 +128,7 @@ export default function ClientRequestsManager({
                     <div>
                       <p className="text-foreground/90">{req.response_text}</p>
                       <p className="text-[10px] text-muted-foreground mt-1">
-                        Replied at {new Date(req.responded_at!).toLocaleString()}
+                        {t('requests.repliedAt')} {new Date(req.responded_at!).toLocaleString()}
                       </p>
                     </div>
                   </div>

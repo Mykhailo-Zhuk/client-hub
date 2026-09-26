@@ -2,8 +2,10 @@
 
 import { useState, useTransition } from "react";
 import { Mail, Loader2, ArrowRight } from "lucide-react";
+import { useLanguage } from "@/lib/i18n/context";
 
 export function LoginForm() {
+  const { t } = useLanguage();
   const [email, setEmail] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
@@ -50,12 +52,12 @@ export function LoginForm() {
   return (
     <form onSubmit={onSubmit} className="space-y-4" noValidate>
       <label className="block">
-        <span className="text-sm font-medium">Email</span>
+        <span className="text-sm font-medium">{t("login.emailLabel")}</span>
         <div className="mt-1.5 flex items-center gap-2 rounded-md border border-border bg-background px-3 focus-within:border-accent">
           <Mail size={14} className="text-muted-foreground" />
           <input
             type="email"
-            placeholder="client@example.com"
+            placeholder={t("login.emailPlaceholder")}
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             className="w-full bg-transparent py-2 text-sm outline-none placeholder:text-muted-foreground/60"
@@ -75,11 +77,11 @@ export function LoginForm() {
       >
         {pending ? (
           <>
-            <Loader2 size={14} className="animate-spin" /> Sending magic link...
+            <Loader2 size={14} className="animate-spin" /> {t("login.sending")}
           </>
         ) : (
           <>
-            Send magic link <ArrowRight size={14} />
+            {t("login.sendLink")} <ArrowRight size={14} />
           </>
         )}
       </button>

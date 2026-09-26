@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createProject } from '@/lib/projects-db';
 import { generateToken } from '@/lib/utils';
+import { isAuthorizedSecret } from '@/lib/agent-auth';
 
 export async function POST(req: NextRequest) {
   try {
@@ -13,7 +14,7 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const secret = token || body.secret;
 
-    if (!secret || secret !== process.env.AGENT_SECRET) {
+    if (!secret || !isAuthorizedSecret(secret)) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 

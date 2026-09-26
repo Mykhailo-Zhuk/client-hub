@@ -27,6 +27,20 @@ function resolveAgentSecret() {
 }
 export const AGENT_SECRET = resolveAgentSecret();
 export const AGENT_COOKIE = 'agent_token';
+
+/**
+ * Checks if the supplied password/secret matches either the machine
+ * AGENT_SECRET or a human-friendly ADMIN_PASSWORD (if configured).
+ */
+export function isAuthorizedSecret(secret: string): boolean {
+  if (!secret || typeof secret !== 'string') return false;
+  const trimmed = secret.trim();
+  if (AGENT_SECRET && trimmed === AGENT_SECRET) return true;
+  const adminPassword = (process.env.ADMIN_PASSWORD || '').trim();
+  if (adminPassword && trimmed === adminPassword) return true;
+  return false;
+}
+
 export function isUsingDevFallback() {
   return (
     AGENT_SECRET === FALLBACK_DEV_SECRET &&

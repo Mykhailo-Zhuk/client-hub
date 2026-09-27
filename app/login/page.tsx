@@ -42,16 +42,7 @@ export default async function LoginPage({
           <div className="flex items-start gap-2">
             <Sparkles size={14} className="mt-0.5 flex-shrink-0 text-accent" />
             <div>
-              <strong className="text-foreground">MVP demo:</strong> any email
-              works. Mock magic link is generated instantly. Try{" "}
-              <code className="rounded bg-muted px-1 py-0.5">
-                client@iron-master.example
-              </code>{" "}
-              or{" "}
-              <code className="rounded bg-muted px-1 py-0.5">
-                client@spa-canada.example
-              </code>
-              .
+              <strong className="text-foreground">MVP demo:</strong> default password is the email name without ending (e.g. <code className="rounded bg-muted px-1 py-0.5">client</code> for <code className="rounded bg-muted px-1 py-0.5">client@iron-master.example</code> or <code className="rounded bg-muted px-1 py-0.5">sashasquilts</code> for <code className="rounded bg-muted px-1 py-0.5">sashasquilts@gmail.com</code>). You can change email and password anytime in the portal <strong>Settings</strong> tab.
             </div>
           </div>
         </Card>

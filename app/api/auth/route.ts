@@ -2,11 +2,12 @@ import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { getProjectsByEmailAsync, getProjectByIdAsync } from "@/lib/projects-db";
 import { signPortalToken, verifyPortalToken } from "@/lib/jwt";
+import { verifyClientPassword } from "@/lib/client-passwords";
 
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { email, projectId: providedProjectId } = body;
+    const { email, password, projectId: providedProjectId } = body;
 
     console.log("[api/auth] POST email=", email);
 
@@ -17,10 +18,17 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    if (!password || typeof password !== "string") {
+      return NextResponse.json(
+        { error: "Password is required" },
+        { status: 400 }
+      );
+    }
+
     // SECURITY: require an EXACT email match against a known project
     // (owner / contributor). No fallback to "first active project" — that
     // turned the endpoint into an auth bypass for any visitor.
-    const matching = await getProjectsByEmailAsync(email);
+    const matching = await getProjectsByEmailAsync(email.trim());
 
     let projectId: string | undefined;
     if (matching.length === 1) {
@@ -60,6 +68,19 @@ export async function POST(req: NextRequest) {
     const project = await getProjectByIdAsync(projectId);
     if (!project) {
       return NextResponse.json({ error: "Project not found" }, { status: 404 });
+    }
+
+    const isPasswordValid = await verifyClientPassword(
+      project.id,
+      project.clientEmail || email,
+      password
+    );
+
+    if (!isPasswordValid) {
+      return NextResponse.json(
+        { error: "Invalid email or password" },
+        { status: 401 }
+      );
     }
 
     const token = await signPortalToken({ email, projectId });

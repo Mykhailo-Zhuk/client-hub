@@ -99,7 +99,7 @@ export default function ClientRequestsManager({
             {requests.map((req) => (
               <Card key={req.id} className="p-3 flex flex-col gap-3">
                 <div className="flex items-center justify-between gap-4">
-                  <div className="flex items-center gap-3 overflow-hidden min-w-0 flex-1">
+                  <div className="flex items-center gap-3 overflow-auto min-w-0 flex-1" style={{maxHeight: '200px'}}>
                     <Badge className={`shrink-0 ${req.status === 'pending' ? '' : 'bg-secondary text-secondary-foreground'}`}>
                       {req.status === 'pending' ? (
                         <span className="flex items-center gap-1">
@@ -111,7 +111,7 @@ export default function ClientRequestsManager({
                         </span>
                       )}
                     </Badge>
-                    <p className="text-sm truncate font-medium">{req.text}</p>
+                    <p className="text-sm break-words font-medium" style={{whiteSpace: 'pre-wrap'}}>{req.text}</p>
                   </div>
                   {req.status === 'pending' && (
                     <button 

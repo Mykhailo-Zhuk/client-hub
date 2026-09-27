@@ -4,6 +4,7 @@ export interface Project {
   id: string;
   client: string;
   clientEmail?: string;
+  clientPassword?: string;
   title: string;
   description?: string;
   status: ProjectStatus;

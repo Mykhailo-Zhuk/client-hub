@@ -1,13 +1,15 @@
 import { notFound, redirect } from "next/navigation";
 import { cookies } from "next/headers";
-import { ExternalLink, Github, Calendar, ArrowLeft } from "lucide-react";
+import { ExternalLink, Github, Calendar, ArrowLeft, Clock, Settings } from "lucide-react";
 import Link from "next/link";
 import { getProjectById } from "@/lib/projects";
+import { getProjectByIdAsync } from "@/lib/projects-db";
 import { getCommentsByProjectAsync } from "@/lib/comments-db";
 import { verifyPortalToken } from "@/lib/jwt";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Reveal } from "@/components/ui/reveal";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { formatDate } from "@/lib/utils";
 import { LogoutButton } from "../actions";
 import { ClientCommentsTimeline } from "../client-comments-timeline";
@@ -15,6 +17,7 @@ import type { ClientComment } from "../client-comment-form";
 import { ProjectStats } from "./project-stats";
 import { ClientAttention } from "./client-attention";
 import { PortalMounted } from "./portal-mounted";
+import { ClientPortalSettingsForm } from "./client-portal-settings-form";
 import type { Comment } from "@/lib/types";
 import { getRequestsByProjectAsync } from "@/lib/requests-db";
 import { getServerTranslation } from "@/lib/i18n/server";
@@ -53,7 +56,7 @@ export default async function PortalPage({
 
   console.log(`[portal/${projectId}] auth OK email=${session.email} source=${source}`);
 
-  const project = getProjectById(projectId);
+  const project = (await getProjectByIdAsync(projectId)) ?? getProjectById(projectId);
   if (!project) notFound();
 
   const comments = await getCommentsByProjectAsync(project.id);
@@ -141,103 +144,132 @@ export default async function PortalPage({
           </Reveal>
         )}
 
-        <Reveal delay={0.08}>
-          <div className="mt-8">
-            <ProjectStats project={project} comments={comments as unknown as Comment[]} />
-          </div>
-        </Reveal>
+        <div className="mt-8">
+          <Tabs defaultValue="timeline">
+            <TabsList className="mb-6">
+              <TabsTrigger value="timeline" className="gap-2">
+                <Clock size={14} />
+                {t("portal.tabs.timeline")}
+              </TabsTrigger>
+              <TabsTrigger value="settings" className="gap-2">
+                <Settings size={14} />
+                {t("portal.tabs.settings")}
+              </TabsTrigger>
+            </TabsList>
 
-        <div className="mt-8 grid gap-6 lg:grid-cols-3">
-          <div className="lg:col-span-2 space-y-6">
-            <Reveal>
-              <Card className="p-6">
-                <h2 className="text-lg font-semibold">{t("portal.timeline.title")}</h2>
-                <p className="mt-1 text-sm text-muted-foreground">
-                  {t("portal.timeline.subtitle")}
-                </p>
-
-                <div className="mt-6">
-                  <ClientCommentsTimeline
-                    projectId={project.id}
-                    clientEmail={project.clientEmail || session.email}
-                    token={token}
-                    initialComments={comments as unknown as ClientComment[]}
-                  />
+            <TabsContent value="timeline">
+              <Reveal delay={0.08}>
+                <div className="mb-8">
+                  <ProjectStats project={project} comments={comments as unknown as Comment[]} />
                 </div>
-              </Card>
-            </Reveal>
-          </div>
-
-          <div className="space-y-4">
-            <Reveal delay={0.1}>
-              <Card className="p-5">
-                <div className="text-xs text-muted-foreground">{t("portal.progress")}</div>
-                <div className="mt-1 text-3xl font-bold">{project.progress}%</div>
-                <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-muted">
-                  <div
-                    className="h-full rounded-full bg-accent"
-                    style={{ width: `${project.progress}%` }}
-                  />
-                </div>
-                {dayPercent !== null && (
-                  <div className="mt-4">
-                    <div className="flex justify-between text-xs text-muted-foreground">
-                      <span>
-                        {t("portal.day")} {project.dayCurrent} / {project.dayTotal}
-                      </span>
-                      <span>{Math.round(dayPercent)}%</span>
-                    </div>
-                    <div className="mt-1 h-1.5 w-full overflow-hidden rounded-full bg-muted">
-                      <div
-                        className="h-full rounded-full bg-accent/60"
-                        style={{ width: `${dayPercent}%` }}
-                      />
-                    </div>
-                  </div>
-                )}
-              </Card>
-            </Reveal>
-
-            <Reveal delay={0.15}>
-              <Card className="p-5">
-                <div className="text-xs text-muted-foreground">{t("portal.started")}</div>
-                <div className="mt-1 text-sm font-medium">
-                  <Calendar size={12} className="mr-1 inline" />
-                  {formatDate(project.startDate)}
-                </div>
-                {project.estimatedEnd && (
-                  <>
-                    <div className="mt-3 text-xs text-muted-foreground">{t("portal.eta")}</div>
-                    <div className="mt-1 text-sm font-medium">
-                      {formatDate(project.estimatedEnd)}
-                    </div>
-                  </>
-                )}
-              </Card>
-            </Reveal>
-
-            <Reveal delay={0.2}>
-              <Card className="p-5">
-                <div className="text-xs text-muted-foreground">{t("portal.stack")}</div>
-                <div className="mt-2 flex flex-wrap gap-1.5">
-                  {project.tags.map((t) => (
-                    <Badge key={t}>{t}</Badge>
-                  ))}
-                </div>
-              </Card>
-            </Reveal>
-
-            {project.description && (
-              <Reveal delay={0.25}>
-                <Card className="p-5">
-                  <div className="text-xs text-muted-foreground">{t("portal.brief")}</div>
-                  <p className="mt-2 text-sm text-foreground/90">
-                    {project.description}
-                  </p>
-                </Card>
               </Reveal>
-            )}
-          </div>
+
+              <div className="grid gap-6 lg:grid-cols-3">
+                <div className="lg:col-span-2 space-y-6">
+                  <Reveal>
+                    <Card className="p-6">
+                      <h2 className="text-lg font-semibold">{t("portal.timeline.title")}</h2>
+                      <p className="mt-1 text-sm text-muted-foreground">
+                        {t("portal.timeline.subtitle")}
+                      </p>
+
+                      <div className="mt-6">
+                        <ClientCommentsTimeline
+                          projectId={project.id}
+                          clientEmail={project.clientEmail || session.email}
+                          token={token}
+                          initialComments={comments as unknown as ClientComment[]}
+                        />
+                      </div>
+                    </Card>
+                  </Reveal>
+                </div>
+
+                <div className="space-y-4">
+                  <Reveal delay={0.1}>
+                    <Card className="p-5">
+                      <div className="text-xs text-muted-foreground">{t("portal.progress")}</div>
+                      <div className="mt-1 text-3xl font-bold">{project.progress}%</div>
+                      <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-muted">
+                        <div
+                          className="h-full rounded-full bg-accent"
+                          style={{ width: `${project.progress}%` }}
+                        />
+                      </div>
+                      {dayPercent !== null && (
+                        <div className="mt-4">
+                          <div className="flex justify-between text-xs text-muted-foreground">
+                            <span>
+                              {t("portal.day")} {project.dayCurrent} / {project.dayTotal}
+                            </span>
+                            <span>{Math.round(dayPercent)}%</span>
+                          </div>
+                          <div className="mt-1 h-1.5 w-full overflow-hidden rounded-full bg-muted">
+                            <div
+                              className="h-full rounded-full bg-accent/60"
+                              style={{ width: `${dayPercent}%` }}
+                            />
+                          </div>
+                        </div>
+                      )}
+                    </Card>
+                  </Reveal>
+
+                  <Reveal delay={0.15}>
+                    <Card className="p-5">
+                      <div className="text-xs text-muted-foreground">{t("portal.started")}</div>
+                      <div className="mt-1 text-sm font-medium">
+                        <Calendar size={12} className="mr-1 inline" />
+                        {formatDate(project.startDate)}
+                      </div>
+                      {project.estimatedEnd && (
+                        <>
+                          <div className="mt-3 text-xs text-muted-foreground">{t("portal.eta")}</div>
+                          <div className="mt-1 text-sm font-medium">
+                            {formatDate(project.estimatedEnd)}
+                          </div>
+                        </>
+                      )}
+                    </Card>
+                  </Reveal>
+
+                  <Reveal delay={0.2}>
+                    <Card className="p-5">
+                      <div className="text-xs text-muted-foreground">{t("portal.stack")}</div>
+                      <div className="mt-2 flex flex-wrap gap-1.5">
+                        {project.tags.map((t) => (
+                          <Badge key={t}>{t}</Badge>
+                        ))}
+                      </div>
+                    </Card>
+                  </Reveal>
+
+                  {project.description && (
+                    <Reveal delay={0.25}>
+                      <Card className="p-5">
+                        <div className="text-xs text-muted-foreground">{t("portal.brief")}</div>
+                        <p className="mt-2 text-sm text-foreground/90">
+                          {project.description}
+                        </p>
+                      </Card>
+                    </Reveal>
+                  )}
+                </div>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="settings">
+              <Reveal>
+                <div className="max-w-2xl">
+                  <ClientPortalSettingsForm
+                    projectId={project.id}
+                    initialEmail={project.clientEmail || session.email}
+                    token={token}
+                  />
+                </div>
+              </Reveal>
+            </TabsContent>
+          </Tabs>
         </div>
       </section>
     </PortalMounted>

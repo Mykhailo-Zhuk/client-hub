@@ -26,6 +26,7 @@ export default function ProjectSettingsForm({
   const [title, setTitle] = useState(project.title);
   const [clientName, setClientName] = useState(project.client_name);
   const [clientEmail, setClientEmail] = useState(project.client_email ?? '');
+  const [clientPassword, setClientPassword] = useState('');
   const [status, setStatus] = useState(project.status);
   const [progress, setProgress] = useState(project.progress);
   const [dayCurrent, setDayCurrent] = useState(project.day_current ?? 0);
@@ -47,6 +48,7 @@ export default function ProjectSettingsForm({
           title: title.trim(),
           client_name: clientName.trim(),
           client_email: clientEmail.trim() || null,
+          client_password: clientPassword.trim() || undefined,
           status,
           progress,
           day_current: dayCurrent,
@@ -87,6 +89,15 @@ export default function ProjectSettingsForm({
             type="email"
             value={clientEmail}
             onChange={(e) => setClientEmail(e.target.value)}
+            className="w-full rounded-md border border-border bg-background px-3 py-1.5 text-sm outline-none focus:border-accent"
+          />
+        </Field>
+        <Field label="Client password (leave blank to keep unchanged)">
+          <input
+            type="text"
+            value={clientPassword}
+            onChange={(e) => setClientPassword(e.target.value)}
+            placeholder="Default: email username before @"
             className="w-full rounded-md border border-border bg-background px-3 py-1.5 text-sm outline-none focus:border-accent"
           />
         </Field>

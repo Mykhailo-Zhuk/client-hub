@@ -66,11 +66,7 @@ function updateProjectsJson(
  * Returns true if a custom password has been explicitly set for this project.
  */
 export async function hasCustomPassword(projectId: string): Promise<boolean> {
-  // Check local JSON store first
-  const fileStore = readPasswordsFile();
-  if (fileStore[projectId]) return true;
-
-  // Check Supabase if configured
+  // 1. Check Supabase first if configured
   const sb = getSupabaseAdmin();
   if (sb) {
     try {
@@ -87,6 +83,10 @@ export async function hasCustomPassword(projectId: string): Promise<boolean> {
     }
   }
 
+  // 2. Check local JSON store fallback
+  const fileStore = readPasswordsFile();
+  if (fileStore[projectId]) return true;
+
   return false;
 }
 
@@ -98,13 +98,7 @@ export async function getClientPassword(
   projectId: string,
   clientEmail?: string
 ): Promise<string> {
-  // 1. Check local JSON file
-  const fileStore = readPasswordsFile();
-  if (fileStore[projectId]) {
-    return fileStore[projectId];
-  }
-
-  // 2. Check Supabase
+  // 1. Check Supabase first if configured (primary persistent database)
   const sb = getSupabaseAdmin();
   if (sb) {
     try {
@@ -123,8 +117,14 @@ export async function getClientPassword(
         }
       }
     } catch {
-      // Silently fall back to default password
+      // Silently fall back to file or default password
     }
+  }
+
+  // 2. Check local JSON file (fallback for offline / local-only dev)
+  const fileStore = readPasswordsFile();
+  if (fileStore[projectId]) {
+    return fileStore[projectId];
   }
 
   // 3. Fallback to default password (email username before '@')
@@ -141,29 +141,30 @@ export async function setClientPassword(
   const trimmed = newPassword.trim();
   if (!trimmed) return;
 
-  // 1. Save to data/client-passwords.json
+  // 1. Save to data/client-passwords.json (best-effort local file store)
   const fileStore = readPasswordsFile();
   fileStore[projectId] = trimmed;
   writePasswordsFile(fileStore);
 
-  // 2. Update data/projects.json
+  // 2. Update data/projects.json (best-effort local file store)
   updateProjectsJson(projectId, (p) => {
     p.clientPassword = trimmed;
   });
 
-  // 3. Update Supabase if available and column exists
+  // 3. Update Supabase (primary persistent store)
   const sb = getSupabaseAdmin();
   if (sb) {
-    try {
-      const { error } = await sb
-        .from('projects')
-        .update({ client_password: trimmed })
-        .eq('id', projectId);
-      if (error && error.code !== 'PGRST204' && error.code !== '42703') {
-        console.warn('[client-passwords] Supabase update warning:', error.message);
+    const { error } = await sb
+      .from('projects')
+      .update({ client_password: trimmed })
+      .eq('id', projectId);
+    if (error) {
+      if (error.code === 'PGRST204' || error.code === '42703') {
+        throw new Error(
+          "Database column 'client_password' is missing in Supabase. Please run migration 005_add_client_password.sql in your Supabase SQL Editor."
+        );
       }
-    } catch {
-      // Ignore if column doesn't exist
+      throw new Error(`Failed to update password in database: ${error.message}`);
     }
   }
 }
@@ -180,7 +181,7 @@ export async function updateClientEmail(
     throw new Error('Valid email required');
   }
 
-  // 1. Update data/projects.json
+  // 1. Update data/projects.json (best-effort local)
   updateProjectsJson(projectId, (p) => {
     p.clientEmail = trimmed;
   });
@@ -194,6 +195,7 @@ export async function updateClientEmail(
       .eq('id', projectId);
     if (error) {
       console.warn('[client-passwords] Supabase client_email update warning:', error.message);
+      throw new Error(`Failed to update email in database: ${error.message}`);
     }
   }
 }

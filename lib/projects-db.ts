@@ -32,6 +32,7 @@ type SupabaseProjectRow = {
   github: string | null;
   demo: string | null;
   cover: string | null;
+  client_password?: string | null;
 };
 
 function rowToProject(r: SupabaseProjectRow): Project {
@@ -39,6 +40,7 @@ function rowToProject(r: SupabaseProjectRow): Project {
     id: r.id,
     client: r.client_name,
     clientEmail: r.client_email,
+    clientPassword: r.client_password ?? undefined,
     title: r.title,
     description: r.description ?? undefined,
     status: r.status,

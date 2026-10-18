@@ -113,4 +113,4 @@ See `lib/telegram.ts` and `app/api/auth/route.ts` for integration points.
 
 ## License
 
-MIT — by [Mykhailo Zhuk](https://zhuk.dev)
+MIT — by [Mykhailo Zhuk](https://misha-zhuk-portfolio.vercel.app/)

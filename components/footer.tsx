@@ -11,7 +11,7 @@ export function Footer() {
         <div>
           © {new Date().getFullYear()} Client Hub · {t("footer.builtBy")}{" "}
           <a
-            href="https://zhuk.dev"
+            href="https://misha-zhuk-portfolio.vercel.app/"
             target="_blank"
             rel="noreferrer"
             className="underline underline-offset-4 hover:text-foreground"

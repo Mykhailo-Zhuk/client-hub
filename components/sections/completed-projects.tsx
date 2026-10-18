@@ -2,14 +2,15 @@
 
 import { CheckCircle2, ExternalLink, Github } from "lucide-react";
 import { getCompletedProjects } from "@/lib/projects";
+import type { Project } from "@/lib/types";
 import { Card } from "../ui/card";
 import { Badge } from "../ui/badge";
 import { Reveal } from "../ui/reveal";
 import { useLanguage } from "@/lib/i18n/context";
 
-export function CompletedProjects() {
+export function CompletedProjects({ projects: initialProjects }: { projects?: Project[] } = {}) {
   const { t } = useLanguage();
-  const projects = getCompletedProjects();
+  const projects = initialProjects ?? getCompletedProjects();
   if (projects.length === 0) return null;
 
   return (

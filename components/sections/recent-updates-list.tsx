@@ -6,6 +6,7 @@ import { Reveal } from "../ui/reveal";
 import { Activity, Bug, Rocket, Sparkles, MessageSquare } from "lucide-react";
 import type { Comment, CommentType } from "@/lib/types";
 import { useLanguage } from "@/lib/i18n/context";
+import ClientMarkdown from "@/components/client-markdown";
 
 const iconMap: Record<CommentType, typeof Activity> = {
   status_update: Activity,
@@ -48,9 +49,12 @@ export function RecentUpdatesList({ comments }: { comments: Comment[] }) {
                   size={18}
                   className={`mt-0.5 flex-shrink-0 ${colorMap[c.type]}`}
                 />
-                <div className="flex-1">
-                  <div className="text-sm">{c.message}</div>
-                  <div className="mt-1 flex items-center gap-2 text-xs text-muted-foreground">
+                <div className="flex-1 min-w-0">
+                  <ClientMarkdown
+                    content={c.message}
+                    className="prose prose-sm dark:prose-invert max-w-none text-sm break-words [&_p]:my-1 first:[&_p]:mt-0 last:[&_p]:mb-0 [&_ul]:my-1.5 [&_ol]:my-1.5 [&_li]:my-0.5"
+                  />
+                  <div className="mt-2 flex items-center gap-2 text-xs text-muted-foreground">
                     <span className="font-mono">{c.projectId}</span>
                     <span>·</span>
                     <span>{c.author}</span>

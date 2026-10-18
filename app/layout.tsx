@@ -16,6 +16,9 @@ export const metadata: Metadata = {
   title: "Client Hub — track your project in real-time",
   description:
     "Public dashboard with active projects, per-client portal with magic-link access, and Telegram bot integration for progress updates.",
+  icons: {
+    icon: "/icon.svg",
+  },
 };
 
 export default async function RootLayout({

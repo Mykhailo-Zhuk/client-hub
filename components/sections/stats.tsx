@@ -4,11 +4,21 @@ import { Card } from "../ui/card";
 import { Reveal } from "../ui/reveal";
 import { useLanguage } from "@/lib/i18n/context";
 
-export function Stats() {
+import { getActiveProjects } from "@/lib/projects";
+
+export function Stats({
+  activeProjectsCount,
+}: {
+  activeProjectsCount?: number;
+}) {
   const { t } = useLanguage();
+  const count =
+    typeof activeProjectsCount === "number"
+      ? activeProjectsCount
+      : getActiveProjects().length;
 
   const stats = [
-    { label: t("stats.activeProjects"), value: "12" },
+    { label: t("stats.activeProjects"), value: String(count) },
     { label: t("stats.happyClients"), value: "47" },
     { label: t("stats.countries"), value: "8" },
     { label: t("stats.shippedMvps"), value: "23" },

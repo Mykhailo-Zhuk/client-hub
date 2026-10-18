@@ -3,14 +3,15 @@
 import Link from "next/link";
 import { ArrowRight, ExternalLink, Github } from "lucide-react";
 import { getActiveProjects } from "@/lib/projects";
+import type { Project } from "@/lib/types";
 import { Card } from "../ui/card";
 import { Badge } from "../ui/badge";
 import { Reveal } from "../ui/reveal";
 import { useLanguage } from "@/lib/i18n/context";
 
-export function ActiveProjects() {
+export function ActiveProjects({ projects: initialProjects }: { projects?: Project[] } = {}) {
   const { t } = useLanguage();
-  const projects = getActiveProjects();
+  const projects = initialProjects ?? getActiveProjects();
 
   return (
     <section className="mx-auto max-w-6xl px-4 py-16">

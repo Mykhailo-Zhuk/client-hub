@@ -61,17 +61,27 @@ const PURIFY_CONFIG = {
   FORBID_ATTR: ['onerror', 'onload', 'onclick', 'onmouseover', 'onfocus', 'style'],
 };
 
+function fallbackSanitize(html: string): string {
+  return html
+    .replace(/<(script|style|iframe|object|embed|form)\b[^>]*>[\s\S]*?<\/\1>/gi, '')
+    .replace(/<(script|style|iframe|object|embed|form)\b[^>]*\/?>/gi, '')
+    .replace(/\son\w+\s*=\s*("[^"]*"|'[^']*'|[^\s>]+)/gi, '')
+    .replace(/javascript\s*:/gi, '');
+}
+
 /**
  * Render markdown to HTML and sanitize the result.
  * Returns HTML that is safe to feed into dangerouslySetInnerHTML.
  */
 export function renderSafeMarkdown(markdown: string): string {
   if (!markdown) return '';
-  // marked v14 with async:false returns string synchronously
-  const rawHtml = marked.parse(markdown, { async: false }) as string;
-  // DOMPurify.sanitize can return TrustedHTML in some configs; we want a
-  // plain string for dangerouslySetInnerHTML, so coerce.
-  return String(DOMPurify.sanitize(rawHtml, PURIFY_CONFIG));
+  try {
+    // marked v14 with async:false returns string synchronously
+    const rawHtml = marked.parse(markdown, { async: false }) as string;
+    return sanitizeHtml(rawHtml);
+  } catch {
+    return fallbackSanitize(markdown);
+  }
 }
 
 /**
@@ -79,5 +89,9 @@ export function renderSafeMarkdown(markdown: string): string {
  */
 export function sanitizeHtml(html: string): string {
   if (!html) return '';
-  return String(DOMPurify.sanitize(html, PURIFY_CONFIG));
+  try {
+    return String(DOMPurify.sanitize(html, PURIFY_CONFIG));
+  } catch {
+    return fallbackSanitize(html);
+  }
 }

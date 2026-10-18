@@ -2,10 +2,11 @@
 
 /**
  * Error boundary for /admin/[projectId] — surfaces the actual exception
- * instead of the generic Next.js 500 page. Used to debug the
- * "iron-master 500" incident on 2026-09-21.
+ * instead of the generic Next.js 500 page.
  */
 import { useEffect } from 'react';
+import Link from 'next/link';
+import { AlertTriangle, ArrowLeft, RotateCcw } from 'lucide-react';
 
 export default function AdminProjectError({
   error,
@@ -21,12 +22,14 @@ export default function AdminProjectError({
   return (
     <section className="mx-auto max-w-4xl px-4 py-12">
       <div className="rounded-lg border border-red-500/30 bg-red-500/5 p-6">
-        <h1 className="text-xl font-bold text-red-500">
-          Error loading project
-        </h1>
+        <div className="flex items-center gap-2 text-red-500">
+          <AlertTriangle size={20} />
+          <h1 className="text-xl font-bold">
+            Помилка завантаження проєкту
+          </h1>
+        </div>
         <p className="mt-2 text-sm text-muted-foreground">
-          The admin project page crashed during server render. The full
-          error is below — copy it and report to Misha.
+          Сторінка проєкту в адмін-панелі завершилась із помилкою під час звернення до сервера. Деталі помилки наведено нижче:
         </p>
         <div className="mt-4 space-y-2 rounded border border-border bg-background p-4 font-mono text-xs">
           <div>
@@ -54,12 +57,20 @@ export default function AdminProjectError({
             </details>
           ) : null}
         </div>
-        <button
-          onClick={reset}
-          className="mt-4 inline-flex items-center gap-1.5 rounded-md bg-accent px-4 py-2 text-sm font-medium text-accent-foreground hover:opacity-90"
-        >
-          Try again
-        </button>
+        <div className="mt-4 flex flex-wrap items-center gap-3">
+          <button
+            onClick={reset}
+            className="inline-flex items-center gap-1.5 rounded-md bg-accent px-4 py-2 text-xs font-medium text-accent-foreground hover:opacity-90"
+          >
+            <RotateCcw size={13} /> Спробувати знову
+          </button>
+          <Link
+            href="/admin"
+            className="inline-flex items-center gap-1.5 rounded-md border border-border bg-background px-4 py-2 text-xs font-medium hover:bg-muted"
+          >
+            <ArrowLeft size={13} /> Назад в адмінку
+          </Link>
+        </div>
       </div>
     </section>
   );

@@ -2,8 +2,7 @@
 
 import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
-import { marked } from 'marked';
-import DOMPurify from 'isomorphic-dompurify';
+import { renderSafeMarkdown } from '@/lib/sanitize';
 import {
   Send,
   Sparkles,
@@ -94,14 +93,7 @@ export default function CommentEditor({ projectId }: { projectId: string }) {
     });
   }
 
-  const previewHtml = (() => {
-    if (!message.trim()) return '';
-    try {
-      return DOMPurify.sanitize(marked.parse(message) as string);
-    } catch {
-      return '';
-    }
-  })();
+  const previewHtml = message.trim() ? renderSafeMarkdown(message) : '';
 
   return (
     <form onSubmit={submit} className="space-y-3">

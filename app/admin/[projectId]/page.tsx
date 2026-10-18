@@ -5,15 +5,15 @@ import { Badge } from '@/components/ui/badge';
 import { Reveal } from '@/components/ui/reveal';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import {
+  AlertTriangle,
   ArrowLeft,
   ExternalLink,
   Github,
 } from 'lucide-react';
-import { getProjectByIdAsync } from '@/lib/projects-db';
+import { getProjectByIdAsync, getProjectsAsync } from '@/lib/projects-db';
 import { getCommentsByProjectAsync } from '@/lib/comments-db';
 import { getRequestsByProjectAsync } from '@/lib/requests-db';
-import { getProjectsAsync } from '@/lib/projects-db';
-import { isSupabaseConfigured, getSupabaseAdmin } from '@/lib/supabase';
+import { getLastSupabaseError } from '@/lib/supabase';
 import { getServerTranslation } from '@/lib/i18n/server';
 
 import ProjectList from '../project-list';
@@ -56,20 +56,22 @@ export default async function AdminProjectPage({
   try {
     return await renderAdminProject(projectId);
   } catch (err) {
-    // DEBUG (2026-09-21 iron-master 500 incident): surface the actual
-    // exception so we can see the stack trace instead of the generic
-    // Next.js 500 page. Rasty is investigating.
     const e = err as Error & { digest?: string };
+    if (e?.digest?.startsWith('NEXT_')) {
+      throw err;
+    }
     console.error(`[admin/${projectId}] render failed:`, e);
     return (
       <section className="mx-auto max-w-4xl px-4 py-12">
         <div className="rounded-lg border border-red-500/30 bg-red-500/5 p-6">
-          <h1 className="text-xl font-bold text-red-500">
-            Admin render crashed for <code>/admin/{projectId}</code>
-          </h1>
+          <div className="flex items-center gap-2 text-red-500">
+            <AlertTriangle size={20} />
+            <h1 className="text-xl font-bold">
+              Помилка завантаження проєкту <code>/admin/{projectId}</code>
+            </h1>
+          </div>
           <p className="mt-2 text-sm text-muted-foreground">
-            Showing the actual exception instead of the Next.js 500 page.
-            Once the bug is fixed this branch should never run.
+            Сталася помилка під час рендерингу сторінки проєкту на сервері. Нижче наведено деталі помилки:
           </p>
           <div className="mt-4 space-y-1 rounded border border-border bg-background p-4 font-mono text-xs">
             <div>
@@ -86,6 +88,20 @@ export default async function AdminProjectPage({
               </pre>
             ) : null}
           </div>
+          <div className="mt-4 flex items-center gap-3">
+            <a
+              href={`/admin/${projectId}`}
+              className="inline-flex items-center gap-1.5 rounded-md bg-accent px-4 py-2 text-xs font-medium text-accent-foreground hover:opacity-90"
+            >
+              Спробувати знову
+            </a>
+            <Link
+              href="/admin"
+              className="inline-flex items-center gap-1.5 rounded-md border border-border bg-background px-4 py-2 text-xs font-medium hover:bg-muted"
+            >
+              <ArrowLeft size={12} /> Назад в адмінку
+            </Link>
+          </div>
         </div>
       </section>
     );
@@ -93,45 +109,39 @@ export default async function AdminProjectPage({
 }
 
 async function renderAdminProject(projectId: string) {
-  // Load sidebar list and the selected project in parallel.
-  const [project, allProjects, { t, locale }] = await Promise.all([
+  // Run all data fetches in parallel so even if Supabase is slow, we never chain timeouts sequentially.
+  const [project, allProjects, comments, projectRequests, { t }] = await Promise.all([
     getProjectByIdAsync(projectId),
     getProjectsAsync(),
+    getCommentsByProjectAsync(projectId),
+    getRequestsByProjectAsync(projectId),
     getServerTranslation(),
   ]);
 
   if (!project) notFound();
 
-  // Hydrate Supabase columns that may not be in JSON fallback (demo/github/tags etc.).
-  let supabaseExtras: Partial<AdminProject> = {};
-  if (isSupabaseConfigured()) {
-    const sb = getSupabaseAdmin();
-    if (sb) {
-      const { data } = await sb
-        .from('projects')
-        .select(
-          'id, title, client_name, client_email, status, progress, day_current, day_total, start_date, demo, github'
-        )
-        .eq('id', projectId)
-        .maybeSingle();
-      if (data) {
-        supabaseExtras = data as Partial<AdminProject>;
-      }
-    }
-  }
+  const supabaseError = getLastSupabaseError();
 
   const merged: AdminProject = {
-    ...(project as unknown as AdminProject),
-    ...supabaseExtras,
+    id: project.id,
+    title: project.title,
+    description: project.description ?? null,
+    client_name: project.client,
+    client: project.client,
+    client_email: project.clientEmail ?? null,
+    status: project.status,
+    progress: project.progress,
+    day_current: project.dayCurrent,
+    day_total: project.dayTotal,
+    start_date: project.startDate ?? null,
+    estimated_end: project.estimatedEnd ?? null,
+    completed_date: project.completedDate ?? null,
+    demo: project.demo ?? null,
+    github: project.github ?? null,
+    tags: project.tags ?? [],
   };
 
-  const comments = await getCommentsByProjectAsync(project.id);
-
-  // Fetch project requests
-  const projectRequests = await getRequestsByProjectAsync(project.id);
-
-
-  const hasPendingRequests = projectRequests.some(r => r.status === 'pending');
+  const hasPendingRequests = projectRequests.some((r) => r.status === 'pending');
 
   const sidebarItems = allProjects.map((p) => ({
     id: p.id,
@@ -158,6 +168,32 @@ async function renderAdminProject(projectId: string) {
           <ArrowLeft size={12} /> {t('admin.backToAdmin')}
         </Link>
       </Reveal>
+
+      {supabaseError && (
+        <Reveal>
+          <Card className="mb-6 border-amber-500/40 bg-amber-500/10 p-4 text-xs">
+            <div className="flex items-start justify-between gap-3">
+              <div className="flex items-start gap-2.5">
+                <AlertTriangle size={16} className="mt-0.5 flex-shrink-0 text-amber-500" />
+                <div>
+                  <strong className="text-amber-500">
+                    З&apos;єднання з Supabase тимчасово недоступне — увімкнено резервний режим (JSON fallback)
+                  </strong>
+                  <p className="mt-1 text-muted-foreground">
+                    Деталі помилки: <code className="rounded bg-background/80 px-1.5 py-0.5 text-foreground">{supabaseError.message}</code>
+                  </p>
+                </div>
+              </div>
+              <a
+                href={`/admin/${projectId}`}
+                className="flex-shrink-0 rounded-md border border-amber-500/40 bg-background px-2.5 py-1 text-xs font-medium text-amber-500 hover:bg-amber-500/10"
+              >
+                Оновити
+              </a>
+            </div>
+          </Card>
+        </Reveal>
+      )}
 
       <div className="grid grid-cols-12 gap-6">
         <aside className="col-span-12 lg:col-span-3">

@@ -11,7 +11,12 @@
  * Once the migration is applied + env vars are set, all callers can
  * migrate to `getProjectsAsync()` / `getProjectByIdAsync()`.
  */
-import { getSupabaseAdmin, isSupabaseConfigured } from './supabase';
+import {
+  getSupabaseAdmin,
+  isSupabaseConfigured,
+  recordSupabaseError,
+  clearSupabaseError,
+} from './supabase';
 import projectsData from '@/data/projects.json';
 import type { Project } from './types';
 
@@ -82,41 +87,68 @@ export function getProjectsByEmail(email: string): Project[] {
 export async function getProjectsAsync(): Promise<Project[]> {
   const sb = getSupabaseAdmin();
   if (!sb) return JSON_PROJECTS;
-  const { data, error } = await sb
-    .from('projects')
-    .select('*')
-    .order('created_at', { ascending: false });
-  if (error) {
-    console.warn('[lib/projects-db] supabase error, falling back to JSON:', error.message);
+  try {
+    const { data, error } = await sb
+      .from('projects')
+      .select('*')
+      .order('created_at', { ascending: false });
+    if (error) {
+      recordSupabaseError(error.message);
+      console.warn('[lib/projects-db] supabase error, falling back to JSON:', error.message);
+      return JSON_PROJECTS;
+    }
+    clearSupabaseError();
+    return (data ?? []).map((r) => rowToProject(r as SupabaseProjectRow));
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : String(err);
+    recordSupabaseError(msg);
+    console.warn('[lib/projects-db] supabase exception, falling back to JSON:', msg);
     return JSON_PROJECTS;
   }
-  return (data ?? []).map((r) => rowToProject(r as SupabaseProjectRow));
 }
 
 export async function getProjectByIdAsync(id: string): Promise<Project | null> {
   const sb = getSupabaseAdmin();
   if (!sb) return getProjectById(id) ?? null;
-  const { data, error } = await sb.from('projects').select('*').eq('id', id).maybeSingle();
-  if (error) {
-    console.warn('[lib/projects-db] supabase error:', error.message);
+  try {
+    const { data, error } = await sb.from('projects').select('*').eq('id', id).maybeSingle();
+    if (error) {
+      recordSupabaseError(error.message);
+      console.warn('[lib/projects-db] supabase error:', error.message);
+      return getProjectById(id) ?? null;
+    }
+    clearSupabaseError();
+    return data ? rowToProject(data as SupabaseProjectRow) : (getProjectById(id) ?? null);
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : String(err);
+    recordSupabaseError(msg);
+    console.warn('[lib/projects-db] supabase exception:', msg);
     return getProjectById(id) ?? null;
   }
-  return data ? rowToProject(data as SupabaseProjectRow) : null;
 }
 
 export async function getProjectsByEmailAsync(email: string): Promise<Project[]> {
   const sb = getSupabaseAdmin();
   if (!sb) return getProjectsByEmail(email);
-  const { data, error } = await sb
-    .from('projects')
-    .select('*')
-    .ilike('client_email', email)
-    .order('created_at', { ascending: false });
-  if (error) {
-    console.warn('[lib/projects-db] supabase error:', error.message);
+  try {
+    const { data, error } = await sb
+      .from('projects')
+      .select('*')
+      .ilike('client_email', email)
+      .order('created_at', { ascending: false });
+    if (error) {
+      recordSupabaseError(error.message);
+      console.warn('[lib/projects-db] supabase error:', error.message);
+      return getProjectsByEmail(email);
+    }
+    clearSupabaseError();
+    return (data ?? []).map((r) => rowToProject(r as SupabaseProjectRow));
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : String(err);
+    recordSupabaseError(msg);
+    console.warn('[lib/projects-db] supabase exception:', msg);
     return getProjectsByEmail(email);
   }
-  return (data ?? []).map((r) => rowToProject(r as SupabaseProjectRow));
 }
 
 export async function updateProjectProgress(

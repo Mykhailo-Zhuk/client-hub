@@ -11,6 +11,7 @@
  *   - On Vercel serverless each cold start starts with an empty store —
  *     this is acceptable for local dev only.
  */
+import commentsData from "@/data/comments.json";
 import type { Comment, CommentType } from "./types";
 
 declare global {
@@ -19,7 +20,9 @@ declare global {
 }
 
 function memStore(): Comment[] {
-  if (!globalThis.__ch_comments) globalThis.__ch_comments = [];
+  if (!globalThis.__ch_comments) {
+    globalThis.__ch_comments = [...(commentsData as Comment[])];
+  }
   return globalThis.__ch_comments;
 }
 

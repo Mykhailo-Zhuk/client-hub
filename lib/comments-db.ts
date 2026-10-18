@@ -3,7 +3,7 @@
  * but writes/reads to PostgreSQL when configured. Falls back to JSON
  * (in-memory) store when Supabase is not yet wired so dev never breaks.
  */
-import { getSupabaseAdmin } from './supabase';
+import { getSupabaseAdmin, recordSupabaseError } from './supabase';
 import type { Comment, CommentType } from './types';
 
 type SupabaseCommentRow = {
@@ -32,17 +32,26 @@ export async function getCommentsByProjectAsync(projectId: string): Promise<Comm
     const { getCommentsByProject } = await import('./comments');
     return getCommentsByProject(projectId);
   }
-  const { data, error } = await sb
-    .from('comments')
-    .select('*')
-    .eq('project_id', projectId)
-    .order('timestamp', { ascending: false });
-  if (error) {
-    console.warn('[lib/comments-db] supabase error:', error.message);
+  try {
+    const { data, error } = await sb
+      .from('comments')
+      .select('*')
+      .eq('project_id', projectId)
+      .order('timestamp', { ascending: false });
+    if (error) {
+      recordSupabaseError(error.message);
+      console.warn('[lib/comments-db] supabase error:', error.message);
+      const { getCommentsByProject } = await import('./comments');
+      return getCommentsByProject(projectId);
+    }
+    return (data ?? []).map(rowToComment);
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : String(err);
+    recordSupabaseError(msg);
+    console.warn('[lib/comments-db] supabase exception:', msg);
     const { getCommentsByProject } = await import('./comments');
     return getCommentsByProject(projectId);
   }
-  return (data ?? []).map(rowToComment);
 }
 
 export async function getRecentCommentsAsync(limit = 5): Promise<Comment[]> {
@@ -51,17 +60,26 @@ export async function getRecentCommentsAsync(limit = 5): Promise<Comment[]> {
     const { getRecentComments } = await import('./comments');
     return getRecentComments(limit);
   }
-  const { data, error } = await sb
-    .from('comments')
-    .select('*')
-    .order('timestamp', { ascending: false })
-    .limit(limit);
-  if (error) {
-    console.warn('[lib/comments-db] supabase error:', error.message);
+  try {
+    const { data, error } = await sb
+      .from('comments')
+      .select('*')
+      .order('timestamp', { ascending: false })
+      .limit(limit);
+    if (error) {
+      recordSupabaseError(error.message);
+      console.warn('[lib/comments-db] supabase error:', error.message);
+      const { getRecentComments } = await import('./comments');
+      return getRecentComments(limit);
+    }
+    return (data ?? []).map(rowToComment);
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : String(err);
+    recordSupabaseError(msg);
+    console.warn('[lib/comments-db] supabase exception:', msg);
     const { getRecentComments } = await import('./comments');
     return getRecentComments(limit);
   }
-  return (data ?? []).map(rowToComment);
 }
 
 export async function addCommentAsync(input: {

@@ -5,20 +5,21 @@ import { Reveal } from '@/components/ui/reveal';
 import ClientMarkdown from '@/components/client-markdown';
 import { getProjectsAsync } from '@/lib/projects-db';
 import { getRecentCommentsAsync } from '@/lib/comments-db';
-import { isSupabaseConfigured } from '@/lib/supabase';
+import { isSupabaseConfigured, getLastSupabaseError } from '@/lib/supabase';
 import { timeAgo } from '@/lib/utils';
-import { Database, Plus, ArrowUpRight } from 'lucide-react';
+import { AlertTriangle, Database, Plus, ArrowUpRight } from 'lucide-react';
 import { getServerTranslation } from '@/lib/i18n/server';
 
 export const dynamic = 'force-dynamic';
 
 export default async function AdminPage() {
-  const [projects, recent, { t, locale }] = await Promise.all([
+  const [projects, recent, { t }] = await Promise.all([
     getProjectsAsync(),
     getRecentCommentsAsync(10),
     getServerTranslation(),
   ]);
   const configured = isSupabaseConfigured();
+  const supabaseError = getLastSupabaseError();
 
   return (
     <section className="mx-auto max-w-6xl px-4 py-10 sm:py-14">
@@ -30,10 +31,14 @@ export default async function AdminPage() {
               {projects.length} {t('admin.projectsCount')} · {recent.length} {t('admin.recentUpdatesCount')} · backend:{' '}
               <span
                 className={
-                  configured ? 'text-emerald-500' : 'text-amber-500'
+                  configured && !supabaseError ? 'text-emerald-500' : 'text-amber-500'
                 }
               >
-                {configured ? 'supabase' : 'json-fallback'}
+                {configured
+                  ? supabaseError
+                    ? 'supabase (error → json-fallback)'
+                    : 'supabase'
+                  : 'json-fallback'}
               </span>
             </p>
           </div>
@@ -47,6 +52,32 @@ export default async function AdminPage() {
           </div>
         </div>
       </Reveal>
+
+      {supabaseError && (
+        <Reveal delay={0.03}>
+          <Card className="mt-6 border-amber-500/40 bg-amber-500/10 p-4 text-xs">
+            <div className="flex items-start justify-between gap-3">
+              <div className="flex items-start gap-2.5">
+                <AlertTriangle size={16} className="mt-0.5 flex-shrink-0 text-amber-500" />
+                <div>
+                  <strong className="text-amber-500">
+                    З&apos;єднання з Supabase тимчасово недоступне — увімкнено резервний режим (JSON fallback)
+                  </strong>
+                  <p className="mt-1 text-muted-foreground">
+                    Деталі помилки: <code className="rounded bg-background/80 px-1.5 py-0.5 text-foreground">{supabaseError.message}</code>
+                  </p>
+                </div>
+              </div>
+              <a
+                href="/admin"
+                className="flex-shrink-0 rounded-md border border-amber-500/40 bg-background px-2.5 py-1 text-xs font-medium text-amber-500 hover:bg-amber-500/10"
+              >
+                Оновити
+              </a>
+            </div>
+          </Card>
+        </Reveal>
+      )}
 
       {!configured && (
         <Reveal delay={0.05}>

@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { verifyPortalToken } from '@/lib/jwt';
 import { sendTelegramNotification } from '@/lib/telegram';
 import { addCommentAsync, getCommentsByProjectAsync, getRecentCommentsAsync } from '@/lib/comments-db';
-import { isSupabaseConfigured } from '@/lib/supabase';
+import { getSupabaseAdmin, isSupabaseConfigured } from '@/lib/supabase';
 import type { CommentType } from '@/lib/types';
 
 const validTypes: CommentType[] = [
@@ -32,7 +32,7 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { projectId, type, message, author } = body;
+    const { projectId, commentId, type, message, author, progress, day_current, day_total } = body;
 
     if (!projectId || !message) {
       return NextResponse.json(
@@ -66,6 +66,38 @@ export async function POST(req: NextRequest) {
         finalAuthor = session.email;
       } else if (session && session.projectId !== projectId) {
         return NextResponse.json({ error: 'Token does not match project' }, { status: 403 });
+      }
+    }
+
+    // Optional project progress sync for agent updates
+    const sb = getSupabaseAdmin();
+    if (sb && finalType !== 'client_reply') {
+      const projUpdates: Record<string, unknown> = {};
+      if (typeof progress === 'number' && progress >= 0 && progress <= 100) {
+        projUpdates.progress = progress;
+      }
+      if (typeof day_current === 'number' && day_current >= 0) {
+        projUpdates.day_current = day_current;
+      }
+      if (typeof day_total === 'number' && day_total >= 0) {
+        projUpdates.day_total = day_total;
+      }
+      if (Object.keys(projUpdates).length > 0) {
+        await sb.from('projects').update(projUpdates).eq('id', projectId);
+      }
+    }
+
+    // If commentId is provided for an agent update, update the existing comment in-place
+    if (sb && commentId && typeof commentId === 'string' && finalType !== 'client_reply') {
+      const { data: updatedRow, error: updErr } = await sb
+        .from('comments')
+        .update({ message: trimmed, type: finalType, author: finalAuthor })
+        .eq('id', commentId)
+        .eq('project_id', projectId)
+        .select('*')
+        .maybeSingle();
+      if (!updErr && updatedRow) {
+        return NextResponse.json({ ok: true, comment: updatedRow, updated: true, backend: 'supabase' });
       }
     }
 

@@ -41,6 +41,10 @@ type SupabaseProjectRow = {
 };
 
 function rowToProject(r: SupabaseProjectRow): Project {
+  const jsonFallback = (projectsData as Project[]).find((p) => p.id === r.id);
+  const useJsonProgress = Boolean(
+    jsonFallback && typeof jsonFallback.progress === 'number' && jsonFallback.progress > r.progress
+  );
   return {
     id: r.id,
     client: r.client_name,
@@ -49,9 +53,11 @@ function rowToProject(r: SupabaseProjectRow): Project {
     title: r.title,
     description: r.description ?? undefined,
     status: r.status,
-    progress: r.progress,
-    dayCurrent: r.day_current || undefined,
-    dayTotal: r.day_total || undefined,
+    progress: useJsonProgress && jsonFallback ? jsonFallback.progress : r.progress,
+    dayCurrent:
+      (useJsonProgress && jsonFallback ? jsonFallback.dayCurrent : r.day_current) || undefined,
+    dayTotal:
+      (useJsonProgress && jsonFallback ? jsonFallback.dayTotal : r.day_total) || undefined,
     startDate: r.start_date ?? '',
     estimatedEnd: r.estimated_end ?? undefined,
     completedDate: r.completed_date ?? undefined,

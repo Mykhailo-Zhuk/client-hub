@@ -158,5 +158,317 @@
     "message": "Проєкт досяг прогресу **90%** 🚀\n- Оновлена версія платформи доступна наживо: [https://www.sashasquilts.com/](https://www.sashasquilts.com/).\n- Усі ключові модулі (каталог, кошик, особистий кабінет, WayForPay callback, захищене скачування PDF та промокоди) налаштовані.\n- Наступний крок: фінальне бойове тестування реальних платежів WayForPay та верифікація QR-кодів у завантажуваних PDF.",
     "author": "Agent",
     "timestamp": "2026-09-25T11:00:00Z"
+  },
+  {
+    "id": "conf-c1",
+    "projectId": "conference-ei",
+    "type": "status_update",
+    "message": "Ініціалізація проєкту сайту конференції на Next.js та базової структури лендінгу",
+    "author": "Mykhailo Zhuk",
+    "timestamp": "2024-10-02T10:00:00Z"
+  },
+  {
+    "id": "conf-c2",
+    "projectId": "conference-ei",
+    "type": "milestone",
+    "message": "Додано список спікерів, завантажено файли програми заходу (agenda) та логотипи партнерів",
+    "author": "Mykhailo Zhuk",
+    "timestamp": "2024-10-03T16:30:00Z"
+  },
+  {
+    "id": "conf-c3",
+    "projectId": "conference-ei",
+    "type": "status_update",
+    "message": "Оновлено локацію проведення конференції, таймінг секцій та інформаційні блоки",
+    "author": "Mykhailo Zhuk",
+    "timestamp": "2024-10-08T12:00:00Z"
+  },
+  {
+    "id": "conf-c4",
+    "projectId": "conference-ei",
+    "type": "milestone",
+    "message": "Налаштовано i18n багатомовність (next-intl), додано переклади секцій та правила участі",
+    "author": "Mykhailo Zhuk",
+    "timestamp": "2024-10-09T18:00:00Z"
+  },
+  {
+    "id": "conf-c5",
+    "projectId": "conference-ei",
+    "type": "deploy",
+    "message": "Фіналізовано розклад виступів, інтегровано Embla Carousel для спікерів, проєкт успішно розгорнуто на Vercel",
+    "author": "Mykhailo Zhuk",
+    "timestamp": "2024-10-14T20:00:00Z"
+  },
+  {
+    "id": "conf-c6",
+    "projectId": "conference-ei",
+    "type": "status_update",
+    "message": "Оптимізація швидкодії: впроваджено dynamic imports для нижніх секцій та стиснення бандла (-90% розміру)",
+    "author": "Mykhailo Zhuk",
+    "timestamp": "2026-09-16T14:00:00Z"
+  },
+  {
+    "id": "straw-c1",
+    "projectId": "strawberry-web-store",
+    "type": "status_update",
+    "message": "Старт розробки інтернет-магазину на Next.js App Router",
+    "author": "Mykhailo Zhuk",
+    "timestamp": "2025-07-18T11:00:00Z"
+  },
+  {
+    "id": "straw-c2",
+    "projectId": "strawberry-web-store",
+    "type": "milestone",
+    "message": "Підключено MongoDB через Mongoose, реалізовано глобальний стан кошика та каталогу на Zustand",
+    "author": "Mykhailo Zhuk",
+    "timestamp": "2025-07-22T15:00:00Z"
+  },
+  {
+    "id": "straw-c3",
+    "projectId": "strawberry-web-store",
+    "type": "status_update",
+    "message": "Верстка секції 'Про нас', головної навігації, адаптивного хедера та мобільного меню",
+    "author": "Mykhailo Zhuk",
+    "timestamp": "2025-07-26T17:30:00Z"
+  },
+  {
+    "id": "straw-c4",
+    "projectId": "strawberry-web-store",
+    "type": "milestone",
+    "message": "Створено сторінку каталогу ягід з фільтрами та детальні сторінки товарів",
+    "author": "Mykhailo Zhuk",
+    "timestamp": "2025-07-28T16:00:00Z"
+  },
+  {
+    "id": "straw-c5",
+    "projectId": "strawberry-web-store",
+    "type": "status_update",
+    "message": "Реалізовано адміністративну панель для керування позиціями каталогу",
+    "author": "Mykhailo Zhuk",
+    "timestamp": "2025-08-02T13:00:00Z"
+  },
+  {
+    "id": "straw-c6",
+    "projectId": "strawberry-web-store",
+    "type": "milestone",
+    "message": "Завершено рев'ю головної сторінки: список товарів, відгуки, заповнено первинну базу даних",
+    "author": "Mykhailo Zhuk",
+    "timestamp": "2025-08-04T18:00:00Z"
+  },
+  {
+    "id": "straw-c7",
+    "projectId": "strawberry-web-store",
+    "type": "deploy",
+    "message": "Додано сторінки оплати, доставки та контактів, налаштовано форми замовлення на Zod та email-сповіщення через Resend",
+    "author": "Mykhailo Zhuk",
+    "timestamp": "2025-08-05T19:30:00Z"
+  },
+  {
+    "id": "wf-c1",
+    "projectId": "woman-franch-working",
+    "type": "status_update",
+    "message": "Реструктуризація компонентів та оптимізація відображення зображень франшиз",
+    "author": "Mykhailo Zhuk",
+    "timestamp": "2025-03-23T12:00:00Z"
+  },
+  {
+    "id": "wf-c2",
+    "projectId": "woman-franch-working",
+    "type": "milestone",
+    "message": "Адаптація та налаштування блоків франшиз (Starland, Малята, Мудрик, Smart)",
+    "author": "Mykhailo Zhuk",
+    "timestamp": "2025-03-29T16:00:00Z"
+  },
+  {
+    "id": "wf-c3",
+    "projectId": "woman-franch-working",
+    "type": "status_update",
+    "message": "Створено модальні форми лідогенерації для скачування презентацій та бізнес-планів",
+    "author": "Mykhailo Zhuk",
+    "timestamp": "2025-04-15T14:30:00Z"
+  },
+  {
+    "id": "wf-c4",
+    "projectId": "woman-franch-working",
+    "type": "milestone",
+    "message": "Додано новий розділ франчайзингових пакетів та інтерактивний калькулятор інвестицій",
+    "author": "Mykhailo Zhuk",
+    "timestamp": "2025-05-18T18:00:00Z"
+  },
+  {
+    "id": "wf-c5",
+    "projectId": "woman-franch-working",
+    "type": "milestone",
+    "message": "Розроблено та інтегровано окрему лендінг-сторінку De Massage з формою лідів та Suspense",
+    "author": "Mykhailo Zhuk",
+    "timestamp": "2025-07-11T17:00:00Z"
+  },
+  {
+    "id": "wf-c6",
+    "projectId": "woman-franch-working",
+    "type": "deploy",
+    "message": "Оптимізовано SEO метадані, інтегровано Mux Video плеєр для відгуків та оновлено контактні лінії",
+    "author": "Mykhailo Zhuk",
+    "timestamp": "2025-08-01T20:00:00Z"
+  },
+  {
+    "id": "pr-c1",
+    "projectId": "pravovyi-radnyk",
+    "type": "status_update",
+    "message": "Створення архітектури корпоративного сайту юридичної компанії 'Правовий Радник'",
+    "author": "Mykhailo Zhuk",
+    "timestamp": "2024-11-24T10:00:00Z"
+  },
+  {
+    "id": "pr-c2",
+    "projectId": "pravovyi-radnyk",
+    "type": "milestone",
+    "message": "Розроблено каталог юридичних послуг, секції команди та перемикач мов",
+    "author": "Mykhailo Zhuk",
+    "timestamp": "2024-12-03T15:30:00Z"
+  },
+  {
+    "id": "pr-c3",
+    "projectId": "pravovyi-radnyk",
+    "type": "milestone",
+    "message": "Завершено адмін-панель: інтеграція Notion-like редактора Novel для публікації статей та новин",
+    "author": "Mykhailo Zhuk",
+    "timestamp": "2024-12-24T18:00:00Z"
+  },
+  {
+    "id": "pr-c4",
+    "projectId": "pravovyi-radnyk",
+    "type": "status_update",
+    "message": "Налаштовано NextAuth авторизацію та захист адмін-панелі через MongoDB",
+    "author": "Mykhailo Zhuk",
+    "timestamp": "2024-12-28T16:00:00Z"
+  },
+  {
+    "id": "pr-c5",
+    "projectId": "pravovyi-radnyk",
+    "type": "bug_fix",
+    "message": "Виправлено bubble-меню редактора Novel, оптимізовано завантаження зображень через Cloudinary",
+    "author": "Mykhailo Zhuk",
+    "timestamp": "2025-01-03T14:00:00Z"
+  },
+  {
+    "id": "pr-c6",
+    "projectId": "pravovyi-radnyk",
+    "type": "deploy",
+    "message": "Фінальне тестування sitemap, SEO метатегів та успішний реліз на Vercel",
+    "author": "Mykhailo Zhuk",
+    "timestamp": "2025-01-29T19:00:00Z"
+  },
+  {
+    "id": "wfbf-c1",
+    "projectId": "wf-black-friday",
+    "type": "status_update",
+    "message": "Старт розробки промо-кампанії Black Friday для франшизи Woman Franch",
+    "author": "Mykhailo Zhuk",
+    "timestamp": "2024-11-15T11:00:00Z"
+  },
+  {
+    "id": "wfbf-c2",
+    "projectId": "wf-black-friday",
+    "type": "milestone",
+    "message": "Адаптивна верстка промо-секцій: гарячі пропозиції, таймери зворотного відліку та вибір пакетів",
+    "author": "Mykhailo Zhuk",
+    "timestamp": "2024-11-16T17:00:00Z"
+  },
+  {
+    "id": "wfbf-c3",
+    "projectId": "wf-black-friday",
+    "type": "status_update",
+    "message": "Підключено маркетингові інструменти: Google Tag Manager та лідогенераційні маршрути API",
+    "author": "Mykhailo Zhuk",
+    "timestamp": "2024-11-18T14:00:00Z"
+  },
+  {
+    "id": "wfbf-c4",
+    "projectId": "wf-black-friday",
+    "type": "milestone",
+    "message": "Інтегровано Facebook Pixel для відстеження конверсій рекламного трафіку",
+    "author": "Mykhailo Zhuk",
+    "timestamp": "2024-11-19T16:30:00Z"
+  },
+  {
+    "id": "wfbf-c5",
+    "projectId": "wf-black-friday",
+    "type": "deploy",
+    "message": "Валідація форм на Zod, підключення email-доставки заявок через Resend та запуск акційного лендінгу",
+    "author": "Mykhailo Zhuk",
+    "timestamp": "2024-11-27T18:00:00Z"
+  },
+  {
+    "id": "auto-c1",
+    "projectId": "auto-siluet-project",
+    "type": "status_update",
+    "message": "Ініціалізація інтернет-магазину автоаксесуарів Auto Siluet на Next.js",
+    "author": "Mykhailo Zhuk",
+    "timestamp": "2024-10-04T09:00:00Z"
+  },
+  {
+    "id": "auto-c2",
+    "projectId": "auto-siluet-project",
+    "type": "milestone",
+    "message": "Реалізовано інтерактивний конфігуратор автокилимків EVA з вибором кольорів та окантовки",
+    "author": "Mykhailo Zhuk",
+    "timestamp": "2024-10-04T12:00:00Z"
+  },
+  {
+    "id": "auto-c3",
+    "projectId": "auto-siluet-project",
+    "type": "status_update",
+    "message": "Створено галерею робіт, слайдер 'до/після' та розділи автоорганайзерів",
+    "author": "Mykhailo Zhuk",
+    "timestamp": "2024-10-04T15:30:00Z"
+  },
+  {
+    "id": "auto-c4",
+    "projectId": "auto-siluet-project",
+    "type": "deploy",
+    "message": "Налаштовано адмін-панель з NextAuth і MongoDB, завантаження фото Cloudinary та реліз на Vercel",
+    "author": "Mykhailo Zhuk",
+    "timestamp": "2024-10-04T19:00:00Z"
+  },
+  {
+    "id": "tesla-c1",
+    "projectId": "tesla-nextjs",
+    "type": "status_update",
+    "message": "Створення промо-лендінгу для сервісу та підбору автомобілів Tesla",
+    "author": "Mykhailo Zhuk",
+    "timestamp": "2023-07-28T10:00:00Z"
+  },
+  {
+    "id": "tesla-c2",
+    "projectId": "tesla-nextjs",
+    "type": "milestone",
+    "message": "Розроблено секції сервісних робіт СТО, карусель відгуків клієнтів та попапи прорахунку",
+    "author": "Mykhailo Zhuk",
+    "timestamp": "2023-07-30T17:00:00Z"
+  },
+  {
+    "id": "tesla-c3",
+    "projectId": "tesla-nextjs",
+    "type": "status_update",
+    "message": "Інтегровано Facebook Pixel, клікабельні кнопки месенджерів та швидкого дзвінка",
+    "author": "Mykhailo Zhuk",
+    "timestamp": "2023-08-02T13:00:00Z"
+  },
+  {
+    "id": "tesla-c4",
+    "projectId": "tesla-nextjs",
+    "type": "milestone",
+    "message": "Додано рухомий рядок спецпропозицій, фіксовану кнопку зв'язку та валідацію форм",
+    "author": "Mykhailo Zhuk",
+    "timestamp": "2023-08-05T16:00:00Z"
+  },
+  {
+    "id": "tesla-c5",
+    "projectId": "tesla-nextjs",
+    "type": "deploy",
+    "message": "Оновлено маркетингові скрипти GTM/Pixel, оптимізовано мобільний лейаут та проведено редеплой",
+    "author": "Mykhailo Zhuk",
+    "timestamp": "2024-08-26T18:00:00Z"
   }
 ]

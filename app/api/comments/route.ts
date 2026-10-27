@@ -113,9 +113,21 @@ export async function POST(req: NextRequest) {
       `[comments] stored projectId=${projectId} type=${finalType} author=${finalAuthor} backend=${usedSupabase ? 'supabase' : 'json'}`
     );
 
-    // Telegram notification — only for agent (non-client) messages.
-    if (finalType !== 'client_reply') {
-      sendTelegramNotification(projectId, trimmed).catch(console.error);
+    // Telegram notification:
+    // If client reply -> notify admin
+    // If agent / admin comment -> notify client
+    if (finalType === 'client_reply') {
+      sendTelegramNotification(projectId, trimmed, {
+        recipient: 'admin',
+        author: finalAuthor,
+        title: 'Новий коментар від клієнта',
+      }).catch(console.error);
+    } else {
+      sendTelegramNotification(projectId, trimmed, {
+        recipient: 'client',
+        author: finalAuthor,
+        title: `Нове оновлення (${finalType})`,
+      }).catch(console.error);
     }
 
     return NextResponse.json({ ok: true, comment, backend: usedSupabase ? 'supabase' : 'json' });

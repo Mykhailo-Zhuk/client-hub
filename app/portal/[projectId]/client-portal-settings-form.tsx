@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Mail, Lock, Eye, EyeOff, Loader2, Save, KeyRound, CheckCircle2, AlertCircle, Info } from "lucide-react";
+import { Mail, Lock, Eye, EyeOff, Loader2, Save, KeyRound, CheckCircle2, AlertCircle, Info, Bell, Send } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { useLanguage } from "@/lib/i18n/context";
 
@@ -10,10 +10,14 @@ export function ClientPortalSettingsForm({
   projectId,
   initialEmail,
   token,
+  initialTelegramChatId,
+  initialTelegramToken,
 }: {
   projectId: string;
   initialEmail: string;
   token: string;
+  initialTelegramChatId?: string;
+  initialTelegramToken?: string;
 }) {
   const { t } = useLanguage();
   const router = useRouter();
@@ -23,6 +27,8 @@ export function ClientPortalSettingsForm({
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [telegramChatId, setTelegramChatId] = useState(initialTelegramChatId ?? "");
+  const [telegramToken, setTelegramToken] = useState(initialTelegramToken ?? "");
 
   const [message, setMessage] = useState<{
     type: "success" | "error";
@@ -69,10 +75,14 @@ export function ClientPortalSettingsForm({
           email: string;
           password?: string;
           token: string;
+          clientTelegramChatId?: string;
+          clientTelegramToken?: string;
         } = {
           projectId,
           email: trimmedEmail,
           token,
+          clientTelegramChatId: telegramChatId.trim(),
+          clientTelegramToken: telegramToken.trim(),
         };
 
         if (password) {
@@ -225,6 +235,57 @@ export function ClientPortalSettingsForm({
               </button>
             </div>
           </label>
+        </div>
+
+        {/* Telegram Notifications Section */}
+        <div className="border-t border-border pt-5 space-y-4">
+          <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
+            <Bell size={16} className="text-accent" />
+            <span>Telegram Сповіщення</span>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Вкажіть ваш Telegram Chat ID (та за потреби власний Bot Token), щоб миттєво отримувати сповіщення про нові коментарі, запити та зміни статусу проєкту.
+          </p>
+
+          <div className="grid gap-4 sm:grid-cols-2">
+            <label className="block">
+              <span className="text-xs font-medium text-foreground">
+                Telegram Chat ID
+              </span>
+              <div className="mt-1 flex items-center gap-2 rounded-md border border-border bg-background px-3 focus-within:border-accent">
+                <Send size={13} className="text-muted-foreground" />
+                <input
+                  type="text"
+                  placeholder="напр. 123456789 або @username"
+                  value={telegramChatId}
+                  onChange={(e) => setTelegramChatId(e.target.value)}
+                  className="w-full bg-transparent py-2 text-xs outline-none font-mono placeholder:text-muted-foreground/60"
+                />
+              </div>
+              <span className="mt-1 block text-[11px] text-muted-foreground">
+                Дізнатися ID можна через бота @userinfobot у Telegram.
+              </span>
+            </label>
+
+            <label className="block">
+              <span className="text-xs font-medium text-foreground">
+                Telegram Bot Token (Опціонально)
+              </span>
+              <div className="mt-1 flex items-center gap-2 rounded-md border border-border bg-background px-3 focus-within:border-accent">
+                <Lock size={13} className="text-muted-foreground" />
+                <input
+                  type="text"
+                  placeholder="123456:ABC-DEF… (якщо маєте власний бот)"
+                  value={telegramToken}
+                  onChange={(e) => setTelegramToken(e.target.value)}
+                  className="w-full bg-transparent py-2 text-xs outline-none font-mono placeholder:text-muted-foreground/60"
+                />
+              </div>
+              <span className="mt-1 block text-[11px] text-muted-foreground">
+                За замовчуванням сповіщення надсилаються через системного бота.
+              </span>
+            </label>
+          </div>
         </div>
 
         {/* Feedback message */}

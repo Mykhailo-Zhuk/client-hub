@@ -18,6 +18,10 @@ export interface Project {
   github?: string;
   demo?: string;
   cover?: string;
+  telegramBotToken?: string;
+  telegramChatId?: string;
+  clientTelegramToken?: string;
+  clientTelegramChatId?: string;
 }
 
 export type CommentType =

@@ -8,6 +8,7 @@ import { getSupabaseAdmin } from './supabase';
 import type { ProjectRequest } from './types';
 import {
   getRequestsByProject,
+  getRequestById,
   createRequest,
   updateRequestStatus,
   submitRequestResponse,
@@ -36,6 +37,29 @@ export async function getRequestsByProjectAsync(projectId: string): Promise<Proj
     const message = err instanceof Error ? err.message : String(err);
     console.warn('[lib/requests-db] exception reading supabase, falling back:', message);
     return getRequestsByProject(projectId);
+  }
+}
+
+export async function getRequestByIdAsync(requestId: string): Promise<ProjectRequest | null> {
+  const sb = getSupabaseAdmin();
+  if (!sb) {
+    return getRequestById(requestId);
+  }
+
+  try {
+    const { data, error } = await sb
+      .from('project_requests')
+      .select('*')
+      .eq('id', requestId)
+      .maybeSingle();
+
+    if (error || !data) {
+      return getRequestById(requestId);
+    }
+
+    return data as ProjectRequest;
+  } catch {
+    return getRequestById(requestId);
   }
 }
 

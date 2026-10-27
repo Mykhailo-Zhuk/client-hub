@@ -16,6 +16,10 @@ type Project = {
   day_total?: number;
   demo?: string | null;
   github?: string | null;
+  telegram_bot_token?: string | null;
+  telegram_chat_id?: string | null;
+  client_telegram_token?: string | null;
+  client_telegram_chat_id?: string | null;
 };
 
 export default function ProjectSettingsForm({
@@ -33,6 +37,10 @@ export default function ProjectSettingsForm({
   const [dayTotal, setDayTotal] = useState(project.day_total ?? 0);
   const [demo, setDemo] = useState(project.demo ?? '');
   const [github, setGithub] = useState(project.github ?? '');
+  const [telegramBotToken, setTelegramBotToken] = useState(project.telegram_bot_token ?? '');
+  const [telegramChatId, setTelegramChatId] = useState(project.telegram_chat_id ?? '');
+  const [clientTelegramToken, setClientTelegramToken] = useState(project.client_telegram_token ?? '');
+  const [clientTelegramChatId, setClientTelegramChatId] = useState(project.client_telegram_chat_id ?? '');
   const [pending, startTransition] = useTransition();
   const [feedback, setFeedback] = useState<string | null>(null);
   const router = useRouter();
@@ -55,6 +63,10 @@ export default function ProjectSettingsForm({
           day_total: dayTotal,
           demo: demo.trim() || null,
           github: github.trim() || null,
+          telegram_bot_token: telegramBotToken.trim() || null,
+          telegram_chat_id: telegramChatId.trim() || null,
+          client_telegram_token: clientTelegramToken.trim() || null,
+          client_telegram_chat_id: clientTelegramChatId.trim() || null,
         }),
       });
       if (!res.ok) {
@@ -155,6 +167,38 @@ export default function ProjectSettingsForm({
             onChange={(e) => setGithub(e.target.value)}
             placeholder="https://github.com/…"
             className="w-full rounded-md border border-border bg-background px-3 py-1.5 text-sm outline-none focus:border-accent"
+          />
+        </Field>
+        <Field label="Telegram Bot Token (Admin / System)">
+          <input
+            value={telegramBotToken}
+            onChange={(e) => setTelegramBotToken(e.target.value)}
+            placeholder="123456:ABC-DEF… (або fallback з env)"
+            className="w-full rounded-md border border-border bg-background px-3 py-1.5 text-sm outline-none focus:border-accent font-mono text-xs"
+          />
+        </Field>
+        <Field label="Telegram Chat ID (Ваш Admin Chat ID)">
+          <input
+            value={telegramChatId}
+            onChange={(e) => setTelegramChatId(e.target.value)}
+            placeholder="напр. 123456789 або -100..."
+            className="w-full rounded-md border border-border bg-background px-3 py-1.5 text-sm outline-none focus:border-accent font-mono text-xs"
+          />
+        </Field>
+        <Field label="Client Telegram Bot Token (Опціонально для клієнта)">
+          <input
+            value={clientTelegramToken}
+            onChange={(e) => setClientTelegramToken(e.target.value)}
+            placeholder="Якщо клієнт використовує власний бот"
+            className="w-full rounded-md border border-border bg-background px-3 py-1.5 text-sm outline-none focus:border-accent font-mono text-xs"
+          />
+        </Field>
+        <Field label="Client Telegram Chat ID (Отримувач сповіщень клієнта)">
+          <input
+            value={clientTelegramChatId}
+            onChange={(e) => setClientTelegramChatId(e.target.value)}
+            placeholder="напр. 987654321"
+            className="w-full rounded-md border border-border bg-background px-3 py-1.5 text-sm outline-none focus:border-accent font-mono text-xs"
           />
         </Field>
       </div>

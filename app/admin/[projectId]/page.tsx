@@ -44,6 +44,10 @@ type AdminProject = {
   demo?: string | null;
   github?: string | null;
   tags?: string[];
+  telegram_bot_token?: string | null;
+  telegram_chat_id?: string | null;
+  client_telegram_token?: string | null;
+  client_telegram_chat_id?: string | null;
 };
 
 export default async function AdminProjectPage({
@@ -139,6 +143,10 @@ async function renderAdminProject(projectId: string) {
     demo: project.demo ?? null,
     github: project.github ?? null,
     tags: project.tags ?? [],
+    telegram_bot_token: project.telegramBotToken ?? null,
+    telegram_chat_id: project.telegramChatId ?? null,
+    client_telegram_token: project.clientTelegramToken ?? null,
+    client_telegram_chat_id: project.clientTelegramChatId ?? null,
   };
 
   const hasPendingRequests = projectRequests.some((r) => r.status === 'pending');

@@ -3,11 +3,41 @@ import { cookies } from "next/headers";
 import { verifyPortalToken, signPortalToken } from "@/lib/jwt";
 import { updateClientEmail, setClientPassword, getClientPassword } from "@/lib/client-passwords";
 import { getProjectByIdAsync } from "@/lib/projects-db";
+import { getSupabaseAdmin } from "@/lib/supabase";
+import fs from "fs";
+import path from "path";
+
+const PROJECTS_FILE = path.join(process.cwd(), "data", "projects.json");
+
+function updateProjectsJsonTelegram(projectId: string, updates: { clientTelegramToken?: string | null; clientTelegramChatId?: string | null }) {
+  try {
+    if (!fs.existsSync(PROJECTS_FILE)) return;
+    const raw = fs.readFileSync(PROJECTS_FILE, "utf-8");
+    const projects = JSON.parse(raw);
+    const target = projects.find((p: any) => p.id === projectId);
+    if (target) {
+      if (updates.clientTelegramToken !== undefined) target.clientTelegramToken = updates.clientTelegramToken || undefined;
+      if (updates.clientTelegramChatId !== undefined) target.clientTelegramChatId = updates.clientTelegramChatId || undefined;
+      fs.writeFileSync(PROJECTS_FILE, JSON.stringify(projects, null, 2), "utf-8");
+    }
+  } catch (err) {
+    console.warn("[api/portal/settings] error updating projects.json telegram:", err);
+  }
+}
 
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { projectId, email, password, token: bodyToken } = body;
+    const {
+      projectId,
+      email,
+      password,
+      token: bodyToken,
+      telegramToken,
+      telegramChatId,
+      clientTelegramToken,
+      clientTelegramChatId,
+    } = body;
 
     if (!projectId || typeof projectId !== "string") {
       return NextResponse.json({ error: "projectId is required" }, { status: 400 });
@@ -72,7 +102,33 @@ export async function POST(req: NextRequest) {
       passwordChanged = true;
     }
 
-    if (!emailChanged && !passwordChanged) {
+    // 4. Process Telegram settings update if provided
+    let telegramChanged = false;
+    const finalTgToken = clientTelegramToken !== undefined ? clientTelegramToken : telegramToken;
+    const finalTgChatId = clientTelegramChatId !== undefined ? clientTelegramChatId : telegramChatId;
+
+    if (finalTgToken !== undefined || finalTgChatId !== undefined) {
+      const tgTokenVal = typeof finalTgToken === "string" ? finalTgToken.trim() : null;
+      const tgChatIdVal = typeof finalTgChatId === "string" ? finalTgChatId.trim() : null;
+
+      updateProjectsJsonTelegram(projectId, {
+        clientTelegramToken: tgTokenVal,
+        clientTelegramChatId: tgChatIdVal,
+      });
+
+      const sb = getSupabaseAdmin();
+      if (sb) {
+        const sbUpdates: Record<string, any> = {};
+        if (finalTgToken !== undefined) sbUpdates.client_telegram_token = tgTokenVal || null;
+        if (finalTgChatId !== undefined) sbUpdates.client_telegram_chat_id = tgChatIdVal || null;
+        if (Object.keys(sbUpdates).length > 0) {
+          await sb.from("projects").update(sbUpdates).eq("id", projectId);
+        }
+      }
+      telegramChanged = true;
+    }
+
+    if (!emailChanged && !passwordChanged && !telegramChanged) {
       return NextResponse.json({ ok: true, message: "No changes needed", email: effectiveEmail });
     }
 

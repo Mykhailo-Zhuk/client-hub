@@ -17,7 +17,9 @@ import {
   createRequestAsync,
   updateRequestStatusAsync,
   submitRequestResponseAsync,
+  getRequestByIdAsync,
 } from '@/lib/requests-db';
+import { sendTelegramNotification } from '@/lib/telegram';
 
 // Admin UI sends 'update'; it isn't a CommentType so we map → 'general' below.
 const ADMIN_TYPE_ALIASES: Record<string, CommentType> = {
@@ -97,6 +99,12 @@ export async function createCommentAction(
     throw new Error(error?.message ?? 'supabase insert failed');
   }
 
+  sendTelegramNotification(projectId, message, {
+    recipient: 'client',
+    author,
+    title: `Нове оновлення (${type})`,
+  }).catch((err) => console.warn('[createCommentAction] telegram error:', err));
+
   return { ok: true, id: data.id as string, backend: 'supabase' };
 }
 
@@ -155,7 +163,32 @@ export async function createRequestAction(input: CreateRequestInput): Promise<{ 
   const { projectId, text } = input;
   if (!projectId || !text) throw new Error('projectId and text are required');
 
-  return createRequestAsync(projectId, text);
+  const res = await createRequestAsync(projectId, text);
+  sendTelegramNotification(projectId, text, {
+    recipient: 'client',
+    author: 'Розробник',
+    title: 'Новий запит для клієнта',
+  }).catch((err) => console.warn('[createRequestAction] telegram error:', err));
+
+  return res;
+}
+
+export async function clientCreateRequestAction(input: {
+  projectId: string;
+  text: string;
+  author?: string;
+}): Promise<{ ok: true; id: string }> {
+  const { projectId, text, author } = input;
+  if (!projectId || !text) throw new Error('projectId and text are required');
+
+  const res = await createRequestAsync(projectId, text);
+  sendTelegramNotification(projectId, text, {
+    recipient: 'admin',
+    author: author || 'Клієнт',
+    title: 'Новий запит від клієнта',
+  }).catch((err) => console.warn('[clientCreateRequestAction] telegram error:', err));
+
+  return res;
 }
 
 export async function updateRequestStatusAction(requestId: string, status: 'pending' | 'fulfilled'): Promise<{ ok: true }> {
@@ -168,6 +201,17 @@ export async function submitRequestResponseAction(requestId: string, text: strin
   if (!requestId) throw new Error('requestId required');
   if (!text) throw new Error('response text is required');
 
-  return submitRequestResponseAsync(requestId, text);
+  const req = await getRequestByIdAsync(requestId);
+  const res = await submitRequestResponseAsync(requestId, text);
+
+  if (req?.project_id) {
+    sendTelegramNotification(req.project_id, text, {
+      recipient: 'admin',
+      author: 'Клієнт',
+      title: 'Відповідь на запит від клієнта',
+    }).catch((err) => console.warn('[submitRequestResponseAction] telegram error:', err));
+  }
+
+  return res;
 }
 

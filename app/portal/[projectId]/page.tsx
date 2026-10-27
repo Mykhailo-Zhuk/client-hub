@@ -132,7 +132,11 @@ export default async function PortalPage({
         </Reveal>
 
         <div className="mt-8">
-          <ClientAttention requests={projectRequests} />
+          <ClientAttention
+            requests={projectRequests}
+            projectId={project.id}
+            clientEmail={project.clientEmail || session.email}
+          />
         </div>
 
         {project.cover && (
@@ -265,6 +269,8 @@ export default async function PortalPage({
                     projectId={project.id}
                     initialEmail={project.clientEmail || session.email}
                     token={token}
+                    initialTelegramChatId={project.clientTelegramChatId}
+                    initialTelegramToken={project.clientTelegramToken}
                   />
                 </div>
               </Reveal>

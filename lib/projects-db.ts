@@ -38,6 +38,10 @@ type SupabaseProjectRow = {
   demo: string | null;
   cover: string | null;
   client_password?: string | null;
+  telegram_bot_token?: string | null;
+  telegram_chat_id?: string | null;
+  client_telegram_token?: string | null;
+  client_telegram_chat_id?: string | null;
 };
 
 function rowToProject(r: SupabaseProjectRow): Project {
@@ -65,6 +69,10 @@ function rowToProject(r: SupabaseProjectRow): Project {
     github: r.github ?? undefined,
     demo: r.demo ?? undefined,
     cover: r.cover ?? undefined,
+    telegramBotToken: r.telegram_bot_token ?? jsonFallback?.telegramBotToken ?? undefined,
+    telegramChatId: r.telegram_chat_id ?? jsonFallback?.telegramChatId ?? undefined,
+    clientTelegramToken: r.client_telegram_token ?? jsonFallback?.clientTelegramToken ?? undefined,
+    clientTelegramChatId: r.client_telegram_chat_id ?? jsonFallback?.clientTelegramChatId ?? undefined,
   };
 }
 

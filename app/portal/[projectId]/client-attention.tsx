@@ -3,21 +3,33 @@
 import React, { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { AlertCircle, Send, Loader2, ArrowRight } from 'lucide-react';
+import { AlertCircle, Send, Loader2, ArrowRight, Plus, MessageSquarePlus, CheckCircle2 } from 'lucide-react';
 import { Reveal } from '@/components/ui/reveal';
-import { submitRequestResponseAction } from '@/app/actions';
+import { submitRequestResponseAction, clientCreateRequestAction } from '@/app/actions';
 import { useRouter } from 'next/navigation';
 import { timeAgo } from '@/lib/utils';
 import { useLanguage } from '@/lib/i18n/context';
 import type { ProjectRequest } from '@/lib/types';
 
-export function ClientAttention({ requests }: { requests: ProjectRequest[] }) {
+export function ClientAttention({
+  requests,
+  projectId,
+  clientEmail,
+}: {
+  requests: ProjectRequest[];
+  projectId?: string;
+  clientEmail?: string;
+}) {
   const router = useRouter();
   const { t, locale } = useLanguage();
   const [mounted, setMounted] = useState(false);
   const [replyingId, setReplyingId] = useState<string | null>(null);
   const [replyText, setReplyText] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showNewRequest, setShowNewRequest] = useState(false);
+  const [newRequestText, setNewRequestText] = useState('');
+  const [isCreating, setIsCreating] = useState(false);
+  const [createFeedback, setCreateFeedback] = useState<string | null>(null);
 
   useEffect(() => {
     setMounted(true);
@@ -26,7 +38,6 @@ export function ClientAttention({ requests }: { requests: ProjectRequest[] }) {
   if (!mounted) return null;
 
   const pending = requests.filter((r) => r.status === 'pending');
-  if (pending.length === 0) return null;
 
   const handleSubmitReply = async (requestId: string) => {
     if (!replyText.trim()) return;
@@ -45,6 +56,51 @@ export function ClientAttention({ requests }: { requests: ProjectRequest[] }) {
     }
   };
 
+  const handleCreateRequest = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!projectId || !newRequestText.trim()) return;
+
+    setIsCreating(true);
+    setCreateFeedback(null);
+    try {
+      await clientCreateRequestAction({
+        projectId,
+        text: newRequestText.trim(),
+        author: clientEmail || 'Клієнт',
+      });
+      setNewRequestText('');
+      setShowNewRequest(false);
+      setCreateFeedback('Запит успішно надіслано розробнику!');
+      router.refresh();
+      setTimeout(() => setCreateFeedback(null), 4000);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Failed to create request';
+      alert(message);
+    } finally {
+      setIsCreating(false);
+    }
+  };
+
+  if (pending.length === 0 && !showNewRequest && !createFeedback) {
+    if (!projectId) return null;
+    return (
+      <Reveal delay={0.05}>
+        <div className="flex items-center justify-between rounded-lg border border-border bg-card/60 px-4 py-3 text-xs">
+          <div className="flex items-center gap-2 text-muted-foreground">
+            <MessageSquarePlus size={15} className="text-accent" />
+            <span>Маєте запитання або побажання щодо функціоналу?</span>
+          </div>
+          <button
+            onClick={() => setShowNewRequest(true)}
+            className="inline-flex items-center gap-1 rounded-md bg-accent/10 px-2.5 py-1 text-xs font-medium text-accent hover:bg-accent/20 transition-colors"
+          >
+            <Plus size={13} /> Створити запит розробнику
+          </button>
+        </div>
+      </Reveal>
+    );
+  }
+
   return (
     <Reveal delay={0.05}>
       <Card className="border-amber-500/30 bg-amber-500/5 p-5 sm:p-6 shadow-sm">
@@ -60,10 +116,84 @@ export function ClientAttention({ requests }: { requests: ProjectRequest[] }) {
               </p>
             </div>
           </div>
-          <Badge className="border-amber-500/30 bg-amber-500/10 text-amber-500 text-[11px] font-medium">
-            {pending.length} {t('attention.pendingBadge')}
-          </Badge>
+          <div className="flex items-center gap-2">
+            <Badge className="border-amber-500/30 bg-amber-500/10 text-amber-500 text-[11px] font-medium">
+              {pending.length} {t('attention.pendingBadge')}
+            </Badge>
+            {projectId && !showNewRequest && (
+              <button
+                type="button"
+                onClick={() => setShowNewRequest(true)}
+                className="inline-flex items-center gap-1 rounded-md bg-accent/10 px-2 py-1 text-xs font-medium text-accent hover:bg-accent/20 transition-colors"
+              >
+                <Plus size={12} /> Новий запит
+              </button>
+            )}
+          </div>
         </div>
+
+        {createFeedback && (
+          <div className="mb-3 flex items-center gap-2 rounded-md border border-green-500/30 bg-green-500/10 p-2.5 text-xs text-green-500">
+            <CheckCircle2 size={14} className="shrink-0" />
+            <span>{createFeedback}</span>
+          </div>
+        )}
+
+        {showNewRequest && (
+          <form
+            onSubmit={handleCreateRequest}
+            className="mb-4 rounded-lg border border-accent/30 bg-accent/5 p-3.5 space-y-2.5"
+          >
+            <div className="flex items-center justify-between text-xs font-semibold text-foreground">
+              <span>Створити запит / питання розробнику</span>
+              <button
+                type="button"
+                onClick={() => {
+                  setShowNewRequest(false);
+                  setNewRequestText('');
+                }}
+                className="text-muted-foreground hover:text-foreground"
+              >
+                ✕
+              </button>
+            </div>
+            <textarea
+              autoFocus
+              rows={3}
+              value={newRequestText}
+              onChange={(e) => setNewRequestText(e.target.value)}
+              placeholder="Опишіть завдання, запитання або правку..."
+              className="w-full resize-none rounded-md border border-border bg-background px-3 py-2 text-xs outline-none focus:border-accent"
+            />
+            <div className="flex items-center justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setShowNewRequest(false);
+                  setNewRequestText('');
+                }}
+                className="rounded-md border border-border bg-background px-2.5 py-1 text-xs text-muted-foreground hover:bg-muted"
+              >
+                Скасувати
+              </button>
+              <button
+                type="submit"
+                disabled={isCreating || !newRequestText.trim()}
+                className="inline-flex items-center gap-1.5 rounded-md bg-accent px-3 py-1 text-xs font-medium text-accent-foreground hover:opacity-90 disabled:opacity-50"
+              >
+                {isCreating ? (
+                  <>
+                    <Loader2 size={12} className="animate-spin" /> Відправка...
+                  </>
+                ) : (
+                  <>
+                    <Send size={12} /> Надіслати запит
+                  </>
+                )}
+              </button>
+            </div>
+          </form>
+        )}
 
         <div className="space-y-3">
           {pending.map((req) => (

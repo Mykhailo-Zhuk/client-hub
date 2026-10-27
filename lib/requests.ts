@@ -48,6 +48,11 @@ export async function getAllRequests(): Promise<ProjectRequest[]> {
   return memStore();
 }
 
+export async function getRequestById(requestId: string): Promise<ProjectRequest | null> {
+  const all = await getAllRequests();
+  return all.find((r) => r.id === requestId) ?? null;
+}
+
 export async function getRequestsByProject(projectId: string): Promise<ProjectRequest[]> {
   const all = await getAllRequests();
   return all

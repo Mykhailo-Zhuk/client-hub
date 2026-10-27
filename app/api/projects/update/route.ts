@@ -25,6 +25,10 @@ function updateJsonProjects(projectId: string, updates: Record<string, unknown>)
       if (typeof updates.day_total === 'number') target.dayTotal = updates.day_total;
       if (typeof updates.demo === 'string') target.demo = updates.demo;
       if (typeof updates.github === 'string') target.github = updates.github;
+      if (updates.telegram_bot_token !== undefined) target.telegramBotToken = (updates.telegram_bot_token as string) || undefined;
+      if (updates.telegram_chat_id !== undefined) target.telegramChatId = (updates.telegram_chat_id as string) || undefined;
+      if (updates.client_telegram_token !== undefined) target.clientTelegramToken = (updates.client_telegram_token as string) || undefined;
+      if (updates.client_telegram_chat_id !== undefined) target.clientTelegramChatId = (updates.client_telegram_chat_id as string) || undefined;
       fs.writeFileSync(PROJECTS_FILE, JSON.stringify(projects, null, 2), 'utf-8');
     }
   } catch (err) {
@@ -37,7 +41,8 @@ function updateJsonProjects(projectId: string, updates: Record<string, unknown>)
  * Gated by the agent cookie (same as /admin/layout).
  */
 export async function POST(req: NextRequest) {
-  const agentToken = (await cookies()).get(AGENT_COOKIE)?.value;
+  const authHeader = req.headers.get('authorization')?.replace(/^Bearer\s+/i, '');
+  const agentToken = (await cookies()).get(AGENT_COOKIE)?.value || authHeader;
   if (agentToken !== AGENT_SECRET) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
@@ -56,6 +61,14 @@ export async function POST(req: NextRequest) {
       day_total,
       demo,
       github,
+      telegram_bot_token,
+      telegram_chat_id,
+      client_telegram_token,
+      client_telegram_chat_id,
+      telegramBotToken,
+      telegramChatId,
+      clientTelegramToken,
+      clientTelegramChatId,
     } = body;
 
     if (!projectId) {
@@ -72,6 +85,16 @@ export async function POST(req: NextRequest) {
     if (typeof day_total === 'number') updates.day_total = day_total;
     if (demo !== undefined) updates.demo = demo;
     if (github !== undefined) updates.github = github;
+
+    const finalTgBotToken = telegram_bot_token !== undefined ? telegram_bot_token : telegramBotToken;
+    const finalTgChatId = telegram_chat_id !== undefined ? telegram_chat_id : telegramChatId;
+    const finalClientTgToken = client_telegram_token !== undefined ? client_telegram_token : clientTelegramToken;
+    const finalClientTgChatId = client_telegram_chat_id !== undefined ? client_telegram_chat_id : clientTelegramChatId;
+
+    if (finalTgBotToken !== undefined) updates.telegram_bot_token = finalTgBotToken;
+    if (finalTgChatId !== undefined) updates.telegram_chat_id = finalTgChatId;
+    if (finalClientTgToken !== undefined) updates.client_telegram_token = finalClientTgToken;
+    if (finalClientTgChatId !== undefined) updates.client_telegram_chat_id = finalClientTgChatId;
 
     // Handle password update if specified
     if (typeof client_password === 'string' && client_password.trim()) {

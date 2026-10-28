@@ -3,8 +3,10 @@
 import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { RefreshCw } from 'lucide-react';
+import { useLanguage } from '@/lib/i18n/context';
 
 export function SyncSupabaseButton() {
+  const { t } = useLanguage();
   const [pending, startTransition] = useTransition();
   const [feedback, setFeedback] = useState<string | null>(null);
   const router = useRouter();
@@ -16,14 +18,17 @@ export function SyncSupabaseButton() {
         const res = await fetch('/api/projects/sync', { method: 'POST' });
         const data = await res.json();
         if (data.ok) {
-          setFeedback(`✓ ${data.projectsSynced} проєктів, ${data.commentsSynced} коментарів`);
+          const successMsg = t('admin.sync.success')
+            .replace('{projects}', String(data.projectsSynced))
+            .replace('{comments}', String(data.commentsSynced));
+          setFeedback(successMsg);
           router.refresh();
           setTimeout(() => setFeedback(null), 4000);
         } else {
-          setFeedback(`✗ ${data.error}`);
+          setFeedback(`✗ ${t('admin.sync.error')}: ${data.error}`);
         }
       } catch (err: any) {
-        setFeedback(`✗ ${err?.message}`);
+        setFeedback(`✗ ${t('admin.sync.error')}: ${err?.message}`);
       }
     });
   };
@@ -37,10 +42,10 @@ export function SyncSupabaseButton() {
         onClick={handleSync}
         disabled={pending}
         className="inline-flex items-center gap-1.5 rounded-md border border-border bg-background px-3 py-1.5 text-xs font-medium hover:bg-muted disabled:opacity-50 transition-colors"
-        title="Синхронізувати локальні проєкти та коментарі з Supabase"
+        title={t('admin.sync.title')}
       >
         <RefreshCw size={12} className={pending ? 'animate-spin' : ''} />
-        {pending ? 'Синхронізація...' : 'Синхронізація з Supabase'}
+        {pending ? t('admin.sync.syncing') : t('admin.sync.button')}
       </button>
     </div>
   );

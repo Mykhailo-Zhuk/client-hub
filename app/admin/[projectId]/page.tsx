@@ -65,17 +65,18 @@ export default async function AdminProjectPage({
       throw err;
     }
     console.error(`[admin/${projectId}] render failed:`, e);
+    const { t } = await getServerTranslation();
     return (
       <section className="mx-auto max-w-4xl px-4 py-12">
         <div className="rounded-lg border border-red-500/30 bg-red-500/5 p-6">
           <div className="flex items-center gap-2 text-red-500">
             <AlertTriangle size={20} />
             <h1 className="text-xl font-bold">
-              Помилка завантаження проєкту <code>/admin/{projectId}</code>
+              {t('admin.error.projectTitle')} <code>/admin/{projectId}</code>
             </h1>
           </div>
           <p className="mt-2 text-sm text-muted-foreground">
-            Сталася помилка під час рендерингу сторінки проєкту на сервері. Нижче наведено деталі помилки:
+            {t('admin.error.projectDesc')}
           </p>
           <div className="mt-4 space-y-1 rounded border border-border bg-background p-4 font-mono text-xs">
             <div>
@@ -97,13 +98,13 @@ export default async function AdminProjectPage({
               href={`/admin/${projectId}`}
               className="inline-flex items-center gap-1.5 rounded-md bg-accent px-4 py-2 text-xs font-medium text-accent-foreground hover:opacity-90"
             >
-              Спробувати знову
+              {t('admin.error.retry')}
             </a>
             <Link
               href="/admin"
               className="inline-flex items-center gap-1.5 rounded-md border border-border bg-background px-4 py-2 text-xs font-medium hover:bg-muted"
             >
-              <ArrowLeft size={12} /> Назад в адмінку
+              <ArrowLeft size={12} /> {t('admin.error.back')}
             </Link>
           </div>
         </div>
@@ -185,13 +186,16 @@ async function renderAdminProject(projectId: string) {
                 <AlertTriangle size={16} className="mt-0.5 flex-shrink-0 text-amber-500" />
                 <div>
                   <strong className="text-amber-500">
-                    З&apos;єднання з Supabase тимчасово недоступне — увімкнено резервний режим (JSON fallback)
+                    {t('admin.supabase.warningTitle')}
                   </strong>
                   <p className="mt-1 text-muted-foreground">
-                    Деталі помилки: <code className="rounded bg-background/80 px-1.5 py-0.5 text-foreground">{supabaseError.message}</code>
+                    {t('admin.supabase.errorDetails')}{' '}
+                    <code className="rounded bg-background/80 px-1.5 py-0.5 text-foreground">
+                      {supabaseError.message}
+                    </code>
                   </p>
                   <p className="mt-1 text-[11px] text-muted-foreground">
-                    💡 Безкоштовний проєкт Supabase призупиняється (Paused) через неактивність. Дані проєкту завантажено через JSON fallback. Щоб відновити зв&apos;язок з Supabase, відкрийте Supabase Dashboard і натисніть <strong>«Restore project»</strong>.
+                    {t('admin.supabase.pausedTip')}
                   </p>
                 </div>
               </div>
@@ -199,7 +203,7 @@ async function renderAdminProject(projectId: string) {
                 href={`/admin/${projectId}`}
                 className="flex-shrink-0 rounded-md border border-amber-500/40 bg-background px-2.5 py-1 text-xs font-medium text-amber-500 hover:bg-amber-500/10"
               >
-                Оновити
+                {t('admin.supabase.refresh')}
               </a>
             </div>
           </Card>

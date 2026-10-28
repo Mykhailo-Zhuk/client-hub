@@ -3,6 +3,7 @@
 import { useEffect } from 'react';
 import Link from 'next/link';
 import { AlertTriangle, RotateCcw, Home } from 'lucide-react';
+import { useLanguage } from '@/lib/i18n/context';
 
 export default function AdminError({
   error,
@@ -11,6 +12,8 @@ export default function AdminError({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
+  const { t } = useLanguage();
+
   useEffect(() => {
     console.error('[admin error]', error);
   }, [error]);
@@ -20,10 +23,10 @@ export default function AdminError({
       <div className="rounded-lg border border-red-500/30 bg-red-500/5 p-6">
         <div className="flex items-center gap-2 text-red-500">
           <AlertTriangle size={20} />
-          <h1 className="text-xl font-bold">Помилка завантаження адмін-панелі</h1>
+          <h1 className="text-xl font-bold">{t('admin.error.dashboardTitle')}</h1>
         </div>
         <p className="mt-2 text-sm text-muted-foreground">
-          Виникла помилка під час звернення до сервера або бази даних. Деталі помилки наведено нижче:
+          {t('admin.error.dashboardDesc')}
         </p>
         <div className="mt-4 space-y-2 rounded border border-border bg-background p-4 font-mono text-xs">
           <div>
@@ -56,13 +59,13 @@ export default function AdminError({
             onClick={reset}
             className="inline-flex items-center gap-1.5 rounded-md bg-accent px-4 py-2 text-xs font-medium text-accent-foreground hover:opacity-90"
           >
-            <RotateCcw size={13} /> Спробувати знову
+            <RotateCcw size={13} /> {t('admin.error.retry')}
           </button>
           <Link
             href="/"
             className="inline-flex items-center gap-1.5 rounded-md border border-border bg-background px-4 py-2 text-xs font-medium hover:bg-muted"
           >
-            <Home size={13} /> На головну
+            <Home size={13} /> {t('admin.error.home')}
           </Link>
         </div>
       </div>

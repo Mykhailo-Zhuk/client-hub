@@ -66,11 +66,11 @@ export function ClientAttention({
       await clientCreateRequestAction({
         projectId,
         text: newRequestText.trim(),
-        author: clientEmail || 'Клієнт',
+        author: clientEmail || (locale === 'uk' ? 'Клієнт' : 'Client'),
       });
       setNewRequestText('');
       setShowNewRequest(false);
-      setCreateFeedback('Запит успішно надіслано розробнику!');
+      setCreateFeedback(t('attention.createSuccess'));
       router.refresh();
       setTimeout(() => setCreateFeedback(null), 4000);
     } catch (err: unknown) {
@@ -88,13 +88,13 @@ export function ClientAttention({
         <div className="flex items-center justify-between rounded-lg border border-border bg-card/60 px-4 py-3 text-xs">
           <div className="flex items-center gap-2 text-muted-foreground">
             <MessageSquarePlus size={15} className="text-accent" />
-            <span>Маєте запитання або побажання щодо функціоналу?</span>
+            <span>{t('attention.haveQuestion')}</span>
           </div>
           <button
             onClick={() => setShowNewRequest(true)}
             className="inline-flex items-center gap-1 rounded-md bg-accent/10 px-2.5 py-1 text-xs font-medium text-accent hover:bg-accent/20 transition-colors"
           >
-            <Plus size={13} /> Створити запит розробнику
+            <Plus size={13} /> {t('attention.createRequest')}
           </button>
         </div>
       </Reveal>
@@ -126,7 +126,7 @@ export function ClientAttention({
                 onClick={() => setShowNewRequest(true)}
                 className="inline-flex items-center gap-1 rounded-md bg-accent/10 px-2 py-1 text-xs font-medium text-accent hover:bg-accent/20 transition-colors"
               >
-                <Plus size={12} /> Новий запит
+                <Plus size={12} /> {t('attention.newRequest')}
               </button>
             )}
           </div>
@@ -145,7 +145,7 @@ export function ClientAttention({
             className="mb-4 rounded-lg border border-accent/30 bg-accent/5 p-3.5 space-y-2.5"
           >
             <div className="flex items-center justify-between text-xs font-semibold text-foreground">
-              <span>Створити запит / питання розробнику</span>
+              <span>{t('attention.modalTitle')}</span>
               <button
                 type="button"
                 onClick={() => {
@@ -162,7 +162,7 @@ export function ClientAttention({
               rows={3}
               value={newRequestText}
               onChange={(e) => setNewRequestText(e.target.value)}
-              placeholder="Опишіть завдання, запитання або правку..."
+              placeholder={t('attention.createPlaceholder')}
               className="w-full resize-none rounded-md border border-border bg-background px-3 py-2 text-xs outline-none focus:border-accent"
             />
             <div className="flex items-center justify-end gap-2">
@@ -174,7 +174,7 @@ export function ClientAttention({
                 }}
                 className="rounded-md border border-border bg-background px-2.5 py-1 text-xs text-muted-foreground hover:bg-muted"
               >
-                Скасувати
+                {t('attention.cancel')}
               </button>
               <button
                 type="submit"
@@ -183,11 +183,11 @@ export function ClientAttention({
               >
                 {isCreating ? (
                   <>
-                    <Loader2 size={12} className="animate-spin" /> Відправка...
+                    <Loader2 size={12} className="animate-spin" /> {t('attention.sending')}
                   </>
                 ) : (
                   <>
-                    <Send size={12} /> Надіслати запит
+                    <Send size={12} /> {t('attention.createRequest')}
                   </>
                 )}
               </button>

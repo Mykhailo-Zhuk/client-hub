@@ -137,7 +137,7 @@ export default function NewProjectPage() {
               name="client_name"
               label="Client name"
               required
-              placeholder="СТО IRON MASTER"
+              placeholder="Auto Repair Workshop"
             />
             <Field
               name="client_email"

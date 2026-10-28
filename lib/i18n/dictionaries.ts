@@ -84,6 +84,14 @@ export const en = {
   'portal.settings.passwordMismatch': 'Passwords do not match.',
   'portal.settings.passwordTooShort': 'Password must be at least 3 characters.',
   'portal.settings.invalidEmail': 'Please enter a valid email address.',
+  'portal.settings.telegramTitle': 'Telegram Notifications',
+  'portal.settings.telegramDesc': 'Specify your Telegram Chat ID (and optionally your own Bot Token) to receive instant updates when new comments or requests are posted.',
+  'portal.settings.telegramChatIdLabel': 'Telegram Chat ID',
+  'portal.settings.telegramChatIdPlaceholder': 'e.g. 123456789 or @username',
+  'portal.settings.telegramChatIdHelp': 'Find your ID via @userinfobot in Telegram.',
+  'portal.settings.telegramBotTokenLabel': 'Telegram Bot Token (Optional)',
+  'portal.settings.telegramBotTokenPlaceholder': '123456:ABC-DEF… (if using own bot)',
+  'portal.settings.telegramBotTokenHelp': 'By default, notifications are sent through the system bot.',
 
   // Attention / Requests
   'attention.title': 'Action required',
@@ -96,6 +104,12 @@ export const en = {
   'attention.sending': 'Sending...',
   'attention.placeholder': 'Type your response to this request...',
   'attention.hint': 'Press Ctrl+Enter to send',
+  'attention.haveQuestion': 'Have questions or feature requests?',
+  'attention.createRequest': 'Create request for developer',
+  'attention.newRequest': 'New request',
+  'attention.modalTitle': 'Create request / question for developer',
+  'attention.createPlaceholder': 'Describe the task, question, or change...',
+  'attention.createSuccess': 'Request successfully sent to developer!',
 
   // Admin Requests
   'requests.banner': "Create a request so the client sees it in 'Action Required' on their portal. Mark as fulfilled once received.",
@@ -180,6 +194,57 @@ export const en = {
   'admin.dangerZone': 'Danger zone',
   'admin.deleteProject': 'Delete project',
   'admin.deleteWarning': 'Permanently delete this project and all its updates.',
+
+  // Admin Sorting & Filtering
+  'admin.sort.label': 'Sort by',
+  'admin.sort.newest': 'Newest first',
+  'admin.sort.oldest': 'Oldest first',
+  'admin.sort.progressDesc': 'Highest progress',
+  'admin.sort.progressAsc': 'Lowest progress',
+  'admin.sort.titleAsc': 'Title (A–Z)',
+  'admin.sort.titleDesc': 'Title (Z–A)',
+  'admin.sort.clientAsc': 'Client (A–Z)',
+  'admin.search.placeholder': 'Search projects, clients, tags...',
+  'admin.filter.all': 'All',
+  'admin.filter.active': 'Active',
+  'admin.filter.completed': 'Completed',
+  'admin.filter.paused': 'Paused',
+  'admin.noProjectsFound': 'No projects found matching your criteria.',
+  'admin.clearFilters': 'Clear filters',
+  'admin.showingProjects': 'Showing {count} of {total} projects',
+  'admin.dayProgress': 'Day {current} / {total}',
+
+  // Admin Supabase & Sync
+  'admin.supabase.warningTitle': 'Connection to Supabase temporarily unavailable — running in fallback mode (JSON fallback)',
+  'admin.supabase.errorDetails': 'Error details:',
+  'admin.supabase.pausedTip': '💡 Free tier Supabase project automatically pauses after 7 days of inactivity. All data is saved and functioning via JSON fallback. To restore Supabase connection, open the Supabase Dashboard and click "Restore project".',
+  'admin.supabase.refresh': 'Refresh',
+  'admin.sync.button': 'Sync with Supabase',
+  'admin.sync.syncing': 'Syncing...',
+  'admin.sync.title': 'Sync local projects and comments with Supabase',
+  'admin.sync.success': '✓ {projects} projects, {comments} comments',
+  'admin.sync.error': 'Sync error',
+
+  // Admin Loading & Error
+  'admin.loading.dashboard': 'Loading admin dashboard…',
+  'admin.loading.project': 'Loading project data…',
+  'admin.error.dashboardTitle': 'Error loading admin dashboard',
+  'admin.error.dashboardDesc': 'An error occurred while contacting the server or database. Error details are shown below:',
+  'admin.error.projectTitle': 'Error loading project',
+  'admin.error.projectDesc': 'Project admin page encountered an error while contacting the server. Error details are shown below:',
+  'admin.error.retry': 'Try again',
+  'admin.error.home': 'To Home',
+  'admin.error.back': 'Back to admin',
+
+  // Admin Project Settings (Telegram)
+  'admin.settings.telegramBotTokenLabel': 'Telegram Bot Token (Admin / System)',
+  'admin.settings.telegramBotTokenPlaceholder': '123456:ABC-DEF… (or fallback from env)',
+  'admin.settings.telegramChatIdLabel': 'Telegram Chat ID (Your Admin Chat ID)',
+  'admin.settings.telegramChatIdPlaceholder': 'e.g. 123456789 or -100...',
+  'admin.settings.clientTelegramBotTokenLabel': 'Client Telegram Bot Token (Optional for client)',
+  'admin.settings.clientTelegramBotTokenPlaceholder': 'If client uses their own bot',
+  'admin.settings.clientTelegramChatIdLabel': 'Client Telegram Chat ID (Recipient of client alerts)',
+  'admin.settings.clientTelegramChatIdPlaceholder': 'e.g. 987654321',
 
   // Login
   'login.title': 'Track your project',
@@ -288,6 +353,14 @@ export const uk: Record<keyof typeof en, string> = {
   'portal.settings.passwordMismatch': 'Паролі не збігаються.',
   'portal.settings.passwordTooShort': 'Пароль має містити щонайменше 3 символи.',
   'portal.settings.invalidEmail': 'Будь ласка, введіть коректний email.',
+  'portal.settings.telegramTitle': 'Telegram Сповіщення',
+  'portal.settings.telegramDesc': 'Вкажіть ваш Telegram Chat ID (та за потреби власний Bot Token), щоб миттєво отримувати сповіщення про нові коментарі чи запити.',
+  'portal.settings.telegramChatIdLabel': 'Telegram Chat ID',
+  'portal.settings.telegramChatIdPlaceholder': 'напр. 123456789 або @username',
+  'portal.settings.telegramChatIdHelp': 'Дізнатися ID можна через бота @userinfobot у Telegram.',
+  'portal.settings.telegramBotTokenLabel': 'Telegram Bot Token (Опціонально)',
+  'portal.settings.telegramBotTokenPlaceholder': '123456:ABC-DEF… (якщо маєте власний бот)',
+  'portal.settings.telegramBotTokenHelp': 'За замовчуванням сповіщення надсилаються через системного бота.',
 
   // Attention / Requests
   'attention.title': 'Потрібна дія',
@@ -300,6 +373,12 @@ export const uk: Record<keyof typeof en, string> = {
   'attention.sending': 'Надсилаємо...',
   'attention.placeholder': 'Введіть вашу відповідь на цей запит...',
   'attention.hint': 'Натисніть Ctrl+Enter для надсилання',
+  'attention.haveQuestion': 'Маєте запитання або побажання щодо функціоналу?',
+  'attention.createRequest': 'Створити запит розробнику',
+  'attention.newRequest': 'Новий запит',
+  'attention.modalTitle': 'Створити запит / питання розробнику',
+  'attention.createPlaceholder': 'Опишіть завдання, запитання або правку...',
+  'attention.createSuccess': 'Запит успішно надіслано розробнику!',
 
   // Admin Requests
   'requests.banner': "Створіть запит, щоб клієнт побачив його у блоці 'Потрібна дія' на своєму порталі. Після отримання інформації позначте запит як виконаний.",
@@ -384,6 +463,57 @@ export const uk: Record<keyof typeof en, string> = {
   'admin.dangerZone': 'Небезпечна зона',
   'admin.deleteProject': 'Видалити проєкт',
   'admin.deleteWarning': 'Безповоротно видалити цей проєкт та всі його оновлення.',
+
+  // Admin Sorting & Filtering
+  'admin.sort.label': 'Сортування',
+  'admin.sort.newest': 'Спочатку нові',
+  'admin.sort.oldest': 'Спочатку давні',
+  'admin.sort.progressDesc': 'Найвищий прогрес',
+  'admin.sort.progressAsc': 'Найнижчий прогрес',
+  'admin.sort.titleAsc': 'Назва (А–Я)',
+  'admin.sort.titleDesc': 'Назва (Я–А)',
+  'admin.sort.clientAsc': 'Клієнт (А–Я)',
+  'admin.search.placeholder': 'Пошук за проєктами, клієнтами, тегами...',
+  'admin.filter.all': 'Всі',
+  'admin.filter.active': 'В процесі',
+  'admin.filter.completed': 'Завершені',
+  'admin.filter.paused': 'Призупинені',
+  'admin.noProjectsFound': 'Не знайдено проєктів за заданими критеріями.',
+  'admin.clearFilters': 'Очистити фільтри',
+  'admin.showingProjects': 'Показано {count} з {total} проєктів',
+  'admin.dayProgress': 'День {current} / {total}',
+
+  // Admin Supabase & Sync
+  'admin.supabase.warningTitle': 'З\'єднання з Supabase тимчасово недоступне — увімкнено резервний режим (JSON fallback)',
+  'admin.supabase.errorDetails': 'Деталі помилки:',
+  'admin.supabase.pausedTip': '💡 Безкоштовний проєкт Supabase автоматично призупиняється (Paused) через неактивність (понад 7 днів). Усі дані на сайті збережені та повноцінно працюють через JSON fallback. Щоб повернути зв\'язок з Supabase, відкрийте Supabase Dashboard і натисніть «Restore project».',
+  'admin.supabase.refresh': 'Оновити',
+  'admin.sync.button': 'Синхронізація з Supabase',
+  'admin.sync.syncing': 'Синхронізація...',
+  'admin.sync.title': 'Синхронізувати локальні проєкти та коментарі з Supabase',
+  'admin.sync.success': '✓ {projects} проєктів, {comments} коментарів',
+  'admin.sync.error': 'Помилка синхронізації',
+
+  // Admin Loading & Error
+  'admin.loading.dashboard': 'Завантаження адмін-панелі…',
+  'admin.loading.project': 'Завантаження даних проєкту…',
+  'admin.error.dashboardTitle': 'Помилка завантаження адмін-панелі',
+  'admin.error.dashboardDesc': 'Виникла помилка під час звернення до сервера або бази даних. Деталі помилки наведено нижче:',
+  'admin.error.projectTitle': 'Помилка завантаження проєкту',
+  'admin.error.projectDesc': 'Сторінка проєкту в адмін-панелі завершилась із помилкою під час звернення до сервера. Деталі помилки наведено нижче:',
+  'admin.error.retry': 'Спробувати знову',
+  'admin.error.home': 'На головну',
+  'admin.error.back': 'Назад в адмінку',
+
+  // Admin Project Settings (Telegram)
+  'admin.settings.telegramBotTokenLabel': 'Telegram Bot Token (Admin / System)',
+  'admin.settings.telegramBotTokenPlaceholder': '123456:ABC-DEF… (або fallback з env)',
+  'admin.settings.telegramChatIdLabel': 'Telegram Chat ID (Ваш Admin Chat ID)',
+  'admin.settings.telegramChatIdPlaceholder': 'напр. 123456789 або -100...',
+  'admin.settings.clientTelegramBotTokenLabel': 'Client Telegram Bot Token (Опціонально для клієнта)',
+  'admin.settings.clientTelegramBotTokenPlaceholder': 'Якщо клієнт використовує власний бот',
+  'admin.settings.clientTelegramChatIdLabel': 'Client Telegram Chat ID (Отримувач сповіщень клієнта)',
+  'admin.settings.clientTelegramChatIdPlaceholder': 'напр. 987654321',
 
   // Login
   'login.title': 'Слідкуйте за проєктом',

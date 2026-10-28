@@ -1,12 +1,17 @@
+'use client';
+
 import { Loader2 } from 'lucide-react';
 import { Card } from '@/components/ui/card';
+import { useLanguage } from '@/lib/i18n/context';
 
 export default function AdminLoading() {
+  const { t } = useLanguage();
+
   return (
     <section className="mx-auto max-w-6xl px-4 py-10 sm:py-14">
       <div className="flex items-center gap-2">
         <Loader2 size={18} className="animate-spin text-accent" />
-        <h1 className="text-xl font-bold tracking-tight">Завантаження адмін-панелі…</h1>
+        <h1 className="text-xl font-bold tracking-tight">{t('admin.loading.dashboard')}</h1>
       </div>
       <div className="mt-8 grid gap-6 lg:grid-cols-3">
         <div className="space-y-3 lg:col-span-2">

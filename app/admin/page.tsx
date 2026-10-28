@@ -10,11 +10,12 @@ import { timeAgo } from '@/lib/utils';
 import { AlertTriangle, Database, Plus, ArrowUpRight } from 'lucide-react';
 import { getServerTranslation } from '@/lib/i18n/server';
 import { SyncSupabaseButton } from './sync-button';
+import { AdminProjectsList } from './admin-projects-list';
 
 export const dynamic = 'force-dynamic';
 
 export default async function AdminPage() {
-  const [projects, recent, { t }] = await Promise.all([
+  const [projects, recent, { locale, t }] = await Promise.all([
     getProjectsAsync(),
     getRecentCommentsAsync(10),
     getServerTranslation(),
@@ -63,13 +64,16 @@ export default async function AdminPage() {
                 <AlertTriangle size={16} className="mt-0.5 flex-shrink-0 text-amber-500" />
                 <div>
                   <strong className="text-amber-500">
-                    З&apos;єднання з Supabase тимчасово недоступне — увімкнено резервний режим (JSON fallback)
+                    {t('admin.supabase.warningTitle')}
                   </strong>
                   <p className="mt-1 text-muted-foreground">
-                    Деталі помилки: <code className="rounded bg-background/80 px-1.5 py-0.5 text-foreground">{supabaseError.message}</code>
+                    {t('admin.supabase.errorDetails')}{' '}
+                    <code className="rounded bg-background/80 px-1.5 py-0.5 text-foreground">
+                      {supabaseError.message}
+                    </code>
                   </p>
                   <p className="mt-1 text-[11px] text-muted-foreground">
-                    💡 Безкоштовний проєкт Supabase автоматично призупиняється (Paused) через неактивність (понад 7 днів). Усі дані на сайті збережені та повноцінно працюють через JSON fallback. Щоб повернути зв&apos;язок з Supabase, відкрийте Supabase Dashboard і натисніть <strong>«Restore project»</strong>.
+                    {t('admin.supabase.pausedTip')}
                   </p>
                 </div>
               </div>
@@ -77,7 +81,7 @@ export default async function AdminPage() {
                 href="/admin"
                 className="flex-shrink-0 rounded-md border border-amber-500/40 bg-background px-2.5 py-1 text-xs font-medium text-amber-500 hover:bg-amber-500/10"
               >
-                Оновити
+                {t('admin.supabase.refresh')}
               </a>
             </div>
           </Card>
@@ -105,63 +109,8 @@ export default async function AdminPage() {
       )}
 
       <div className="mt-8 grid gap-6 lg:grid-cols-3">
-        <div className="lg:col-span-2 space-y-3">
-          <Reveal>
-            <h2 className="text-lg font-semibold">{t('admin.projects')}</h2>
-          </Reveal>
-          {projects.map((p, i) => (
-            <Reveal key={p.id} delay={i * 0.05}>
-              <Card className="p-5">
-                <div className="flex items-start justify-between gap-3">
-                  <div className="flex-1">
-                    <Link
-                      href={`/admin/${p.id}`}
-                      className="font-semibold hover:text-accent"
-                    >
-                      {p.title}
-                    </Link>
-                    <div className="text-xs text-muted-foreground">
-                      {p.client}
-                      {p.clientEmail ? ` · ${p.clientEmail}` : ''}
-                    </div>
-                    <div className="mt-2 flex flex-wrap gap-1.5">
-                      {(p.tags ?? []).map((t) => (
-                        <Badge key={t}>{t}</Badge>
-                      ))}
-                    </div>
-                  </div>
-                  <div className="flex flex-col items-end gap-2">
-                    <Badge
-                      className={
-                        p.status === 'active'
-                          ? 'bg-accent/10 text-accent'
-                          : p.status === 'completed'
-                          ? 'bg-emerald-500/10 text-emerald-500'
-                          : 'bg-amber-500/10 text-amber-500'
-                      }
-                    >
-                      {p.status}
-                    </Badge>
-                    <div className="text-xs text-muted-foreground">{p.progress}%</div>
-                    <Link
-                      href={`/admin/${p.id}`}
-                      className="inline-flex items-center gap-1 text-xs text-accent hover:underline"
-                    >
-                      {t('admin.manage')} <ArrowUpRight size={10} />
-                    </Link>
-                  </div>
-                </div>
-                {p.dayCurrent !== undefined && p.dayTotal ? (
-                  <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-muted">
-                    <div
-                      className="h-full bg-accent transition-all"
-                      style={{ width: `${Math.min(100, (p.dayCurrent / p.dayTotal) * 100)}%` }}
-                    />
-                  </div>
-                ) : null}
-              </Card>
-            </Reveal>
-          ))}
+        <div className="lg:col-span-2">
+          <AdminProjectsList initialProjects={projects} />
         </div>
 
         <div className="space-y-3">
@@ -197,7 +146,7 @@ export default async function AdminPage() {
                       {c.projectId}
                     </Link>
                     {' · '}
-                    {c.author} · {timeAgo(c.timestamp)}
+                    {c.author} · {timeAgo(c.timestamp, locale)}
                   </div>
                 </Card>
               </Reveal>

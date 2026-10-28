@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import { Sparkles, Loader2 } from 'lucide-react';
+import { useLanguage } from '@/lib/i18n/context';
 
 type Item = {
   id: string;
@@ -20,6 +21,7 @@ export default function ProjectList({
   projects: Item[];
   activeId?: string;
 }) {
+  const { t } = useLanguage();
   const [loadingId, setLoadingId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -30,12 +32,12 @@ export default function ProjectList({
     <nav className="space-y-1">
       <div className="mb-2 flex items-center gap-1.5 px-2 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
         <Sparkles size={11} />
-        Projects
+        {t('admin.projects')}
       </div>
       <ul className="space-y-0.5">
         {projects.length === 0 && (
           <li className="px-3 py-2 text-xs text-muted-foreground">
-            No projects yet.
+            {t('admin.noProjectsFound')}
           </li>
         )}
         {projects.map((p) => {

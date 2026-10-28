@@ -7,6 +7,7 @@
 import { useEffect } from 'react';
 import Link from 'next/link';
 import { AlertTriangle, ArrowLeft, RotateCcw } from 'lucide-react';
+import { useLanguage } from '@/lib/i18n/context';
 
 export default function AdminProjectError({
   error,
@@ -15,6 +16,8 @@ export default function AdminProjectError({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
+  const { t } = useLanguage();
+
   useEffect(() => {
     console.error('[admin/[projectId] error]', error);
   }, [error]);
@@ -25,11 +28,11 @@ export default function AdminProjectError({
         <div className="flex items-center gap-2 text-red-500">
           <AlertTriangle size={20} />
           <h1 className="text-xl font-bold">
-            Помилка завантаження проєкту
+            {t('admin.error.projectTitle')}
           </h1>
         </div>
         <p className="mt-2 text-sm text-muted-foreground">
-          Сторінка проєкту в адмін-панелі завершилась із помилкою під час звернення до сервера. Деталі помилки наведено нижче:
+          {t('admin.error.projectDesc')}
         </p>
         <div className="mt-4 space-y-2 rounded border border-border bg-background p-4 font-mono text-xs">
           <div>
@@ -62,13 +65,13 @@ export default function AdminProjectError({
             onClick={reset}
             className="inline-flex items-center gap-1.5 rounded-md bg-accent px-4 py-2 text-xs font-medium text-accent-foreground hover:opacity-90"
           >
-            <RotateCcw size={13} /> Спробувати знову
+            <RotateCcw size={13} /> {t('admin.error.retry')}
           </button>
           <Link
             href="/admin"
             className="inline-flex items-center gap-1.5 rounded-md border border-border bg-background px-4 py-2 text-xs font-medium hover:bg-muted"
           >
-            <ArrowLeft size={13} /> Назад в адмінку
+            <ArrowLeft size={13} /> {t('admin.error.back')}
           </Link>
         </div>
       </div>

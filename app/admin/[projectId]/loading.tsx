@@ -1,12 +1,17 @@
+'use client';
+
 import { Loader2 } from 'lucide-react';
 import { Card } from '@/components/ui/card';
+import { useLanguage } from '@/lib/i18n/context';
 
 export default function AdminProjectLoading() {
+  const { t } = useLanguage();
+
   return (
     <section className="mx-auto max-w-6xl px-4 py-8 sm:py-12">
       <div className="mb-4 flex items-center gap-2 text-xs text-muted-foreground">
         <Loader2 size={14} className="animate-spin text-accent" />
-        <span>Завантаження даних проєкту…</span>
+        <span>{t('admin.loading.project')}</span>
       </div>
 
       <div className="grid grid-cols-12 gap-6">

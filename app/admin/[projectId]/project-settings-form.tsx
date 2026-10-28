@@ -3,6 +3,7 @@
 import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { Loader2, Save } from 'lucide-react';
+import { useLanguage } from '@/lib/i18n/context';
 
 type Project = {
   id: string;
@@ -27,6 +28,7 @@ export default function ProjectSettingsForm({
 }: {
   project: Project;
 }) {
+  const { t } = useLanguage();
   const [title, setTitle] = useState(project.title);
   const [clientName, setClientName] = useState(project.client_name);
   const [clientEmail, setClientEmail] = useState(project.client_email ?? '');
@@ -169,35 +171,35 @@ export default function ProjectSettingsForm({
             className="w-full rounded-md border border-border bg-background px-3 py-1.5 text-sm outline-none focus:border-accent"
           />
         </Field>
-        <Field label="Telegram Bot Token (Admin / System)">
+        <Field label={t('admin.settings.telegramBotTokenLabel')}>
           <input
             value={telegramBotToken}
             onChange={(e) => setTelegramBotToken(e.target.value)}
-            placeholder="123456:ABC-DEF… (або fallback з env)"
+            placeholder={t('admin.settings.telegramBotTokenPlaceholder')}
             className="w-full rounded-md border border-border bg-background px-3 py-1.5 text-sm outline-none focus:border-accent font-mono text-xs"
           />
         </Field>
-        <Field label="Telegram Chat ID (Ваш Admin Chat ID)">
+        <Field label={t('admin.settings.telegramChatIdLabel')}>
           <input
             value={telegramChatId}
             onChange={(e) => setTelegramChatId(e.target.value)}
-            placeholder="напр. 123456789 або -100..."
+            placeholder={t('admin.settings.telegramChatIdPlaceholder')}
             className="w-full rounded-md border border-border bg-background px-3 py-1.5 text-sm outline-none focus:border-accent font-mono text-xs"
           />
         </Field>
-        <Field label="Client Telegram Bot Token (Опціонально для клієнта)">
+        <Field label={t('admin.settings.clientTelegramBotTokenLabel')}>
           <input
             value={clientTelegramToken}
             onChange={(e) => setClientTelegramToken(e.target.value)}
-            placeholder="Якщо клієнт використовує власний бот"
+            placeholder={t('admin.settings.clientTelegramBotTokenPlaceholder')}
             className="w-full rounded-md border border-border bg-background px-3 py-1.5 text-sm outline-none focus:border-accent font-mono text-xs"
           />
         </Field>
-        <Field label="Client Telegram Chat ID (Отримувач сповіщень клієнта)">
+        <Field label={t('admin.settings.clientTelegramChatIdLabel')}>
           <input
             value={clientTelegramChatId}
             onChange={(e) => setClientTelegramChatId(e.target.value)}
-            placeholder="напр. 987654321"
+            placeholder={t('admin.settings.clientTelegramChatIdPlaceholder')}
             className="w-full rounded-md border border-border bg-background px-3 py-1.5 text-sm outline-none focus:border-accent font-mono text-xs"
           />
         </Field>

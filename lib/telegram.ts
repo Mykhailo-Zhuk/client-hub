@@ -63,7 +63,7 @@ export async function sendTelegramNotification(
   options?: TelegramNotificationOptions
 ): Promise<TelegramResult> {
   const recipient = options?.recipient || 'all';
-  const title = options?.title || 'Сповіщення';
+  const title = options?.title || 'Notification';
   const author = options?.author;
 
   let project = null;
@@ -116,8 +116,8 @@ export async function sendTelegramNotification(
 
   for (const target of targets) {
     const preview = `${message.substring(0, 100)}${message.length > 100 ? '...' : ''}`;
-    const authorLine = author ? `👤 Від: ${author}\n` : '';
-    const text = `🔔 Client Hub | ${title}\n📁 Проєкт: ${projectTitle}\n${authorLine}\n💬 Повідомлення:\n${message}\n\n🌐 Посилання: ${target.link}`;
+    const authorLine = author ? `👤 ${author}\n` : '';
+    const text = `🔔 Client Hub | ${title}\n📁 ${projectTitle}\n${authorLine}\n💬 ${message}\n\n🔗 ${target.link}`;
 
     if (!target.botToken || !target.chatId) {
       console.log(

@@ -241,48 +241,48 @@ export function ClientPortalSettingsForm({
         <div className="border-t border-border pt-5 space-y-4">
           <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
             <Bell size={16} className="text-accent" />
-            <span>Telegram Сповіщення</span>
+            <span>{t("portal.settings.telegramTitle")}</span>
           </div>
           <p className="text-xs text-muted-foreground">
-            Вкажіть ваш Telegram Chat ID (та за потреби власний Bot Token), щоб миттєво отримувати сповіщення про нові коментарі, запити та зміни статусу проєкту.
+            {t("portal.settings.telegramDesc")}
           </p>
 
           <div className="grid gap-4 sm:grid-cols-2">
             <label className="block">
               <span className="text-xs font-medium text-foreground">
-                Telegram Chat ID
+                {t("portal.settings.telegramChatIdLabel")}
               </span>
               <div className="mt-1 flex items-center gap-2 rounded-md border border-border bg-background px-3 focus-within:border-accent">
                 <Send size={13} className="text-muted-foreground" />
                 <input
                   type="text"
-                  placeholder="напр. 123456789 або @username"
+                  placeholder={t("portal.settings.telegramChatIdPlaceholder")}
                   value={telegramChatId}
                   onChange={(e) => setTelegramChatId(e.target.value)}
                   className="w-full bg-transparent py-2 text-xs outline-none font-mono placeholder:text-muted-foreground/60"
                 />
               </div>
               <span className="mt-1 block text-[11px] text-muted-foreground">
-                Дізнатися ID можна через бота @userinfobot у Telegram.
+                {t("portal.settings.telegramChatIdHelp")}
               </span>
             </label>
 
             <label className="block">
               <span className="text-xs font-medium text-foreground">
-                Telegram Bot Token (Опціонально)
+                {t("portal.settings.telegramBotTokenLabel")}
               </span>
               <div className="mt-1 flex items-center gap-2 rounded-md border border-border bg-background px-3 focus-within:border-accent">
                 <Lock size={13} className="text-muted-foreground" />
                 <input
                   type="text"
-                  placeholder="123456:ABC-DEF… (якщо маєте власний бот)"
+                  placeholder={t("portal.settings.telegramBotTokenPlaceholder")}
                   value={telegramToken}
                   onChange={(e) => setTelegramToken(e.target.value)}
                   className="w-full bg-transparent py-2 text-xs outline-none font-mono placeholder:text-muted-foreground/60"
                 />
               </div>
               <span className="mt-1 block text-[11px] text-muted-foreground">
-                За замовчуванням сповіщення надсилаються через системного бота.
+                {t("portal.settings.telegramBotTokenHelp")}
               </span>
             </label>
           </div>

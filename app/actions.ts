@@ -102,7 +102,7 @@ export async function createCommentAction(
   sendTelegramNotification(projectId, message, {
     recipient: 'client',
     author,
-    title: `Нове оновлення (${type})`,
+    title: `New update (${type}) / Нове оновлення (${type})`,
   }).catch((err) => console.warn('[createCommentAction] telegram error:', err));
 
   return { ok: true, id: data.id as string, backend: 'supabase' };
@@ -166,8 +166,8 @@ export async function createRequestAction(input: CreateRequestInput): Promise<{ 
   const res = await createRequestAsync(projectId, text);
   sendTelegramNotification(projectId, text, {
     recipient: 'client',
-    author: 'Розробник',
-    title: 'Новий запит для клієнта',
+    author: 'Developer / Розробник',
+    title: 'Action required / Новий запит',
   }).catch((err) => console.warn('[createRequestAction] telegram error:', err));
 
   return res;
@@ -184,8 +184,8 @@ export async function clientCreateRequestAction(input: {
   const res = await createRequestAsync(projectId, text);
   sendTelegramNotification(projectId, text, {
     recipient: 'admin',
-    author: author || 'Клієнт',
-    title: 'Новий запит від клієнта',
+    author: author || 'Client / Клієнт',
+    title: 'New client request / Новий запит від клієнта',
   }).catch((err) => console.warn('[clientCreateRequestAction] telegram error:', err));
 
   return res;
@@ -207,8 +207,8 @@ export async function submitRequestResponseAction(requestId: string, text: strin
   if (req?.project_id) {
     sendTelegramNotification(req.project_id, text, {
       recipient: 'admin',
-      author: 'Клієнт',
-      title: 'Відповідь на запит від клієнта',
+      author: 'Client / Клієнт',
+      title: 'Client response / Відповідь на запит',
     }).catch((err) => console.warn('[submitRequestResponseAction] telegram error:', err));
   }
 

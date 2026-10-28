@@ -120,13 +120,13 @@ export async function POST(req: NextRequest) {
       sendTelegramNotification(projectId, trimmed, {
         recipient: 'admin',
         author: finalAuthor,
-        title: 'Новий коментар від клієнта',
+        title: 'New comment from client / Новий коментар від клієнта',
       }).catch(console.error);
     } else {
       sendTelegramNotification(projectId, trimmed, {
         recipient: 'client',
         author: finalAuthor,
-        title: `Нове оновлення (${finalType})`,
+        title: `New update (${finalType}) / Нове оновлення (${finalType})`,
       }).catch(console.error);
     }
 

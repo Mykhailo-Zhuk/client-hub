@@ -11,7 +11,8 @@ let _lastError: { message: string; timestamp: number } | null = null;
 let _circuitOpenUntil = 0;
 
 export function recordSupabaseError(message: string) {
-  _lastError = { message, timestamp: Date.now() };
+  const cleaned = message.replace(/^(Error:\s*)+/i, '');
+  _lastError = { message: cleaned, timestamp: Date.now() };
 }
 
 export function clearSupabaseError() {

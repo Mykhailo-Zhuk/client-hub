@@ -66,6 +66,9 @@ export default async function AdminPage() {
                   <p className="mt-1 text-muted-foreground">
                     Деталі помилки: <code className="rounded bg-background/80 px-1.5 py-0.5 text-foreground">{supabaseError.message}</code>
                   </p>
+                  <p className="mt-1 text-[11px] text-muted-foreground">
+                    💡 Безкоштовний проєкт Supabase автоматично призупиняється (Paused) через неактивність (понад 7 днів). Усі дані на сайті збережені та повноцінно працюють через JSON fallback. Щоб повернути зв&apos;язок з Supabase, відкрийте Supabase Dashboard і натисніть <strong>«Restore project»</strong>.
+                  </p>
                 </div>
               </div>
               <a

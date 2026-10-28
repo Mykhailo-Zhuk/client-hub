@@ -190,6 +190,9 @@ async function renderAdminProject(projectId: string) {
                   <p className="mt-1 text-muted-foreground">
                     Деталі помилки: <code className="rounded bg-background/80 px-1.5 py-0.5 text-foreground">{supabaseError.message}</code>
                   </p>
+                  <p className="mt-1 text-[11px] text-muted-foreground">
+                    💡 Безкоштовний проєкт Supabase призупиняється (Paused) через неактивність. Дані проєкту завантажено через JSON fallback. Щоб відновити зв&apos;язок з Supabase, відкрийте Supabase Dashboard і натисніть <strong>«Restore project»</strong>.
+                  </p>
                 </div>
               </div>
               <a

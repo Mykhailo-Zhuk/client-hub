@@ -112,13 +112,71 @@ export async function getProjectsAsync(): Promise<Project[]> {
       return JSON_PROJECTS;
     }
     clearSupabaseError();
-    return (data ?? []).map((r) => rowToProject(r as SupabaseProjectRow));
+    const sbProjects = (data ?? []).map((r) => rowToProject(r as SupabaseProjectRow));
+    const sbIds = new Set(sbProjects.map((p) => p.id));
+    const missingFromJson = JSON_PROJECTS.filter((p) => !sbIds.has(p.id));
+
+    if (missingFromJson.length > 0) {
+      // Fire-and-forget sync to Supabase so missing projects are saved to PostgreSQL
+      syncProjectsToSupabase(missingFromJson).catch((err) =>
+        console.warn('[lib/projects-db] auto-sync projects to supabase error:', err)
+      );
+      return [...sbProjects, ...missingFromJson];
+    }
+
+    return sbProjects;
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : String(err);
     recordSupabaseError(msg);
     console.warn('[lib/projects-db] supabase exception, falling back to JSON:', msg);
     return JSON_PROJECTS;
   }
+}
+
+export async function syncProjectsToSupabase(
+  projectsToSync: Project[] = JSON_PROJECTS
+): Promise<{ synced: number }> {
+  const sb = getSupabaseAdmin();
+  if (!sb) return { synced: 0 };
+
+  let count = 0;
+  for (const p of projectsToSync) {
+    try {
+      const row: Record<string, unknown> = {
+        id: p.id,
+        client_name: p.client,
+        client_email: p.clientEmail || `contact@${p.id}.example`,
+        title: p.title,
+        description: p.description ?? null,
+        status: p.status,
+        progress: p.progress,
+        day_current: p.dayCurrent ?? 0,
+        day_total: p.dayTotal ?? 0,
+        start_date: p.startDate || null,
+        estimated_end: p.estimatedEnd ?? null,
+        completed_date: p.completedDate ?? null,
+        tags: p.tags ?? [],
+        github: p.github ?? null,
+        demo: p.demo ?? null,
+        cover: p.cover ?? null,
+      };
+      if (p.clientPassword) row.client_password = p.clientPassword;
+      if (p.telegramBotToken) row.telegram_bot_token = p.telegramBotToken;
+      if (p.telegramChatId) row.telegram_chat_id = p.telegramChatId;
+      if (p.clientTelegramToken) row.client_telegram_token = p.clientTelegramToken;
+      if (p.clientTelegramChatId) row.client_telegram_chat_id = p.clientTelegramChatId;
+
+      const { error } = await sb.from('projects').upsert(row, { onConflict: 'id' });
+      if (!error) {
+        count++;
+      } else {
+        console.warn(`[lib/projects-db] sync project ${p.id} error:`, error.message);
+      }
+    } catch (err: any) {
+      console.warn(`[lib/projects-db] sync project ${p.id} exception:`, err?.message);
+    }
+  }
+  return { synced: count };
 }
 
 export async function getProjectByIdAsync(id: string): Promise<Project | null> {

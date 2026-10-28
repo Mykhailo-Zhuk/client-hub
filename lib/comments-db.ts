@@ -5,6 +5,7 @@
  */
 import { getSupabaseAdmin, recordSupabaseError } from './supabase';
 import type { Comment, CommentType } from './types';
+import commentsData from '@/data/comments.json';
 
 type SupabaseCommentRow = {
   id: string;
@@ -44,7 +45,18 @@ export async function getCommentsByProjectAsync(projectId: string): Promise<Comm
       const { getCommentsByProject } = await import('./comments');
       return getCommentsByProject(projectId);
     }
-    return (data ?? []).map(rowToComment);
+
+    const sbComments = (data ?? []).map(rowToComment);
+    if (sbComments.length === 0) {
+      const { getCommentsByProject } = await import('./comments');
+      const jsonComments = await getCommentsByProject(projectId);
+      if (jsonComments.length > 0) {
+        syncCommentsToSupabase(jsonComments).catch(() => {});
+      }
+      return jsonComments;
+    }
+
+    return sbComments;
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : String(err);
     recordSupabaseError(msg);
@@ -54,7 +66,7 @@ export async function getCommentsByProjectAsync(projectId: string): Promise<Comm
   }
 }
 
-export async function getRecentCommentsAsync(limit = 5): Promise<Comment[]> {
+export async function getRecentCommentsAsync(limit = 10): Promise<Comment[]> {
   const sb = getSupabaseAdmin();
   if (!sb) {
     const { getRecentComments } = await import('./comments');
@@ -72,7 +84,18 @@ export async function getRecentCommentsAsync(limit = 5): Promise<Comment[]> {
       const { getRecentComments } = await import('./comments');
       return getRecentComments(limit);
     }
-    return (data ?? []).map(rowToComment);
+    const sbComments = (data ?? []).map(rowToComment);
+    const { getRecentComments } = await import('./comments');
+    const jsonComments = await getRecentComments(limit * 2);
+
+    const combined = [...sbComments];
+    for (const jc of jsonComments) {
+      if (!combined.some((c) => c.projectId === jc.projectId && c.message === jc.message)) {
+        combined.push(jc);
+      }
+    }
+    combined.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+    return combined.slice(0, limit);
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : String(err);
     recordSupabaseError(msg);
@@ -80,6 +103,40 @@ export async function getRecentCommentsAsync(limit = 5): Promise<Comment[]> {
     const { getRecentComments } = await import('./comments');
     return getRecentComments(limit);
   }
+}
+
+export async function syncCommentsToSupabase(
+  commentsToSync?: Comment[]
+): Promise<{ synced: number }> {
+  const sb = getSupabaseAdmin();
+  if (!sb) return { synced: 0 };
+  const list = commentsToSync ?? (commentsData as Comment[]);
+  let count = 0;
+  for (const c of list) {
+    try {
+      // Check if comment already exists for this project with matching message
+      const { data: existing } = await sb
+        .from('comments')
+        .select('id')
+        .eq('project_id', c.projectId)
+        .eq('message', c.message)
+        .maybeSingle();
+
+      if (!existing) {
+        const { error } = await sb.from('comments').insert({
+          project_id: c.projectId,
+          type: c.type,
+          message: c.message,
+          author: c.author,
+          timestamp: c.timestamp,
+        });
+        if (!error) count++;
+      }
+    } catch {
+      // Ignore
+    }
+  }
+  return { synced: count };
 }
 
 export async function addCommentAsync(input: {

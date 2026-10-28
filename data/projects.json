@@ -67,6 +67,7 @@
   {
     "id": "vlob-landing",
     "client": "VLOB Kids Coding",
+    "clientEmail": "contact@vlob.example",
     "title": "VLOB Landing — Kids Coding Course",
     "status": "completed",
     "progress": 100,

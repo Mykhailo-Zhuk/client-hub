@@ -312,6 +312,14 @@
     "timestamp": "2025-08-01T20:00:00Z"
   },
   {
+    "id": "wf-c7",
+    "projectId": "woman-franch-working",
+    "type": "milestone",
+    "message": "🚀 Завершено масштабне оновлення та повне тестування проекту: 1) Оновлено паушальний внесок De Massage до $5000 (~210 тис грн); 2) Виправлено SSR гідрацію React у OwnerInfo; 3) Розгорнуто повний набір Unit/Integration (79) та E2E (6) тестів із покриттям >80%; 4) Зміни змерджено в main та запушено до GitHub.",
+    "author": "Mykhailo Zhuk",
+    "timestamp": "2026-10-29T17:20:00Z"
+  },
+  {
     "id": "pr-c1",
     "projectId": "pravovyi-radnyk",
     "type": "status_update",

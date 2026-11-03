@@ -1,25 +1,29 @@
 [
   {
     "id": "iron-master",
-    "client": "СТО IRON MASTER",
-    "clientEmail": "client@iron-master.example",
-    "title": "СТО IRON MASTER — MVP",
-    "description": "Повноцінний сайт мережі СТО з Google-style формою запису, admin panel, real-time bookings. Next.js 14 + Zod + Tailwind.",
-    "status": "active",
-    "progress": 40,
-    "dayCurrent": 12,
-    "dayTotal": 30,
-    "startDate": "2026-09-01",
-    "estimatedEnd": "2026-10-01",
+    "client": "Universal Service Template",
+    "clientEmail": "template@universal-service.example",
+    "title": "Universal Service Template",
+    "description": "Universal SaaS template for restaurants, cafes, beauty salons. QR-menu + booking + payment + admin panel. Next.js 16 + TypeScript + Tailwind CSS.",
+    "status": "completed",
+    "progress": 100,
+    "dayCurrent": 17,
+    "dayTotal": 17,
+    "startDate": "2026-09-12",
+    "estimatedEnd": "2026-09-28",
+    "completedDate": "2026-09-28",
     "tags": [
-      "Next.js",
-      "SaaS",
+      "Next.js 16",
+      "TypeScript",
+      "Tailwind",
+      "QR-Menu",
       "Booking",
-      "Tailwind"
+      "Admin Panel",
+      "SaaS"
     ],
-    "github": "https://github.com/Mykhailo-Zhuk/mvp-iron-master",
-    "demo": "https://mvp-iron-master.vercel.app/",
-    "cover": "https://images.unsplash.com/photo-1486754735734-325b5831c3ad?w=1200&h=800&fit=crop"
+    "github": "https://github.com/Mykhailo-Zhuk/universal-service-template",
+    "demo": "https://universal-service-template.vercel.app/",
+    "cover": "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=1200&h=800&fit=crop"
   },
   {
     "id": "spa-canada",

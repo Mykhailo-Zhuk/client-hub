@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { syncProjectsToSupabase } from '@/lib/projects-db';
 import { syncCommentsToSupabase } from '@/lib/comments-db';
-import { isSupabaseConfigured } from '@/lib/supabase';
+import { getSupabaseAdmin, isSupabaseConfigured } from '@/lib/supabase';
 
 export async function POST(req: NextRequest) {
   if (!isSupabaseConfigured()) {
@@ -12,6 +12,16 @@ export async function POST(req: NextRequest) {
   }
 
   try {
+    const sb = getSupabaseAdmin();
+    if (sb) {
+      // Clean up legacy placeholder comments for iron-master
+      await sb
+        .from('comments')
+        .delete()
+        .eq('project_id', 'iron-master')
+        .not('message', 'like', '### %');
+    }
+
     const [pRes, cRes] = await Promise.all([
       syncProjectsToSupabase(),
       syncCommentsToSupabase(),

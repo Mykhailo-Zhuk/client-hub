@@ -79,19 +79,19 @@ function rowToProject(r: SupabaseProjectRow): Project {
 // ---------- synchronous JSON fallback (legacy) ----------
 const JSON_PROJECTS = projectsData as Project[];
 
-export function getAllProjects(): Project[] {
+function getAllProjects(): Project[] {
   return JSON_PROJECTS;
 }
-export function getActiveProjects(): Project[] {
+function getActiveProjects(): Project[] {
   return getAllProjects().filter((p) => p.status === 'active');
 }
-export function getCompletedProjects(): Project[] {
+function getCompletedProjects(): Project[] {
   return getAllProjects().filter((p) => p.status === 'completed');
 }
-export function getProjectById(id: string): Project | undefined {
+function getProjectById(id: string): Project | undefined {
   return getAllProjects().find((p) => p.id === id);
 }
-export function getProjectsByEmail(email: string): Project[] {
+function getProjectsByEmail(email: string): Project[] {
   return getAllProjects().filter(
     (p) => p.clientEmail?.toLowerCase() === email.toLowerCase()
   );
@@ -183,7 +183,8 @@ export async function getProjectByIdAsync(id: string): Promise<Project | null> {
   const sb = getSupabaseAdmin();
   if (!sb) return getProjectById(id) ?? null;
   try {
-    const { data, error } = await sb.from('projects').select('*').eq('id', id).maybeSingle();
+    const targetId = id === 'universal-service-template' ? 'iron-master' : id;
+    const { data, error } = await sb.from('projects').select('*').eq('id', targetId).maybeSingle();
     if (error) {
       recordSupabaseError(error.message);
       console.warn('[lib/projects-db] supabase error:', error.message);
@@ -223,7 +224,7 @@ export async function getProjectsByEmailAsync(email: string): Promise<Project[]>
   }
 }
 
-export async function updateProjectProgress(
+async function updateProjectProgress(
   id: string,
   progress: number
 ): Promise<void> {
@@ -232,7 +233,7 @@ export async function updateProjectProgress(
   await sb.from('projects').update({ progress }).eq('id', id);
 }
 
-export async function updateProjectStatus(
+async function updateProjectStatus(
   id: string,
   status: 'active' | 'completed' | 'paused'
 ): Promise<void> {
@@ -283,5 +284,3 @@ export async function deleteProject(id: string): Promise<void> {
     throw new Error(error.message);
   }
 }
-
-export { isSupabaseConfigured };

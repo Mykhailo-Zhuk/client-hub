@@ -14,10 +14,15 @@ export function getCompletedProjects(): Project[] {
 }
 
 export function getProjectById(id: string): Project | undefined {
-  return getAllProjects().find((p) => p.id === id);
+  return getAllProjects().find(
+    (p) =>
+      p.id === id ||
+      (id === "universal-service-template" && p.id === "iron-master") ||
+      (id === "iron-master" && p.id === "universal-service-template")
+  );
 }
 
-export function getProjectsByEmail(email: string): Project[] {
+function getProjectsByEmail(email: string): Project[] {
   return getAllProjects().filter(
     (p) => p.clientEmail?.toLowerCase() === email.toLowerCase()
   );

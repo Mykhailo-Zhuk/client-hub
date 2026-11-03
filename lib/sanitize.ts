@@ -87,8 +87,12 @@ export function renderSafeMarkdown(markdown: string): string {
 /**
  * Sanitize an already-rendered HTML string.
  */
-export function sanitizeHtml(html: string): string {
+function sanitizeHtml(html: string): string {
   if (!html) return '';
+  // On Vercel serverless / SSR, bypass jsdom to prevent runtime crashes
+  if (typeof window === 'undefined') {
+    return fallbackSanitize(html);
+  }
   try {
     return String(DOMPurify.sanitize(html, PURIFY_CONFIG));
   } catch {

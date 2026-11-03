@@ -39,8 +39,8 @@ export function CompletedProjects({ projects: initialProjects }: { projects?: Pr
                 </div>
               )}
               <div className="mt-3 flex flex-wrap gap-1.5">
-                {p.tags.map((t) => (
-                  <Badge key={t}>{t}</Badge>
+                {(p.tags || []).map((tag) => (
+                  <Badge key={tag}>{tag}</Badge>
                 ))}
               </div>
               <div className="mt-4 flex gap-2">

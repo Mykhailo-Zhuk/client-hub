@@ -14,7 +14,7 @@
  *   - app/agent-console/page.tsx       (markdown editor preview)
  *   - app/portal/client-comments-timeline.tsx (comment render)
  */
-import DOMPurify from 'isomorphic-dompurify';
+import DOMPurify from 'dompurify';
 import { marked } from 'marked';
 
 const ALLOWED_TAGS = [

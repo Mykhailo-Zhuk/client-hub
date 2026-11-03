@@ -41,13 +41,14 @@ export function RecentUpdatesList({ comments }: { comments: Comment[] }) {
       </Reveal>
       <div className="mt-8 space-y-3">
         {comments.map((c, i) => {
-          const Icon = iconMap[c.type];
+          const Icon = iconMap[c.type] || Activity;
+          const colorClass = colorMap[c.type] || "text-blue-500";
           return (
             <Reveal key={c.id} delay={i * 0.05}>
               <Card className="flex items-start gap-4 p-4">
                 <Icon
                   size={18}
-                  className={`mt-0.5 flex-shrink-0 ${colorMap[c.type]}`}
+                  className={`mt-0.5 flex-shrink-0 ${colorClass}`}
                 />
                 <div className="flex-1 min-w-0">
                   <ClientMarkdown

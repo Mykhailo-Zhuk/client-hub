@@ -1,0 +1,47 @@
+{
+  "$schema": "https://raw.githubusercontent.com/fallow-rs/fallow/main/schema.json",
+  "duplicates": {
+    "minOccurrences": 3
+  },
+  "boundaries": {
+    "zones": [
+      {
+        "name": "app",
+        "patterns": ["app/**"]
+      },
+      {
+        "name": "components",
+        "patterns": ["components/**"]
+      },
+      {
+        "name": "lib",
+        "patterns": ["lib/**"]
+      }
+    ],
+    "rules": [
+      {
+        "from": "lib",
+        "allow": ["lib"]
+      },
+      {
+        "from": "components",
+        "allow": ["components", "lib"]
+      },
+      {
+        "from": "app",
+        "allow": ["app", "components", "lib"]
+      }
+    ]
+  },
+  "rules": {},
+  "ignoreExports": [
+    {
+      "file": "lib/projects-db.ts",
+      "exports": ["*"]
+    },
+    {
+      "file": "lib/projects.ts",
+      "exports": ["*"]
+    }
+  ]
+}

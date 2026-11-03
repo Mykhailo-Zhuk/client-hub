@@ -36,7 +36,7 @@ async function writeComments(comments: Comment[]): Promise<void> {
   memStore().splice(0, memStore().length, ...comments);
 }
 
-export async function getAllComments(): Promise<Comment[]> {
+async function getAllComments(): Promise<Comment[]> {
   return readComments();
 }
 

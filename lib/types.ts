@@ -22,6 +22,7 @@ export interface Project {
   telegramChatId?: string;
   clientTelegramToken?: string;
   clientTelegramChatId?: string;
+  isSample?: boolean;
 }
 
 export type CommentType =

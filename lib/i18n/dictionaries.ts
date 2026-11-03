@@ -34,6 +34,9 @@ export const en = {
   'activeProjects.clientPortal': 'Client portal',
   'activeProjects.demo': 'Demo',
   'activeProjects.repo': 'Repo',
+  'projects.sampleBadge': 'Sample showcase',
+  'projects.sampleNotice': 'Open sample: anyone can explore the demo and client portal.',
+  'portal.sampleBanner': 'Public sample · Open access for anyone to explore this portal.',
 
   // Home Completed Projects
   'completedProjects.title': 'Completed',
@@ -303,6 +306,9 @@ export const uk: Record<keyof typeof en, string> = {
   'activeProjects.clientPortal': 'Клієнтський портал',
   'activeProjects.demo': 'Демо',
   'activeProjects.repo': 'Репо',
+  'projects.sampleBadge': 'Зразок (відкритий доступ)',
+  'projects.sampleNotice': 'Зразок: будь-хто може зайти та подивитися проєкт і клієнтський портал.',
+  'portal.sampleBanner': 'Публічний зразок проєкту · Відкритий доступ для всіх бажаючих ознайомитися.',
 
   // Home Completed Projects
   'completedProjects.title': 'Завершені',

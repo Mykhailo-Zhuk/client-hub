@@ -4,7 +4,7 @@ import { useState, useTransition } from "react";
 import { Send, LogOut, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 
-export function CommentForm({
+function CommentForm({
   projectId,
   onPosted,
 }: {

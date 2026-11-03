@@ -2,38 +2,24 @@ import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { requireSupabaseAdmin, isSupabaseConfigured } from '@/lib/supabase';
 import { AGENT_SECRET, AGENT_COOKIE } from '@/lib/agent-auth';
-import { updateClientEmail, setClientPassword } from '@/lib/client-passwords';
-import fs from 'fs';
-import path from 'path';
-import type { Project } from '@/lib/types';
-
-const PROJECTS_FILE = path.join(process.cwd(), 'data', 'projects.json');
+import { setClientPassword, updateProjectsJson } from '@/lib/client-passwords';
 
 function updateJsonProjects(projectId: string, updates: Record<string, unknown>) {
-  try {
-    if (!fs.existsSync(PROJECTS_FILE)) return;
-    const raw = fs.readFileSync(PROJECTS_FILE, 'utf-8');
-    const projects: Project[] = JSON.parse(raw);
-    const target = projects.find((p) => p.id === projectId);
-    if (target) {
-      if (typeof updates.title === 'string') target.title = updates.title;
-      if (typeof updates.client_name === 'string') target.client = updates.client_name;
-      if (typeof updates.client_email === 'string') target.clientEmail = updates.client_email;
-      if (typeof updates.status === 'string') target.status = updates.status as any;
-      if (typeof updates.progress === 'number') target.progress = updates.progress;
-      if (typeof updates.day_current === 'number') target.dayCurrent = updates.day_current;
-      if (typeof updates.day_total === 'number') target.dayTotal = updates.day_total;
-      if (typeof updates.demo === 'string') target.demo = updates.demo;
-      if (typeof updates.github === 'string') target.github = updates.github;
-      if (updates.telegram_bot_token !== undefined) target.telegramBotToken = (updates.telegram_bot_token as string) || undefined;
-      if (updates.telegram_chat_id !== undefined) target.telegramChatId = (updates.telegram_chat_id as string) || undefined;
-      if (updates.client_telegram_token !== undefined) target.clientTelegramToken = (updates.client_telegram_token as string) || undefined;
-      if (updates.client_telegram_chat_id !== undefined) target.clientTelegramChatId = (updates.client_telegram_chat_id as string) || undefined;
-      fs.writeFileSync(PROJECTS_FILE, JSON.stringify(projects, null, 2), 'utf-8');
-    }
-  } catch (err) {
-    console.warn('[api/projects/update] error updating projects.json:', err);
-  }
+  updateProjectsJson(projectId, (target) => {
+    if (typeof updates.title === 'string') target.title = updates.title;
+    if (typeof updates.client_name === 'string') target.client = updates.client_name;
+    if (typeof updates.client_email === 'string') target.clientEmail = updates.client_email;
+    if (typeof updates.status === 'string') target.status = updates.status as any;
+    if (typeof updates.progress === 'number') target.progress = updates.progress;
+    if (typeof updates.day_current === 'number') target.dayCurrent = updates.day_current;
+    if (typeof updates.day_total === 'number') target.dayTotal = updates.day_total;
+    if (typeof updates.demo === 'string') target.demo = updates.demo;
+    if (typeof updates.github === 'string') target.github = updates.github;
+    if (updates.telegram_bot_token !== undefined) target.telegramBotToken = (updates.telegram_bot_token as string) || undefined;
+    if (updates.telegram_chat_id !== undefined) target.telegramChatId = (updates.telegram_chat_id as string) || undefined;
+    if (updates.client_telegram_token !== undefined) target.clientTelegramToken = (updates.client_telegram_token as string) || undefined;
+    if (updates.client_telegram_chat_id !== undefined) target.clientTelegramChatId = (updates.client_telegram_chat_id as string) || undefined;
+  });
 }
 
 /**

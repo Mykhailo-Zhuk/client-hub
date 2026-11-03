@@ -73,6 +73,7 @@ function rowToProject(r: SupabaseProjectRow): Project {
     telegramChatId: r.telegram_chat_id ?? jsonFallback?.telegramChatId ?? undefined,
     clientTelegramToken: r.client_telegram_token ?? jsonFallback?.clientTelegramToken ?? undefined,
     clientTelegramChatId: r.client_telegram_chat_id ?? jsonFallback?.clientTelegramChatId ?? undefined,
+    isSample: jsonFallback?.isSample ?? (r.id === 'spa-canada' || r.id === 'iron-master' || r.id === 'universal-service-template'),
   };
 }
 

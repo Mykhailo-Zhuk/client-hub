@@ -5,7 +5,7 @@ import Link from "next/link";
 import { getProjectById } from "@/lib/projects";
 import { getProjectByIdAsync } from "@/lib/projects-db";
 import { getCommentsByProjectAsync } from "@/lib/comments-db";
-import { verifyPortalToken } from "@/lib/jwt";
+import { verifyPortalToken, signPortalToken } from "@/lib/jwt";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Reveal } from "@/components/ui/reveal";
@@ -33,6 +33,16 @@ export default async function PortalPage({
   const { projectId } = await params;
   const sp = await searchParams;
 
+  const project = (await getProjectByIdAsync(projectId)) ?? getProjectById(projectId);
+  if (!project) notFound();
+
+  const isSampleProject = Boolean(
+    project.isSample ||
+      project.id === "spa-canada" ||
+      project.id === "iron-master" ||
+      project.id === "universal-service-template"
+  );
+
   // Stateless JWT auth — works across serverless instances.
   // Prefer the URL ?token= (always available from /api/auth's magicLink);
   // fall back to cookie (best-effort). On Vercel serverless, the cookie
@@ -43,21 +53,21 @@ export default async function PortalPage({
   if (!token && sp.token) {
     token = sp.token;
   }
-  if (!token) {
-    console.log(`[portal/${projectId}] no token (source=${source}) → /login`);
-    redirect(`/login?redirect=/portal/${projectId}`);
-  }
 
-  const session = await verifyPortalToken(token);
+  let session = token ? await verifyPortalToken(token) : null;
+
   if (!session) {
-    console.log(`[portal/${projectId}] invalid JWT (source=${source}) → /login`);
-    redirect(`/login?redirect=/portal/${projectId}`);
+    if (isSampleProject) {
+      const demoEmail = project.clientEmail || `demo@${project.id}.example`;
+      token = await signPortalToken({ email: demoEmail, projectId: project.id });
+      session = { email: demoEmail, projectId: project.id };
+    } else {
+      console.log(`[portal/${projectId}] no token (source=${source}) → /login`);
+      redirect(`/login?redirect=/portal/${projectId}`);
+    }
   }
 
   console.log(`[portal/${projectId}] auth OK email=${session.email} source=${source}`);
-
-  const project = (await getProjectByIdAsync(projectId)) ?? getProjectById(projectId);
-  if (!project) notFound();
 
   const comments = await getCommentsByProjectAsync(project.id);
 
@@ -94,6 +104,18 @@ export default async function PortalPage({
           </Link>
           <LogoutButton />
         </div>
+
+        {isSampleProject && (
+          <div className="mb-6 flex items-center gap-3 rounded-xl border border-amber-500/30 bg-amber-500/10 p-4 text-sm text-amber-900 dark:text-amber-200">
+            <span className="text-xl">✨</span>
+            <div>
+              <div className="font-semibold">{t("projects.sampleBadge")}</div>
+              <div className="text-xs text-amber-800/90 dark:text-amber-300/90">
+                {t("portal.sampleBanner")}
+              </div>
+            </div>
+          </div>
+        )}
 
         <Reveal>
           <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
@@ -268,7 +290,7 @@ export default async function PortalPage({
                   <ClientPortalSettingsForm
                     projectId={project.id}
                     initialEmail={project.clientEmail || session.email}
-                    token={token}
+                    token={token || ""}
                     initialTelegramChatId={project.clientTelegramChatId}
                     initialTelegramToken={project.clientTelegramToken}
                   />

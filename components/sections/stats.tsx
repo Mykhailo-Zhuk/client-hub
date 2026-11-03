@@ -20,13 +20,12 @@ export function Stats({
   const stats = [
     { label: t("stats.activeProjects"), value: String(count) },
     { label: t("stats.happyClients"), value: "47" },
-    { label: t("stats.countries"), value: "8" },
     { label: t("stats.shippedMvps"), value: "23" },
   ];
 
   return (
     <section className="mx-auto max-w-6xl px-4 py-16">
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         {stats.map((s, i) => (
           <Reveal key={s.label} delay={i * 0.05}>
             <Card className="p-5 text-center">

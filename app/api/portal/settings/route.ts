@@ -1,28 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { verifyPortalToken, signPortalToken } from "@/lib/jwt";
-import { updateClientEmail, setClientPassword, getClientPassword } from "@/lib/client-passwords";
+import { updateClientEmail, setClientPassword, updateProjectsJson } from "@/lib/client-passwords";
 import { getProjectByIdAsync } from "@/lib/projects-db";
 import { getSupabaseAdmin } from "@/lib/supabase";
-import fs from "fs";
-import path from "path";
-
-const PROJECTS_FILE = path.join(process.cwd(), "data", "projects.json");
 
 function updateProjectsJsonTelegram(projectId: string, updates: { clientTelegramToken?: string | null; clientTelegramChatId?: string | null }) {
-  try {
-    if (!fs.existsSync(PROJECTS_FILE)) return;
-    const raw = fs.readFileSync(PROJECTS_FILE, "utf-8");
-    const projects = JSON.parse(raw);
-    const target = projects.find((p: any) => p.id === projectId);
-    if (target) {
-      if (updates.clientTelegramToken !== undefined) target.clientTelegramToken = updates.clientTelegramToken || undefined;
-      if (updates.clientTelegramChatId !== undefined) target.clientTelegramChatId = updates.clientTelegramChatId || undefined;
-      fs.writeFileSync(PROJECTS_FILE, JSON.stringify(projects, null, 2), "utf-8");
-    }
-  } catch (err) {
-    console.warn("[api/portal/settings] error updating projects.json telegram:", err);
-  }
+  updateProjectsJson(projectId, (target) => {
+    if (updates.clientTelegramToken !== undefined) target.clientTelegramToken = updates.clientTelegramToken || undefined;
+    if (updates.clientTelegramChatId !== undefined) target.clientTelegramChatId = updates.clientTelegramChatId || undefined;
+  });
 }
 
 export async function POST(req: NextRequest) {

@@ -7,7 +7,7 @@ const dictionaries: Record<Locale, Record<TranslationKey, string>> = {
   uk,
 };
 
-export async function getServerLocale(): Promise<Locale> {
+async function getServerLocale(): Promise<Locale> {
   try {
     const cookieStore = await cookies();
     const c = cookieStore.get('ch_locale')?.value;

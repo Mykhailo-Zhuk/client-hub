@@ -12,7 +12,7 @@ const PROJECTS_FILE = path.join(process.cwd(), 'data', 'projects.json');
  * - "client@iron-master.example" -> "client"
  * - "sashasquilts@gmail.com" -> "sashasquilts"
  */
-export function getDefaultPassword(email: string): string {
+function getDefaultPassword(email: string): string {
   if (!email || typeof email !== 'string' || !email.includes('@')) {
     return '';
   }
@@ -44,28 +44,31 @@ function writePasswordsFile(passwords: Record<string, string>): void {
   }
 }
 
-function updateProjectsJson(
+export function updateProjectsJson(
   projectId: string,
   updater: (p: Project) => void
-): void {
+): boolean {
   try {
-    if (!fs.existsSync(PROJECTS_FILE)) return;
+    if (!fs.existsSync(PROJECTS_FILE)) return false;
     const raw = fs.readFileSync(PROJECTS_FILE, 'utf-8');
     const projects: Project[] = JSON.parse(raw);
     const target = projects.find((p) => p.id === projectId);
     if (target) {
       updater(target);
       fs.writeFileSync(PROJECTS_FILE, JSON.stringify(projects, null, 2), 'utf-8');
+      return true;
     }
+    return false;
   } catch (err) {
     console.warn('[client-passwords] error updating projects.json:', err);
+    return false;
   }
 }
 
 /**
  * Returns true if a custom password has been explicitly set for this project.
  */
-export async function hasCustomPassword(projectId: string): Promise<boolean> {
+async function hasCustomPassword(projectId: string): Promise<boolean> {
   // 1. Check Supabase first if configured
   const sb = getSupabaseAdmin();
   if (sb) {
@@ -94,7 +97,7 @@ export async function hasCustomPassword(projectId: string): Promise<boolean> {
  * Get the effective password for a project.
  * Returns the custom password if set, or defaults to the email name before '@'.
  */
-export async function getClientPassword(
+async function getClientPassword(
   projectId: string,
   clientEmail?: string
 ): Promise<string> {

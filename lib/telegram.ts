@@ -150,7 +150,7 @@ export async function sendTelegramNotification(
   };
 }
 
-export function parseTelegramUpdate(body: any): {
+function parseTelegramUpdate(body: any): {
   chat_id?: string;
   text?: string;
   from?: string;

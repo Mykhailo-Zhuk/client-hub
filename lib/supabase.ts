@@ -79,7 +79,7 @@ function isConfigured(url: string, key: string): boolean {
  * Browser/anon client — used from React components for client-side auth.
  * Returns null when env vars are missing placeholders (dev / first-run).
  */
-export const supabase: SupabaseClient | null = isConfigured(supabaseUrl, supabaseAnonKey)
+const supabase: SupabaseClient | null = isConfigured(supabaseUrl, supabaseAnonKey)
   ? createClient(supabaseUrl, supabaseAnonKey, {
       auth: { persistSession: true, autoRefreshToken: true },
       global: { fetch: fetchWithTimeout },

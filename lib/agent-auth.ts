@@ -41,7 +41,7 @@ export function isAuthorizedSecret(secret: string): boolean {
   return false;
 }
 
-export function isUsingDevFallback() {
+function isUsingDevFallback() {
   return (
     AGENT_SECRET === FALLBACK_DEV_SECRET &&
     !process.env.AGENT_SECRET &&

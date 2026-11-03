@@ -44,7 +44,7 @@ function persistStore(): void {
   }
 }
 
-export async function getAllRequests(): Promise<ProjectRequest[]> {
+async function getAllRequests(): Promise<ProjectRequest[]> {
   return memStore();
 }
 

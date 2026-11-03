@@ -38,12 +38,19 @@ export function ActiveProjects({ projects: initialProjects }: { projects?: Proje
               <div className="p-5">
                 <div className="flex items-start justify-between gap-3">
                   <div>
-                    <Link
-                      href={`/portal/${p.id}`}
-                      className="text-lg font-semibold hover:text-accent"
-                    >
-                      {p.title}
-                    </Link>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <Link
+                        href={`/portal/${p.id}`}
+                        className="text-lg font-semibold hover:text-accent"
+                      >
+                        {p.title}
+                      </Link>
+                      {(p.isSample || p.id === "spa-canada") && (
+                        <Badge className="border-amber-500/30 bg-amber-500/10 text-[11px] font-medium text-amber-600 dark:text-amber-400">
+                          ✨ {t("projects.sampleBadge")}
+                        </Badge>
+                      )}
+                    </div>
                     <div className="mt-0.5 text-xs text-muted-foreground">
                       {p.client}
                     </div>
@@ -52,6 +59,12 @@ export function ActiveProjects({ projects: initialProjects }: { projects?: Proje
                     {p.progress}%
                   </Badge>
                 </div>
+                {(p.isSample || p.id === "spa-canada") && (
+                  <div className="mt-3 flex items-center gap-2 rounded-md border border-amber-500/20 bg-amber-500/5 px-2.5 py-1.5 text-xs text-amber-700 dark:text-amber-300">
+                    <span className="shrink-0">✨</span>
+                    <span>{t("projects.sampleNotice")}</span>
+                  </div>
+                )}
                 {p.description && (
                   <p className="mt-3 line-clamp-3 text-sm text-muted-foreground">
                     {p.description}

@@ -1,6 +1,7 @@
 "use client";
 
-import { CheckCircle2, ExternalLink, Github } from "lucide-react";
+import Link from "next/link";
+import { ArrowRight, CheckCircle2, ExternalLink, Github } from "lucide-react";
 import { getCompletedProjects } from "@/lib/projects";
 import type { Project } from "@/lib/types";
 import { Card } from "../ui/card";
@@ -22,52 +23,95 @@ export function CompletedProjects({ projects: initialProjects }: { projects?: Pr
         </p>
       </Reveal>
       <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-        {projects.map((p, i) => (
-          <Reveal key={p.id} delay={i * 0.08}>
-            <Card className="p-5">
-              <div className="flex items-center gap-2 text-xs font-medium text-emerald-500">
-                <CheckCircle2 size={14} />
-                {t("completedProjects.badge")}
-              </div>
-              <h3 className="mt-3 font-semibold">{p.title}</h3>
-              <div className="mt-1 text-xs text-muted-foreground">
-                {p.client}
-              </div>
-              {p.completedDate && (
-                <div className="mt-2 text-xs text-muted-foreground">
-                  {t("completedProjects.shipped")}: {p.completedDate}
+        {projects.map((p, i) => {
+          const isSample = Boolean(
+            p.isSample ||
+              p.id === "iron-master" ||
+              p.id === "universal-service-template"
+          );
+          return (
+            <Reveal key={p.id} delay={i * 0.08}>
+              <Card className="flex flex-col justify-between p-5">
+                <div>
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <div className="flex items-center gap-1.5 text-xs font-medium text-emerald-500">
+                      <CheckCircle2 size={14} />
+                      {t("completedProjects.badge")}
+                    </div>
+                    {isSample && (
+                      <Badge className="border-amber-500/30 bg-amber-500/10 text-[11px] font-medium text-amber-600 dark:text-amber-400">
+                        ✨ {t("projects.sampleBadge")}
+                      </Badge>
+                    )}
+                  </div>
+                  <h3 className="mt-3 font-semibold">
+                    <Link
+                      href={`/portal/${p.id}`}
+                      className="hover:text-accent hover:underline"
+                    >
+                      {p.title}
+                    </Link>
+                  </h3>
+                  <div className="mt-1 text-xs text-muted-foreground">
+                    {p.client}
+                  </div>
+                  {isSample && (
+                    <div className="mt-3 flex items-center gap-2 rounded-md border border-amber-500/20 bg-amber-500/5 px-2.5 py-1.5 text-xs text-amber-700 dark:text-amber-300">
+                      <span className="shrink-0">✨</span>
+                      <span>{t("projects.sampleNotice")}</span>
+                    </div>
+                  )}
+                  {p.description && (
+                    <p className="mt-3 line-clamp-3 text-xs text-muted-foreground">
+                      {p.description}
+                    </p>
+                  )}
+                  {p.completedDate && (
+                    <div className="mt-2 text-xs text-muted-foreground">
+                      {t("completedProjects.shipped")}: {p.completedDate}
+                    </div>
+                  )}
+                  <div className="mt-3 flex flex-wrap gap-1.5">
+                    {(p.tags || []).map((tag) => (
+                      <Badge key={tag}>{tag}</Badge>
+                    ))}
+                  </div>
                 </div>
-              )}
-              <div className="mt-3 flex flex-wrap gap-1.5">
-                {(p.tags || []).map((tag) => (
-                  <Badge key={tag}>{tag}</Badge>
-                ))}
-              </div>
-              <div className="mt-4 flex gap-2">
-                {p.demo && (
-                  <a
-                    href={p.demo}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
+                <div className="mt-5 flex items-center gap-2 pt-2">
+                  {p.demo && (
+                    <a
+                      href={p.demo}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-flex items-center gap-1.5 rounded-md border border-border bg-background px-2.5 py-1 text-xs hover:bg-muted"
+                    >
+                      <ExternalLink size={12} className="shrink-0" />
+                      <span>{t("activeProjects.demo")}</span>
+                    </a>
+                  )}
+                  {p.github && (
+                    <a
+                      href={p.github}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-flex items-center gap-1.5 rounded-md border border-border bg-background px-2.5 py-1 text-xs hover:bg-muted"
+                    >
+                      <Github size={12} className="shrink-0" />
+                      <span>{t("activeProjects.repo")}</span>
+                    </a>
+                  )}
+                  <Link
+                    href={`/portal/${p.id}`}
+                    className="ml-auto inline-flex items-center gap-1.5 rounded-md bg-accent px-2.5 py-1 text-xs font-medium text-accent-foreground hover:opacity-90"
                   >
-                    <ExternalLink size={12} /> Demo
-                  </a>
-                )}
-                {p.github && (
-                  <a
-                    href={p.github}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
-                  >
-                    <Github size={12} /> Repo
-                  </a>
-                )}
-              </div>
-            </Card>
-          </Reveal>
-        ))}
+                    <span>{t("activeProjects.clientPortal")}</span>
+                    <ArrowRight size={12} className="shrink-0" />
+                  </Link>
+                </div>
+              </Card>
+            </Reveal>
+          );
+        })}
       </div>
     </section>
   );

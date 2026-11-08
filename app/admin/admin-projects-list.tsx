@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -37,6 +37,33 @@ export function AdminProjectsList({
   const [search, setSearch] = useState('');
   const [sortBy, setSortBy] = useState<SortOption>('newest');
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
+
+  useEffect(() => {
+    try {
+      const savedSort = localStorage.getItem('client-hub-project-sort') as SortOption | null;
+      if (savedSort) {
+        setSortBy(savedSort);
+      }
+      const savedFilter = localStorage.getItem('client-hub-project-filter') as StatusFilter | null;
+      if (savedFilter) {
+        setStatusFilter(savedFilter);
+      }
+    } catch {}
+  }, []);
+
+  const handleSortChange = (newSort: SortOption) => {
+    setSortBy(newSort);
+    try {
+      localStorage.setItem('client-hub-project-sort', newSort);
+    } catch {}
+  };
+
+  const handleStatusFilterChange = (newFilter: StatusFilter) => {
+    setStatusFilter(newFilter);
+    try {
+      localStorage.setItem('client-hub-project-filter', newFilter);
+    } catch {}
+  };
 
   // Compute counts for status badges
   const counts = useMemo(() => {
@@ -122,7 +149,7 @@ export function AdminProjectsList({
               <select
                 aria-label={t('admin.sort.label')}
                 value={sortBy}
-                onChange={(e) => setSortBy(e.target.value as SortOption)}
+                onChange={(e) => handleSortChange(e.target.value as SortOption)}
                 className="h-8 appearance-none rounded-md border border-border bg-background pl-7 pr-8 text-xs font-medium text-foreground outline-none hover:bg-muted focus:border-accent cursor-pointer"
               >
                 <option value="newest">{t('admin.sort.newest')}</option>
@@ -166,7 +193,7 @@ export function AdminProjectsList({
           <div className="flex flex-wrap items-center gap-1.5">
             <button
               type="button"
-              onClick={() => setStatusFilter('all')}
+              onClick={() => handleStatusFilterChange('all')}
               className={`rounded-md px-2.5 py-1 text-xs font-medium transition-colors ${
                 statusFilter === 'all'
                   ? 'bg-accent text-accent-foreground'
@@ -177,7 +204,7 @@ export function AdminProjectsList({
             </button>
             <button
               type="button"
-              onClick={() => setStatusFilter('active')}
+              onClick={() => handleStatusFilterChange('active')}
               className={`rounded-md px-2.5 py-1 text-xs font-medium transition-colors ${
                 statusFilter === 'active'
                   ? 'bg-accent text-accent-foreground'
@@ -188,7 +215,7 @@ export function AdminProjectsList({
             </button>
             <button
               type="button"
-              onClick={() => setStatusFilter('completed')}
+              onClick={() => handleStatusFilterChange('completed')}
               className={`rounded-md px-2.5 py-1 text-xs font-medium transition-colors ${
                 statusFilter === 'completed'
                   ? 'bg-emerald-500 text-white dark:bg-emerald-600'
@@ -200,7 +227,7 @@ export function AdminProjectsList({
             {counts.paused > 0 && (
               <button
                 type="button"
-                onClick={() => setStatusFilter('paused')}
+                onClick={() => handleStatusFilterChange('paused')}
                 className={`rounded-md px-2.5 py-1 text-xs font-medium transition-colors ${
                   statusFilter === 'paused'
                     ? 'bg-amber-500 text-white dark:bg-amber-600'

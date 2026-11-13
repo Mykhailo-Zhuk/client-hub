@@ -1,8 +1,38 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { revalidatePath } from 'next/cache';
 import { cookies } from 'next/headers';
+import type { SupabaseClient } from '@supabase/supabase-js';
 import { requireSupabaseAdmin, isSupabaseConfigured } from '@/lib/supabase';
 import { AGENT_SECRET, AGENT_COOKIE } from '@/lib/agent-auth';
 import { setClientPassword, updateProjectsJson } from '@/lib/client-passwords';
+import { computeEffectiveDayCurrent } from '@/lib/project-days';
+
+async function updateSupabaseProject(
+  sb: SupabaseClient,
+  projectId: string,
+  updates: Record<string, unknown>
+): Promise<{ error: { message: string; code?: string } | null }> {
+  const pending = { ...updates };
+  const maxAttempts = Object.keys(pending).length + 1;
+
+  for (let i = 0; i < maxAttempts && Object.keys(pending).length > 0; i++) {
+    const { error } = await sb.from('projects').update(pending).eq('id', projectId);
+    if (!error) return { error: null };
+
+    // If an unmigrated optional column is null/unset (e.g. 006_add_telegram_tokens.sql
+    // not yet applied), strip that null field and retry so the rest of the update lands.
+    const missingCol = error.message.match(/Could not find the '([^']+)' column/)?.[1];
+    if (error.code === 'PGRST204' && missingCol && missingCol in pending && pending[missingCol] === null) {
+      console.warn(`[api/projects/update] skipping unmigrated null column "${missingCol}"`);
+      delete pending[missingCol];
+      continue;
+    }
+
+    return { error };
+  }
+
+  return { error: null };
+}
 
 function updateJsonProjects(projectId: string, updates: Record<string, unknown>) {
   updateProjectsJson(projectId, (target) => {
@@ -93,11 +123,47 @@ export async function POST(req: NextRequest) {
     // Update Supabase if configured
     if (isSupabaseConfigured() && Object.keys(updates).length > 0) {
       const sb = requireSupabaseAdmin();
-      const { error } = await sb.from('projects').update(updates).eq('id', projectId);
+
+      // Snapshot live active days before updating so pausing/completing freezes
+      // the counter and editing other fields while active doesn't reset updated_at.
+      const table = sb.from('projects') as unknown as {
+        select?: (cols: string) => {
+          eq: (col: string, val: string) => {
+            maybeSingle: () => PromiseLike<{ data: Record<string, unknown> | null }>;
+          };
+        };
+      };
+      if (typeof table.select === 'function') {
+        const { data: existing } = await table
+          .select('status, day_current, start_date, updated_at')
+          .eq('id', projectId)
+          .maybeSingle();
+
+        if (existing && existing.status === 'active') {
+          const existingDay = typeof existing.day_current === 'number' ? existing.day_current : 0;
+          const userChangedDay = typeof day_current === 'number' && day_current !== existingDay;
+          if (!userChangedDay) {
+            updates.day_current = computeEffectiveDayCurrent({
+              status: 'active',
+              dayCurrent: existingDay,
+              startDate: (existing.start_date as string | null) ?? null,
+              updatedAt: (existing.updated_at as string | null) ?? null,
+            });
+          }
+        }
+      }
+
+      const { error } = await updateSupabaseProject(sb, projectId, updates);
       if (error) {
-        console.warn('[api/projects/update] Supabase error:', error.message);
+        console.error('[api/projects/update] Supabase error:', error.message);
+        return NextResponse.json({ error: error.message }, { status: 500 });
       }
     }
+
+    revalidatePath('/');
+    revalidatePath('/admin');
+    revalidatePath(`/admin/${projectId}`);
+    revalidatePath(`/portal/${projectId}`);
 
     return NextResponse.json({ ok: true, projectId, updates });
   } catch (e: any) {

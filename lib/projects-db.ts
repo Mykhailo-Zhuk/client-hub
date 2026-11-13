@@ -18,6 +18,7 @@ import {
   clearSupabaseError,
 } from './supabase';
 import projectsData from '@/data/projects.json';
+import { computeEffectiveDayCurrent } from './project-days';
 import type { Project } from './types';
 
 type SupabaseProjectRow = {
@@ -42,6 +43,7 @@ type SupabaseProjectRow = {
   telegram_chat_id?: string | null;
   client_telegram_token?: string | null;
   client_telegram_chat_id?: string | null;
+  updated_at?: string | null;
 };
 
 function rowToProject(r: SupabaseProjectRow): Project {
@@ -49,6 +51,14 @@ function rowToProject(r: SupabaseProjectRow): Project {
   const useJsonProgress = Boolean(
     jsonFallback && typeof jsonFallback.progress === 'number' && jsonFallback.progress > r.progress
   );
+  const storedDayCurrent =
+    useJsonProgress && jsonFallback ? jsonFallback.dayCurrent : r.day_current;
+  const effectiveDayCurrent = computeEffectiveDayCurrent({
+    status: r.status,
+    dayCurrent: storedDayCurrent ?? 0,
+    startDate: r.start_date,
+    updatedAt: r.updated_at,
+  });
   return {
     id: r.id,
     client: r.client_name,
@@ -58,13 +68,13 @@ function rowToProject(r: SupabaseProjectRow): Project {
     description: r.description ?? undefined,
     status: r.status,
     progress: useJsonProgress && jsonFallback ? jsonFallback.progress : r.progress,
-    dayCurrent:
-      (useJsonProgress && jsonFallback ? jsonFallback.dayCurrent : r.day_current) || undefined,
+    dayCurrent: effectiveDayCurrent || undefined,
     dayTotal:
       (useJsonProgress && jsonFallback ? jsonFallback.dayTotal : r.day_total) || undefined,
     startDate: r.start_date ?? '',
     estimatedEnd: r.estimated_end ?? undefined,
     completedDate: r.completed_date ?? undefined,
+    updatedAt: r.updated_at ?? undefined,
     tags: r.tags ?? [],
     github: r.github ?? undefined,
     demo: r.demo ?? undefined,

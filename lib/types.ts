@@ -14,6 +14,7 @@ export interface Project {
   startDate: string;
   estimatedEnd?: string;
   completedDate?: string;
+  updatedAt?: string;
   tags: string[];
   github?: string;
   demo?: string;
@@ -41,13 +42,6 @@ export interface Comment {
   message: string;
   author: string;
   timestamp: string;
-}
-
-export interface Session {
-  token: string;
-  email: string;
-  projectId: string;
-  createdAt: string;
 }
 
 export interface ProjectRequest {

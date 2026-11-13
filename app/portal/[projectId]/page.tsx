@@ -18,6 +18,7 @@ import { ProjectStats } from "./project-stats";
 import { ClientAttention } from "./client-attention";
 import { PortalMounted } from "./portal-mounted";
 import { ClientPortalSettingsForm } from "./client-portal-settings-form";
+import LiveStreamViewer from "./live-stream-viewer";
 import type { Comment } from "@/lib/types";
 import { getRequestsByProjectAsync } from "@/lib/requests-db";
 import { getServerTranslation } from "@/lib/i18n/server";
@@ -153,7 +154,8 @@ export default async function PortalPage({
           </div>
         </Reveal>
 
-        <div className="mt-8">
+        <div className="mt-8 space-y-6">
+          <LiveStreamViewer projectId={project.id} />
           <ClientAttention
             requests={projectRequests}
             projectId={project.id}

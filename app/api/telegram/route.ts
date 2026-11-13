@@ -1,7 +1,18 @@
+import crypto from 'crypto';
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase';
 
 const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN || '';
+const TELEGRAM_WEBHOOK_SECRET = process.env.TELEGRAM_WEBHOOK_SECRET || '';
+
+function isValidTelegramWebhookSecret(req: NextRequest): boolean {
+  if (!TELEGRAM_WEBHOOK_SECRET) return true;
+  const header = req.headers.get('x-telegram-bot-api-secret-token') ?? '';
+  const a = Buffer.from(header);
+  const b = Buffer.from(TELEGRAM_WEBHOOK_SECRET);
+  if (a.length !== b.length) return false;
+  return crypto.timingSafeEqual(a, b);
+}
 
 /**
  * Telegram bot webhook.
@@ -284,6 +295,9 @@ export async function POST(req: NextRequest) {
 
     // ---- Inbound webhook (Telegram → us) ----
     if (ct.includes('application/json')) {
+      if (!isValidTelegramWebhookSecret(req)) {
+        return NextResponse.json({ error: 'Unauthorized webhook' }, { status: 401 });
+      }
       // Callback query button press
       if (body.callback_query) {
         await handleCallbackQuery(body.callback_query);

@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
-import { Loader2, Save } from 'lucide-react';
+import { Info, Loader2, Save } from 'lucide-react';
 import { useLanguage } from '@/lib/i18n/context';
 
 type Project = {
@@ -84,21 +84,21 @@ export default function ProjectSettingsForm({
   return (
     <div className="space-y-4">
       <div className="grid gap-3 sm:grid-cols-2">
-        <Field label="Title">
+        <Field label="Title" hint={t('admin.settings.hint.title')}>
           <input
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             className="w-full rounded-md border border-border bg-background px-3 py-1.5 text-sm outline-none focus:border-accent"
           />
         </Field>
-        <Field label="Client name">
+        <Field label="Client name" hint={t('admin.settings.hint.clientName')}>
           <input
             value={clientName}
             onChange={(e) => setClientName(e.target.value)}
             className="w-full rounded-md border border-border bg-background px-3 py-1.5 text-sm outline-none focus:border-accent"
           />
         </Field>
-        <Field label="Client email">
+        <Field label="Client email" hint={t('admin.settings.hint.clientEmail')}>
           <input
             type="email"
             value={clientEmail}
@@ -106,7 +106,7 @@ export default function ProjectSettingsForm({
             className="w-full rounded-md border border-border bg-background px-3 py-1.5 text-sm outline-none focus:border-accent"
           />
         </Field>
-        <Field label="Client password (leave blank to keep unchanged)">
+        <Field label="Client password (leave blank to keep unchanged)" hint={t('admin.settings.hint.clientPassword')}>
           <input
             type="text"
             value={clientPassword}
@@ -115,7 +115,7 @@ export default function ProjectSettingsForm({
             className="w-full rounded-md border border-border bg-background px-3 py-1.5 text-sm outline-none focus:border-accent"
           />
         </Field>
-        <Field label="Status">
+        <Field label="Status" hint={t('admin.settings.hint.status')}>
           <select
             value={status}
             onChange={(e) =>
@@ -128,7 +128,7 @@ export default function ProjectSettingsForm({
             <option value="completed">Completed</option>
           </select>
         </Field>
-        <Field label={`Progress: ${progress}%`}>
+        <Field label={`Progress: ${progress}%`} hint={t('admin.settings.hint.progress')}>
           <input
             type="range"
             min={0}
@@ -138,7 +138,7 @@ export default function ProjectSettingsForm({
             className="w-full"
           />
         </Field>
-        <Field label="Day">
+        <Field label="Day" hint={t('admin.settings.hint.day')}>
           <div className="flex items-center gap-2">
             <input
               type="number"
@@ -155,7 +155,7 @@ export default function ProjectSettingsForm({
             />
           </div>
         </Field>
-        <Field label="Demo URL">
+        <Field label="Demo URL" hint={t('admin.settings.hint.demo')}>
           <input
             value={demo}
             onChange={(e) => setDemo(e.target.value)}
@@ -163,7 +163,7 @@ export default function ProjectSettingsForm({
             className="w-full rounded-md border border-border bg-background px-3 py-1.5 text-sm outline-none focus:border-accent"
           />
         </Field>
-        <Field label="GitHub URL">
+        <Field label="GitHub URL" hint={t('admin.settings.hint.github')}>
           <input
             value={github}
             onChange={(e) => setGithub(e.target.value)}
@@ -171,7 +171,7 @@ export default function ProjectSettingsForm({
             className="w-full rounded-md border border-border bg-background px-3 py-1.5 text-sm outline-none focus:border-accent"
           />
         </Field>
-        <Field label={t('admin.settings.telegramBotTokenLabel')}>
+        <Field label={t('admin.settings.telegramBotTokenLabel')} hint={t('admin.settings.hint.telegramBotToken')}>
           <input
             value={telegramBotToken}
             onChange={(e) => setTelegramBotToken(e.target.value)}
@@ -179,7 +179,7 @@ export default function ProjectSettingsForm({
             className="w-full rounded-md border border-border bg-background px-3 py-1.5 text-sm outline-none focus:border-accent font-mono text-xs"
           />
         </Field>
-        <Field label={t('admin.settings.telegramChatIdLabel')}>
+        <Field label={t('admin.settings.telegramChatIdLabel')} hint={t('admin.settings.hint.telegramChatId')}>
           <input
             value={telegramChatId}
             onChange={(e) => setTelegramChatId(e.target.value)}
@@ -187,7 +187,7 @@ export default function ProjectSettingsForm({
             className="w-full rounded-md border border-border bg-background px-3 py-1.5 text-sm outline-none focus:border-accent font-mono text-xs"
           />
         </Field>
-        <Field label={t('admin.settings.clientTelegramBotTokenLabel')}>
+        <Field label={t('admin.settings.clientTelegramBotTokenLabel')} hint={t('admin.settings.hint.clientTelegramBotToken')}>
           <input
             value={clientTelegramToken}
             onChange={(e) => setClientTelegramToken(e.target.value)}
@@ -195,7 +195,7 @@ export default function ProjectSettingsForm({
             className="w-full rounded-md border border-border bg-background px-3 py-1.5 text-sm outline-none focus:border-accent font-mono text-xs"
           />
         </Field>
-        <Field label={t('admin.settings.clientTelegramChatIdLabel')}>
+        <Field label={t('admin.settings.clientTelegramChatIdLabel')} hint={t('admin.settings.hint.clientTelegramChatId')}>
           <input
             value={clientTelegramChatId}
             onChange={(e) => setClientTelegramChatId(e.target.value)}
@@ -224,17 +224,42 @@ export default function ProjectSettingsForm({
 
 function Field({
   label,
+  hint,
   children,
 }: {
   label: React.ReactNode;
+  hint?: string;
   children: React.ReactNode;
 }) {
+  const [open, setOpen] = useState(false);
   return (
-    <label className="block">
-      <span className="mb-1 block text-xs font-medium text-muted-foreground">
-        {label}
-      </span>
+    <div className="block">
+      <div className="mb-1 flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+        <span>{label}</span>
+        {hint && (
+          <div className="relative inline-flex items-center">
+            <button
+              type="button"
+              onClick={() => setOpen((v) => !v)}
+              onBlur={() => setOpen(false)}
+              title={hint}
+              aria-label={hint}
+              className="group inline-flex h-4 w-4 items-center justify-center rounded-full text-muted-foreground/70 transition-colors hover:bg-muted hover:text-foreground focus:outline-none"
+            >
+              <Info size={12} />
+              <span
+                role="tooltip"
+                className={`pointer-events-none absolute bottom-full left-1/2 z-30 mb-1.5 w-60 -translate-x-1/2 rounded-md border border-border bg-popover px-2.5 py-1.5 text-left text-[11px] font-normal leading-snug text-popover-foreground shadow-md transition-opacity ${
+                  open ? 'opacity-100' : 'opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100'
+                }`}
+              >
+                {hint}
+              </span>
+            </button>
+          </div>
+        )}
+      </div>
       {children}
-    </label>
+    </div>
   );
 }

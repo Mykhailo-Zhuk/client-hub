@@ -1,7 +1,33 @@
+import crypto from 'crypto';
 import fs from 'fs';
 import path from 'path';
 import { getSupabaseAdmin } from './supabase';
 import type { Project } from './types';
+
+const SCRYPT_PREFIX = 'scrypt:';
+
+export function hashClientPassword(password: string): string {
+  const salt = crypto.randomBytes(16).toString('hex');
+  const derived = crypto.scryptSync(password, salt, 64).toString('hex');
+  return `${SCRYPT_PREFIX}${salt}:${derived}`;
+}
+
+export function verifyPasswordValue(input: string, stored: string): boolean {
+  if (!stored) return false;
+  if (stored.startsWith(SCRYPT_PREFIX)) {
+    const rest = stored.slice(SCRYPT_PREFIX.length);
+    const [salt, hexHash] = rest.split(':');
+    if (!salt || !hexHash) return false;
+    const derived = crypto.scryptSync(input, salt, 64);
+    const expected = Buffer.from(hexHash, 'hex');
+    if (derived.length !== expected.length) return false;
+    return crypto.timingSafeEqual(derived, expected);
+  }
+  const a = Buffer.from(input);
+  const b = Buffer.from(stored);
+  if (a.length !== b.length) return false;
+  return crypto.timingSafeEqual(a, b);
+}
 
 const PASSWORDS_FILE = path.join(process.cwd(), 'data', 'client-passwords.json');
 const PROJECTS_FILE = path.join(process.cwd(), 'data', 'projects.json');
@@ -143,15 +169,16 @@ export async function setClientPassword(
 ): Promise<void> {
   const trimmed = newPassword.trim();
   if (!trimmed) return;
+  const hashed = hashClientPassword(trimmed);
 
   // 1. Save to data/client-passwords.json (best-effort local file store)
   const fileStore = readPasswordsFile();
-  fileStore[projectId] = trimmed;
+  fileStore[projectId] = hashed;
   writePasswordsFile(fileStore);
 
   // 2. Update data/projects.json (best-effort local file store)
   updateProjectsJson(projectId, (p) => {
-    p.clientPassword = trimmed;
+    p.clientPassword = hashed;
   });
 
   // 3. Update Supabase (primary persistent store)
@@ -159,7 +186,7 @@ export async function setClientPassword(
   if (sb) {
     const { error } = await sb
       .from('projects')
-      .update({ client_password: trimmed })
+      .update({ client_password: hashed })
       .eq('id', projectId);
     if (error) {
       if (error.code === 'PGRST204' || error.code === '42703') {
@@ -213,5 +240,5 @@ export async function verifyClientPassword(
 ): Promise<boolean> {
   const expected = await getClientPassword(projectId, clientEmail);
   if (!expected) return false;
-  return inputPassword.trim() === expected;
+  return verifyPasswordValue(inputPassword.trim(), expected);
 }

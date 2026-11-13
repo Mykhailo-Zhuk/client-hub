@@ -24,6 +24,7 @@ import ProjectSettingsForm from './project-settings-form';
 import { DeleteProjectButton } from './delete-button';
 import { ClientPreviewButton } from './client-preview-button';
 import ClientRequestsManager from './client-requests';
+import LiveStreamBroadcaster from './live-stream-broadcaster';
 
 export const dynamic = 'force-dynamic';
 
@@ -288,6 +289,10 @@ async function renderAdminProject(projectId: string) {
                 ) : null}
               </div>
             </Card>
+          </Reveal>
+
+          <Reveal delay={0.03}>
+            <LiveStreamBroadcaster projectId={project.id} />
           </Reveal>
 
           <Reveal delay={0.05}>

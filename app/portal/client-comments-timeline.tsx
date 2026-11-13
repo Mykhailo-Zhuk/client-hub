@@ -66,13 +66,9 @@ const commentTypeMeta: Record<
 function CommentItem({
   c,
   currentEmail,
-  onReplace,
-  onRemove,
 }: {
   c: ClientComment;
   currentEmail: string;
-  onReplace?: (oldId: string, next: ClientComment) => void;
-  onRemove?: (id: string) => void;
 }) {
   const { t, locale } = useLanguage();
   const meta = commentTypeMeta[c.type] || commentTypeMeta.general;

@@ -34,6 +34,7 @@
     ]
   },
   "rules": {},
+  "ignorePatterns": ["scripts/**"],
   "ignoreExports": [
     {
       "file": "lib/projects-db.ts",

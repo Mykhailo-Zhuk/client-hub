@@ -109,7 +109,11 @@ export async function POST(req: NextRequest) {
         if (finalTgToken !== undefined) sbUpdates.client_telegram_token = tgTokenVal || null;
         if (finalTgChatId !== undefined) sbUpdates.client_telegram_chat_id = tgChatIdVal || null;
         if (Object.keys(sbUpdates).length > 0) {
-          await sb.from("projects").update(sbUpdates).eq("id", projectId);
+          const { error: sbErr } = await sb.from("projects").update(sbUpdates).eq("id", projectId);
+          if (sbErr) {
+            console.error("[api/portal/settings] Supabase error:", sbErr.message);
+            return NextResponse.json({ error: sbErr.message }, { status: 500 });
+          }
         }
       }
       telegramChanged = true;

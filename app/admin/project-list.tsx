@@ -48,21 +48,27 @@ export default function ProjectList({
       if (savedFilter) {
         setStatusFilter(savedFilter);
       }
-    } catch {}
+    } catch {
+      // localStorage unavailable
+    }
   }, []);
 
   const handleSortChange = (newSort: SortOption) => {
     setSortBy(newSort);
     try {
       localStorage.setItem('client-hub-project-sort', newSort);
-    } catch {}
+    } catch {
+      // localStorage unavailable
+    }
   };
 
   const handleFilterChange = (newFilter: StatusFilter) => {
     setStatusFilter(newFilter);
     try {
       localStorage.setItem('client-hub-project-filter', newFilter);
-    } catch {}
+    } catch {
+      // localStorage unavailable
+    }
   };
 
   useEffect(() => {

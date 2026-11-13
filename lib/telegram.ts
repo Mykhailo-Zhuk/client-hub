@@ -24,6 +24,14 @@ export interface TelegramResult {
 
 const DEFAULT_BASE_URL = 'https://client-hub-inky-one.vercel.app';
 
+function escapeHtml(text: string): string {
+  return text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
 async function sendToTelegramApi(
   botToken: string,
   chatId: string,
@@ -38,6 +46,8 @@ async function sendToTelegramApi(
         body: JSON.stringify({
           chat_id: chatId,
           text,
+          parse_mode: 'HTML',
+          link_preview_options: { is_disabled: true },
         }),
       }
     );
@@ -116,8 +126,8 @@ export async function sendTelegramNotification(
 
   for (const target of targets) {
     const preview = `${message.substring(0, 100)}${message.length > 100 ? '...' : ''}`;
-    const authorLine = author ? `👤 ${author}\n` : '';
-    const text = `🔔 Client Hub | ${title}\n📁 ${projectTitle}\n${authorLine}\n💬 ${message}\n\n🔗 ${target.link}`;
+    const authorLine = author ? `👤 ${escapeHtml(author)}\n` : '';
+    const text = `🔔 <b>Client Hub</b> | ${escapeHtml(title)}\n📁 ${escapeHtml(projectTitle)}\n${authorLine}\n💬 ${escapeHtml(message)}\n\n🔗 <a href="${escapeHtml(target.link)}">Open in Client Hub</a>`;
 
     if (!target.botToken || !target.chatId) {
       console.log(

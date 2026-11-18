@@ -1,9 +1,18 @@
 "use client";
 
-import type { Comment } from "@/lib/types";
-import type { Project } from "@/lib/types";
+import { useState } from "react";
+import type { Comment, Project } from "@/lib/types";
 import { Card } from "@/components/ui/card";
-import { Activity, CheckCircle2, Clock, MessageSquare } from "lucide-react";
+import {
+  Activity,
+  CheckCircle2,
+  ChevronDown,
+  ChevronUp,
+  Clock,
+  Flag,
+  MessageSquare,
+  Rocket,
+} from "lucide-react";
 import { useLanguage } from "@/lib/i18n/context";
 import { computeEffectiveDayCurrent } from "@/lib/project-days";
 
@@ -16,8 +25,35 @@ function isoDay(iso: string): string {
   return iso.slice(0, 10);
 }
 
+/** Strip markdown formatting noise for compact single-line / two-line milestone summaries. */
+function summarizeMilestoneMessage(raw: string): string {
+  const lines = raw
+    .split(/\r?\n/)
+    .map((line) =>
+      line
+        .replace(/^#{1,6}\s+/, "")
+        .replace(/^[-*]\s+/, "")
+        .replace(/\*\*(.*?)\*\*/g, "$1")
+        .replace(/`([^`]*)`/g, "$1")
+        .trim()
+    )
+    .filter(Boolean);
+  return lines.join(" — ");
+}
+
+function formatMilestoneDate(iso: string, locale: string): string {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return iso.slice(0, 10);
+  return new Intl.DateTimeFormat(locale === "uk" ? "uk-UA" : "en-US", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  }).format(d);
+}
+
 export function ProjectStats({ project, comments }: StatsCardProps) {
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
+  const [showAllMilestones, setShowAllMilestones] = useState(false);
   const now = new Date();
   const daysElapsed = project.dayCurrent ?? computeEffectiveDayCurrent(project, now);
   const daysTotal = project.dayTotal ?? Math.max(daysElapsed + 1, 1);
@@ -53,18 +89,27 @@ export function ProjectStats({ project, comments }: StatsCardProps) {
   const agentPct = Math.round((agentCount / totalC) * 100);
   const clientPct = 100 - agentPct;
 
-  // --- Milestones timeline (Gantt-style) -----------------------------
-  // Split project span into 5 evenly-spaced phases + mark known milestones.
+  // --- Milestones timeline (real deliverables + delivery stages) ------
   const phases = [
-    { label: "Discovery", pct: 15 },
-    { label: "Design", pct: 35 },
-    { label: "Build", pct: 55 },
-    { label: "QA", pct: 80 },
-    { label: "Launch", pct: 100 },
+    { key: "discovery", label: t("projectStats.phase.discovery"), pct: 15 },
+    { key: "design", label: t("projectStats.phase.design"), pct: 35 },
+    { key: "build", label: t("projectStats.phase.build"), pct: 55 },
+    { key: "qa", label: t("projectStats.phase.qa"), pct: 80 },
+    { key: "launch", label: t("projectStats.phase.launch"), pct: 100 },
   ];
-  const milestoneTypes = new Set(
-    comments.filter((c) => c.type === "milestone").map((c) => c.id)
-  );
+  const milestoneEvents = [...comments]
+    .filter((c) => c.type === "milestone" || c.type === "deploy")
+    .sort(
+      (a, b) =>
+        new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+    );
+  const milestoneCount = milestoneEvents.filter(
+    (c) => c.type === "milestone"
+  ).length;
+  const visibleMilestones = showAllMilestones
+    ? milestoneEvents
+    : milestoneEvents.slice(-4);
+  const hiddenMilestoneCount = milestoneEvents.length - visibleMilestones.length;
 
   return (
     <div className="space-y-6">
@@ -163,69 +208,164 @@ export function ProjectStats({ project, comments }: StatsCardProps) {
       </Card>
 
       {/* Milestones + Comments distribution */}
-      <div className="grid gap-6 lg:grid-cols-2">
-        {/* Milestones chart */}
-        <Card className="p-5">
-          <div className="flex items-start justify-between gap-2">
+      <div className="grid gap-6 lg:grid-cols-3">
+        {/* Milestones roadmap */}
+        <Card className="p-5 lg:col-span-2">
+          <div className="flex flex-wrap items-start justify-between gap-2">
             <div>
               <h3 className="text-sm font-semibold">{t("projectStats.milestones")}</h3>
               <p className="mt-0.5 text-xs text-muted-foreground">
                 {t("projectStats.milestonesSubtitle")}
               </p>
             </div>
-            <span className="rounded-full bg-accent/15 px-2.5 py-0.5 text-xs font-semibold tabular-nums text-accent">
-              {project.progress}%
-            </span>
+            <div className="flex items-center gap-2">
+              <span className="rounded-full border border-border bg-muted/50 px-2.5 py-0.5 text-[11px] font-medium text-muted-foreground tabular-nums">
+                {milestoneCount > 0
+                  ? `${milestoneCount} ${t("projectStats.milestonesReached")}`
+                  : t("projectStats.firstMilestonePending")}
+              </span>
+              <span className="rounded-full bg-accent/15 px-2.5 py-0.5 text-xs font-semibold tabular-nums text-accent">
+                {project.progress}%
+              </span>
+            </div>
           </div>
 
+          {/* 5-stage delivery progress bar */}
           <div className="mt-4">
-            <MilestonesChart phases={phases} progress={project.progress} />
-          </div>
-
-          <div className="mt-3 grid grid-cols-5 gap-1.5">
-            {phases.map((p, i) => {
-              const prevPct = i === 0 ? 0 : phases[i - 1].pct;
-              const isDone = project.progress >= p.pct;
-              const isCurrent = project.progress < p.pct && project.progress >= prevPct;
-              const phasePct = isDone
-                ? 100
-                : isCurrent
-                ? Math.round(((project.progress - prevPct) / (p.pct - prevPct)) * 100)
-                : 0;
-              return (
-                <div
-                  key={p.label}
-                  className={`rounded-md border px-2 py-1.5 text-center ${
-                    isDone
-                      ? "border-emerald-500/30 bg-emerald-500/10"
-                      : isCurrent
-                      ? "border-accent/40 bg-accent/10"
-                      : "border-border bg-muted/40"
-                  }`}
-                >
-                  <div className="truncate text-[11px] font-medium text-foreground">
-                    {p.label}
-                  </div>
+            <div className="mb-2 h-1.5 w-full overflow-hidden rounded-full bg-muted">
+              <div
+                className="h-full rounded-full bg-gradient-to-r from-accent to-emerald-500 transition-all"
+                style={{ width: `${Math.max(0, Math.min(100, project.progress))}%` }}
+              />
+            </div>
+            <div className="grid grid-cols-5 gap-1.5">
+              {phases.map((p, i) => {
+                const prevPct = i === 0 ? 0 : phases[i - 1].pct;
+                const isDone = project.progress >= p.pct;
+                const isCurrent = project.progress < p.pct && project.progress >= prevPct;
+                const phasePct = isDone
+                  ? 100
+                  : isCurrent
+                  ? Math.round(((project.progress - prevPct) / (p.pct - prevPct)) * 100)
+                  : 0;
+                return (
                   <div
-                    className={`mt-0.5 text-[10px] font-semibold tabular-nums ${
+                    key={p.key}
+                    className={`rounded-md border px-2 py-1.5 text-center ${
                       isDone
-                        ? "text-emerald-600 dark:text-emerald-400"
+                        ? "border-emerald-500/30 bg-emerald-500/10"
                         : isCurrent
-                        ? "text-accent"
-                        : "text-muted-foreground"
+                        ? "border-accent/40 bg-accent/10"
+                        : "border-border bg-muted/40"
                     }`}
                   >
-                    {isDone ? "✓ 100%" : `${phasePct}%`}
+                    <div className="truncate text-[11px] font-medium text-foreground">
+                      {p.label}
+                    </div>
+                    <div
+                      className={`mt-0.5 text-[10px] font-semibold tabular-nums ${
+                        isDone
+                          ? "text-emerald-600 dark:text-emerald-400"
+                          : isCurrent
+                          ? "text-accent"
+                          : "text-muted-foreground"
+                      }`}
+                    >
+                      {isDone ? "✓ 100%" : `${phasePct}%`}
+                    </div>
                   </div>
-                </div>
-              );
-            })}
+                );
+              })}
+            </div>
           </div>
 
-          <div className="mt-3 text-xs text-muted-foreground">
-            {milestoneTypes.size > 0
-              ? `${milestoneTypes.size} ${t("projectStats.milestonesReached")}`
-              : t("projectStats.firstMilestonePending")}
+          {/* Real project milestones & releases list */}
+          <div className="mt-4 border-t border-border pt-4">
+            {milestoneEvents.length === 0 ? (
+              <div className="rounded-lg border border-dashed border-border bg-muted/20 px-4 py-4 text-center text-xs text-muted-foreground">
+                {t("projectStats.noMilestonesYet")}
+              </div>
+            ) : (
+              <>
+                {milestoneEvents.length > 4 && (
+                  <div className="mb-2.5 flex justify-end">
+                    <button
+                      type="button"
+                      onClick={() => setShowAllMilestones((v) => !v)}
+                      className="inline-flex items-center gap-1 text-[11px] font-medium text-accent hover:underline"
+                    >
+                      {showAllMilestones ? (
+                        <>
+                          {t("projectStats.showLessMilestones")}
+                          <ChevronUp size={12} />
+                        </>
+                      ) : (
+                        <>
+                          {t("projectStats.showAllMilestones")} (+{hiddenMilestoneCount})
+                          <ChevronDown size={12} />
+                        </>
+                      )}
+                    </button>
+                  </div>
+                )}
+
+                <ol className="relative space-y-3 pl-5 before:absolute before:bottom-2 before:left-[7px] before:top-2 before:w-px before:bg-border">
+                  {visibleMilestones.map((m, idx) => {
+                    const stepNumber = showAllMilestones
+                      ? idx + 1
+                      : hiddenMilestoneCount + idx + 1;
+                    const isDeploy = m.type === "deploy";
+                    const summary = summarizeMilestoneMessage(m.message);
+                    return (
+                      <li key={m.id} className="relative">
+                        <span
+                          aria-hidden="true"
+                          className={`absolute -left-5 top-1.5 flex h-4 w-4 items-center justify-center rounded-full border ${
+                            isDeploy
+                              ? "border-emerald-500/40 bg-emerald-500/15 text-emerald-500"
+                              : "border-accent/40 bg-accent/15 text-accent"
+                          }`}
+                        >
+                          {isDeploy ? <Rocket size={9} /> : <Flag size={9} />}
+                        </span>
+                        <div className="rounded-lg border border-border/80 bg-muted/20 px-3 py-2">
+                          <div className="flex flex-wrap items-center justify-between gap-2">
+                            <div className="flex items-center gap-1.5">
+                              <span className="font-mono text-[10px] font-semibold text-muted-foreground">
+                                #{stepNumber}
+                              </span>
+                              <span
+                                className={`inline-flex items-center rounded px-1.5 py-0.5 text-[10px] font-medium ${
+                                  isDeploy
+                                    ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400"
+                                    : "bg-accent/15 text-accent"
+                                }`}
+                              >
+                                {isDeploy
+                                  ? t("timeline.type.deploy")
+                                  : t("timeline.type.milestone")}
+                              </span>
+                            </div>
+                            <time
+                              dateTime={m.timestamp}
+                              className="text-[11px] tabular-nums text-muted-foreground"
+                            >
+                              {formatMilestoneDate(m.timestamp, locale)}
+                            </time>
+                          </div>
+                          <p
+                            title={summary}
+                            className="mt-1 line-clamp-2 text-xs leading-relaxed text-foreground/90"
+                          >
+                            {summary}
+                          </p>
+                        </div>
+                      </li>
+                    );
+                  })}
+                </ol>
+              </>
+            )}
           </div>
         </Card>
 
@@ -235,9 +375,9 @@ export function ProjectStats({ project, comments }: StatsCardProps) {
           <p className="mt-0.5 text-xs text-muted-foreground">
             {t("projectStats.communicationSubtitle")}
           </p>
-          <div className="mt-4 flex items-center gap-6">
+          <div className="mt-4 flex flex-wrap items-center gap-5">
             <DonutChart agentPct={agentPct} clientPct={clientPct} />
-            <div className="space-y-2 text-sm">
+            <div className="min-w-[140px] flex-1 space-y-2 text-sm">
               <div className="flex items-center gap-2">
                 <span className="h-3 w-3 rounded-sm bg-accent" />
                 <span className="font-medium">{t("projectStats.agent")}</span>
@@ -264,171 +404,6 @@ export function ProjectStats({ project, comments }: StatsCardProps) {
         </Card>
       </div>
     </div>
-  );
-}
-
-function MilestonesChart({
-  phases,
-  progress,
-}: {
-  phases: { label: string; pct: number }[];
-  progress: number;
-}) {
-  const width = 420;
-  const height = 136;
-  const padL = 32;
-  const padR = 16;
-  const padT = 14;
-  const padB = 26;
-  const innerW = width - padL - padR;
-  const innerH = height - padT - padB;
-
-  const clamped = Math.max(0, Math.min(100, progress));
-  const yForPct = (pct: number) => padT + innerH - (pct / 100) * innerH;
-  const xForStep = (idx: number) => padL + (idx / phases.length) * innerW;
-
-  const targetPoints = [
-    { x: xForStep(0), y: yForPct(0), pct: 0 },
-    ...phases.map((p, idx) => ({
-      x: xForStep(idx + 1),
-      y: yForPct(p.pct),
-      pct: p.pct,
-    })),
-  ];
-
-  // Interpolate current X/Y position along the 5-phase polyline
-  let currentX = targetPoints[0].x;
-  let currentY = targetPoints[0].y;
-  const completedPoints: { x: number; y: number }[] = [targetPoints[0]];
-
-  for (let i = 1; i < targetPoints.length; i++) {
-    const prev = targetPoints[i - 1];
-    const curr = targetPoints[i];
-    if (clamped >= curr.pct) {
-      completedPoints.push(curr);
-      currentX = curr.x;
-      currentY = curr.y;
-    } else {
-      const span = curr.pct - prev.pct || 1;
-      const t = Math.max(0, (clamped - prev.pct) / span);
-      currentX = prev.x + (curr.x - prev.x) * t;
-      currentY = prev.y + (curr.y - prev.y) * t;
-      completedPoints.push({ x: currentX, y: currentY });
-      break;
-    }
-  }
-
-  const targetPolyline = targetPoints.map((p) => `${p.x},${p.y}`).join(" ");
-  const progressPolyline = completedPoints.map((p) => `${p.x},${p.y}`).join(" ");
-  const areaPath =
-    completedPoints.length > 1
-      ? `M ${completedPoints[0].x} ${yForPct(0)} ` +
-        completedPoints.map((p) => `L ${p.x} ${p.y}`).join(" ") +
-        ` L ${currentX} ${yForPct(0)} Z`
-      : "";
-
-  return (
-    <svg
-      viewBox={`0 0 ${width} ${height}`}
-      className="h-auto w-full overflow-visible"
-      role="img"
-      aria-label={`Project milestones progress chart: ${clamped}%`}
-    >
-      <defs>
-        <linearGradient id="milestoneFill" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="rgb(var(--accent))" stopOpacity="0.28" />
-          <stop offset="100%" stopColor="rgb(var(--accent))" stopOpacity="0.02" />
-        </linearGradient>
-      </defs>
-
-      {[0, 25, 50, 75, 100].map((tick) => {
-        const y = yForPct(tick);
-        return (
-          <g key={tick}>
-            <line
-              x1={padL}
-              y1={y}
-              x2={width - padR}
-              y2={y}
-              stroke="currentColor"
-              className="text-border"
-              strokeDasharray={tick === 0 ? undefined : "3 3"}
-              strokeWidth={1}
-            />
-            <text
-              x={padL - 6}
-              y={y + 3}
-              textAnchor="end"
-              className="fill-muted-foreground text-[9px] tabular-nums"
-            >
-              {tick}%
-            </text>
-          </g>
-        );
-      })}
-
-      {/* Planned trajectory */}
-      <polyline
-        fill="none"
-        stroke="currentColor"
-        className="text-muted-foreground/35"
-        strokeWidth={1.5}
-        strokeDasharray="4 4"
-        points={targetPolyline}
-      />
-
-      {/* Completed area + line */}
-      {areaPath && <path d={areaPath} fill="url(#milestoneFill)" />}
-      {completedPoints.length > 1 && (
-        <polyline
-          fill="none"
-          stroke="rgb(var(--accent))"
-          strokeWidth={2.5}
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          points={progressPolyline}
-        />
-      )}
-
-      {/* Milestone nodes */}
-      {phases.map((p, idx) => {
-        const pt = targetPoints[idx + 1];
-        const isDone = clamped >= p.pct;
-        return (
-          <g key={p.label}>
-            <circle
-              cx={pt.x}
-              cy={pt.y}
-              r={4}
-              fill={isDone ? "#10b981" : "hsl(var(--background))"}
-              stroke={isDone ? "#10b981" : "currentColor"}
-              className={isDone ? "" : "text-muted-foreground/50"}
-              strokeWidth={2}
-            />
-            <text
-              x={pt.x}
-              y={height - 6}
-              textAnchor="middle"
-              className={`text-[9px] ${
-                isDone ? "fill-foreground font-medium" : "fill-muted-foreground"
-              }`}
-            >
-              {p.label}
-            </text>
-          </g>
-        );
-      })}
-
-      {/* Current progress marker */}
-      <circle
-        cx={currentX}
-        cy={currentY}
-        r={5.5}
-        fill="rgb(var(--accent))"
-        stroke="hsl(var(--background))"
-        strokeWidth={2}
-      />
-    </svg>
   );
 }
 

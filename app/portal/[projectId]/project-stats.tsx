@@ -5,16 +5,16 @@ import type { Comment, Project } from "@/lib/types";
 import { Card } from "@/components/ui/card";
 import {
   Activity,
+  ArrowDownRight,
   CheckCircle2,
   ChevronDown,
   ChevronUp,
   Clock,
-  Flag,
   MessageSquare,
-  Rocket,
 } from "lucide-react";
 import { useLanguage } from "@/lib/i18n/context";
 import { computeEffectiveDayCurrent } from "@/lib/project-days";
+import { buildProjectWaves, type WorkCategory } from "@/lib/project-waves";
 
 interface StatsCardProps {
   project: Project;
@@ -25,23 +25,7 @@ function isoDay(iso: string): string {
   return iso.slice(0, 10);
 }
 
-/** Strip markdown formatting noise for compact single-line / two-line milestone summaries. */
-function summarizeMilestoneMessage(raw: string): string {
-  const lines = raw
-    .split(/\r?\n/)
-    .map((line) =>
-      line
-        .replace(/^#{1,6}\s+/, "")
-        .replace(/^[-*]\s+/, "")
-        .replace(/\*\*(.*?)\*\*/g, "$1")
-        .replace(/`([^`]*)`/g, "$1")
-        .trim()
-    )
-    .filter(Boolean);
-  return lines.join(" — ");
-}
-
-function formatMilestoneDate(iso: string, locale: string): string {
+function formatShortDate(iso: string, locale: string): string {
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return iso.slice(0, 10);
   return new Intl.DateTimeFormat(locale === "uk" ? "uk-UA" : "en-US", {
@@ -51,9 +35,53 @@ function formatMilestoneDate(iso: string, locale: string): string {
   }).format(d);
 }
 
+function formatWaveRange(startIso: string, endIso: string, locale: string): string {
+  const start = formatShortDate(startIso, locale);
+  const end = formatShortDate(endIso, locale);
+  return start === end ? start : `${start} — ${end}`;
+}
+
+function scrollToTimelineComment(commentId: string) {
+  const target = document.querySelector<HTMLElement>(
+    `[data-comment-id="${CSS.escape(commentId)}"]`
+  );
+  if (!target) return;
+  target.scrollIntoView({ behavior: "smooth", block: "center" });
+  target.classList.add("ring-2", "ring-accent/60", "rounded-md");
+  window.setTimeout(() => {
+    target.classList.remove("ring-2", "ring-accent/60", "rounded-md");
+  }, 1800);
+}
+
+const WORK_CATEGORY_STYLES: Record<
+  WorkCategory,
+  { color: string; badgeClass: string; labelKey: "timeline.type.milestone" | "timeline.type.deploy" | "timeline.type.bugFix" | "timeline.type.status" }
+> = {
+  milestone: {
+    color: "#6366f1",
+    badgeClass: "bg-indigo-500/15 text-indigo-600 dark:text-indigo-400",
+    labelKey: "timeline.type.milestone",
+  },
+  deploy: {
+    color: "#10b981",
+    badgeClass: "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400",
+    labelKey: "timeline.type.deploy",
+  },
+  bug_fix: {
+    color: "#f59e0b",
+    badgeClass: "bg-amber-500/15 text-amber-600 dark:text-amber-400",
+    labelKey: "timeline.type.bugFix",
+  },
+  status_update: {
+    color: "#3b82f6",
+    badgeClass: "bg-blue-500/15 text-blue-600 dark:text-blue-400",
+    labelKey: "timeline.type.status",
+  },
+};
+
 export function ProjectStats({ project, comments }: StatsCardProps) {
   const { t, locale } = useLanguage();
-  const [showAllMilestones, setShowAllMilestones] = useState(false);
+  const [showAllWaves, setShowAllWaves] = useState(false);
   const now = new Date();
   const daysElapsed = project.dayCurrent ?? computeEffectiveDayCurrent(project, now);
   const daysTotal = project.dayTotal ?? Math.max(daysElapsed + 1, 1);
@@ -89,27 +117,19 @@ export function ProjectStats({ project, comments }: StatsCardProps) {
   const agentPct = Math.round((agentCount / totalC) * 100);
   const clientPct = 100 - agentPct;
 
-  // --- Milestones timeline (real deliverables + delivery stages) ------
-  const phases = [
-    { key: "discovery", label: t("projectStats.phase.discovery"), pct: 15 },
-    { key: "design", label: t("projectStats.phase.design"), pct: 35 },
-    { key: "build", label: t("projectStats.phase.build"), pct: 55 },
-    { key: "qa", label: t("projectStats.phase.qa"), pct: 80 },
-    { key: "launch", label: t("projectStats.phase.launch"), pct: 100 },
+  // --- Delivery Waves & Work Mix -------------------------------------
+  const waveSummary = buildProjectWaves(comments, project.status);
+  const visibleWaves = showAllWaves
+    ? waveSummary.waves
+    : waveSummary.waves.slice(0, 3);
+  const hiddenWavesCount = waveSummary.waves.length - visibleWaves.length;
+  const modeLabel = t(`projectStats.waveMode.${waveSummary.mode}`);
+  const workCategories: WorkCategory[] = [
+    "milestone",
+    "deploy",
+    "bug_fix",
+    "status_update",
   ];
-  const milestoneEvents = [...comments]
-    .filter((c) => c.type === "milestone" || c.type === "deploy")
-    .sort(
-      (a, b) =>
-        new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
-    );
-  const milestoneCount = milestoneEvents.filter(
-    (c) => c.type === "milestone"
-  ).length;
-  const visibleMilestones = showAllMilestones
-    ? milestoneEvents
-    : milestoneEvents.slice(-4);
-  const hiddenMilestoneCount = milestoneEvents.length - visibleMilestones.length;
 
   return (
     <div className="space-y-6">
@@ -207,22 +227,28 @@ export function ProjectStats({ project, comments }: StatsCardProps) {
         </div>
       </Card>
 
-      {/* Milestones + Comments distribution */}
+      {/* Delivery Waves + Comments distribution */}
       <div className="grid gap-6 lg:grid-cols-3">
-        {/* Milestones roadmap */}
+        {/* Variant 1: Iterative Release Waves & Work Mix */}
         <Card className="p-5 lg:col-span-2">
           <div className="flex flex-wrap items-start justify-between gap-2">
             <div>
-              <h3 className="text-sm font-semibold">{t("projectStats.milestones")}</h3>
+              <div className="flex flex-wrap items-center gap-2">
+                <h3 className="text-sm font-semibold">{t("projectStats.milestones")}</h3>
+                <span className="rounded-full bg-emerald-500/15 px-2.5 py-0.5 text-[11px] font-medium text-emerald-600 dark:text-emerald-400">
+                  {modeLabel}
+                </span>
+              </div>
               <p className="mt-0.5 text-xs text-muted-foreground">
                 {t("projectStats.milestonesSubtitle")}
               </p>
             </div>
             <div className="flex items-center gap-2">
               <span className="rounded-full border border-border bg-muted/50 px-2.5 py-0.5 text-[11px] font-medium text-muted-foreground tabular-nums">
-                {milestoneCount > 0
-                  ? `${milestoneCount} ${t("projectStats.milestonesReached")}`
-                  : t("projectStats.firstMilestonePending")}
+                {waveSummary.waves.length}{" "}
+                {waveSummary.waves.length === 1
+                  ? t("projectStats.waveSingle")
+                  : t("projectStats.wavesCount")}
               </span>
               <span className="rounded-full bg-accent/15 px-2.5 py-0.5 text-xs font-semibold tabular-nums text-accent">
                 {project.progress}%
@@ -230,143 +256,182 @@ export function ProjectStats({ project, comments }: StatsCardProps) {
             </div>
           </div>
 
-          {/* 5-stage delivery progress bar */}
-          <div className="mt-4">
-            <div className="mb-2 h-1.5 w-full overflow-hidden rounded-full bg-muted">
-              <div
-                className="h-full rounded-full bg-gradient-to-r from-accent to-emerald-500 transition-all"
-                style={{ width: `${Math.max(0, Math.min(100, project.progress))}%` }}
-              />
+          {waveSummary.totalDeliveryUpdates === 0 ? (
+            <div className="mt-4 rounded-lg border border-dashed border-border bg-muted/20 px-4 py-6 text-center text-xs text-muted-foreground">
+              {t("projectStats.noMilestonesYet")}
             </div>
-            <div className="grid grid-cols-5 gap-1.5">
-              {phases.map((p, i) => {
-                const prevPct = i === 0 ? 0 : phases[i - 1].pct;
-                const isDone = project.progress >= p.pct;
-                const isCurrent = project.progress < p.pct && project.progress >= prevPct;
-                const phasePct = isDone
-                  ? 100
-                  : isCurrent
-                  ? Math.round(((project.progress - prevPct) / (p.pct - prevPct)) * 100)
-                  : 0;
-                return (
-                  <div
-                    key={p.key}
-                    className={`rounded-md border px-2 py-1.5 text-center ${
-                      isDone
-                        ? "border-emerald-500/30 bg-emerald-500/10"
-                        : isCurrent
-                        ? "border-accent/40 bg-accent/10"
-                        : "border-border bg-muted/40"
-                    }`}
-                  >
-                    <div className="truncate text-[11px] font-medium text-foreground">
-                      {p.label}
-                    </div>
-                    <div
-                      className={`mt-0.5 text-[10px] font-semibold tabular-nums ${
-                        isDone
-                          ? "text-emerald-600 dark:text-emerald-400"
-                          : isCurrent
-                          ? "text-accent"
-                          : "text-muted-foreground"
-                      }`}
-                    >
-                      {isDone ? "✓ 100%" : `${phasePct}%`}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Real project milestones & releases list */}
-          <div className="mt-4 border-t border-border pt-4">
-            {milestoneEvents.length === 0 ? (
-              <div className="rounded-lg border border-dashed border-border bg-muted/20 px-4 py-4 text-center text-xs text-muted-foreground">
-                {t("projectStats.noMilestonesYet")}
-              </div>
-            ) : (
-              <>
-                {milestoneEvents.length > 4 && (
-                  <div className="mb-2.5 flex justify-end">
-                    <button
-                      type="button"
-                      onClick={() => setShowAllMilestones((v) => !v)}
-                      className="inline-flex items-center gap-1 text-[11px] font-medium text-accent hover:underline"
-                    >
-                      {showAllMilestones ? (
-                        <>
-                          {t("projectStats.showLessMilestones")}
-                          <ChevronUp size={12} />
-                        </>
-                      ) : (
-                        <>
-                          {t("projectStats.showAllMilestones")} (+{hiddenMilestoneCount})
-                          <ChevronDown size={12} />
-                        </>
-                      )}
-                    </button>
-                  </div>
-                )}
-
-                <ol className="relative space-y-3 pl-5 before:absolute before:bottom-2 before:left-[7px] before:top-2 before:w-px before:bg-border">
-                  {visibleMilestones.map((m, idx) => {
-                    const stepNumber = showAllMilestones
-                      ? idx + 1
-                      : hiddenMilestoneCount + idx + 1;
-                    const isDeploy = m.type === "deploy";
-                    const summary = summarizeMilestoneMessage(m.message);
+          ) : (
+            <>
+              {/* Segmented Work Mix Bar */}
+              <div className="mt-4 rounded-xl border border-border bg-muted/30 p-3.5">
+                <div className="mb-2 flex items-center justify-between text-xs">
+                  <span className="font-medium text-foreground">
+                    {t("projectStats.workMixTitle")}
+                  </span>
+                  <span className="tabular-nums text-muted-foreground">
+                    {waveSummary.totalDeliveryUpdates} {t("projectStats.workMixTotal")}
+                  </span>
+                </div>
+                <div className="flex h-2.5 w-full overflow-hidden rounded-full bg-muted">
+                  {workCategories.map((cat) => {
+                    const count = waveSummary.mix[cat];
+                    if (!count) return null;
+                    const pct = (count / waveSummary.totalDeliveryUpdates) * 100;
+                    const meta = WORK_CATEGORY_STYLES[cat];
                     return (
-                      <li key={m.id} className="relative">
-                        <span
-                          aria-hidden="true"
-                          className={`absolute -left-5 top-1.5 flex h-4 w-4 items-center justify-center rounded-full border ${
-                            isDeploy
-                              ? "border-emerald-500/40 bg-emerald-500/15 text-emerald-500"
-                              : "border-accent/40 bg-accent/15 text-accent"
-                          }`}
-                        >
-                          {isDeploy ? <Rocket size={9} /> : <Flag size={9} />}
-                        </span>
-                        <div className="rounded-lg border border-border/80 bg-muted/20 px-3 py-2">
-                          <div className="flex flex-wrap items-center justify-between gap-2">
-                            <div className="flex items-center gap-1.5">
-                              <span className="font-mono text-[10px] font-semibold text-muted-foreground">
-                                #{stepNumber}
-                              </span>
-                              <span
-                                className={`inline-flex items-center rounded px-1.5 py-0.5 text-[10px] font-medium ${
-                                  isDeploy
-                                    ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400"
-                                    : "bg-accent/15 text-accent"
-                                }`}
-                              >
-                                {isDeploy
-                                  ? t("timeline.type.deploy")
-                                  : t("timeline.type.milestone")}
-                              </span>
-                            </div>
-                            <time
-                              dateTime={m.timestamp}
-                              className="text-[11px] tabular-nums text-muted-foreground"
-                            >
-                              {formatMilestoneDate(m.timestamp, locale)}
-                            </time>
-                          </div>
-                          <p
-                            title={summary}
-                            className="mt-1 line-clamp-2 text-xs leading-relaxed text-foreground/90"
-                          >
-                            {summary}
-                          </p>
-                        </div>
-                      </li>
+                      <div
+                        key={cat}
+                        style={{ width: `${pct}%`, backgroundColor: meta.color }}
+                        title={`${t(meta.labelKey)}: ${count}`}
+                      />
                     );
                   })}
-                </ol>
-              </>
-            )}
-          </div>
+                </div>
+                <div className="mt-2.5 flex flex-wrap gap-x-4 gap-y-1.5 text-[11px]">
+                  {workCategories.map((cat) => {
+                    const meta = WORK_CATEGORY_STYLES[cat];
+                    const count = waveSummary.mix[cat];
+                    return (
+                      <div key={cat} className="flex items-center gap-1.5">
+                        <span
+                          className="h-2.5 w-2.5 rounded-sm"
+                          style={{ backgroundColor: meta.color }}
+                        />
+                        <span className="text-muted-foreground">{t(meta.labelKey)}:</span>
+                        <span className="font-semibold tabular-nums text-foreground">
+                          {count}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Compact Iterative Wave Cards (summary, no full-feed duplication) */}
+              <div className="mt-4 space-y-2.5">
+                {visibleWaves.map((wave, idx) => {
+                  const isNewest = idx === 0;
+                  const waveBadge =
+                    isNewest && project.status === "active"
+                      ? {
+                          label: t("projectStats.wave.current"),
+                          cls: "bg-accent/15 text-accent",
+                        }
+                      : isNewest && wave.hasDeploy
+                      ? {
+                          label: t("projectStats.wave.latestRelease"),
+                          cls: "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400",
+                        }
+                      : {
+                          label: t("projectStats.wave.completed"),
+                          cls: "bg-muted text-muted-foreground",
+                        };
+
+                  const countsSummary = workCategories
+                    .filter((cat) => wave.counts[cat] > 0)
+                    .map((cat) => `${wave.counts[cat]} ${t(WORK_CATEGORY_STYLES[cat].labelKey).toLowerCase()}`)
+                    .join(" · ");
+
+                  return (
+                    <details
+                      key={wave.number}
+                      open={isNewest}
+                      className="group rounded-xl border border-border bg-muted/20"
+                    >
+                      <summary className="flex cursor-pointer list-none flex-wrap items-center justify-between gap-2 px-3.5 py-2.5">
+                        <div className="flex min-w-0 flex-1 items-center gap-2.5">
+                          <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-accent/15 font-mono text-[11px] font-bold text-accent">
+                            {wave.number}
+                          </span>
+                          <div className="min-w-0 flex-1">
+                            <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
+                              <span className="text-xs font-semibold text-foreground">
+                                {t("projectStats.waveLabel")} #{wave.number}
+                              </span>
+                              <span className="text-[11px] tabular-nums text-muted-foreground">
+                                {formatWaveRange(wave.startDate, wave.endDate, locale)}
+                              </span>
+                              {countsSummary && (
+                                <span className="text-[11px] text-muted-foreground">
+                                  · {countsSummary}
+                                </span>
+                              )}
+                            </div>
+                            <p className="mt-0.5 truncate text-xs text-foreground/85">
+                              {wave.headline}
+                            </p>
+                          </div>
+                        </div>
+                        <span
+                          className={`shrink-0 rounded-full px-2.5 py-0.5 text-[11px] font-medium ${waveBadge.cls}`}
+                        >
+                          {waveBadge.label}
+                        </span>
+                      </summary>
+
+                      <div className="space-y-1.5 border-t border-border/80 px-3.5 py-2.5">
+                        {wave.highlights.map((h) => {
+                          const meta = WORK_CATEGORY_STYLES[h.type];
+                          return (
+                            <div
+                              key={h.id}
+                              className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-border/70 bg-background/70 px-3 py-2 text-xs"
+                            >
+                              <div className="flex min-w-0 flex-1 items-start gap-2">
+                                <span
+                                  className={`mt-0.5 shrink-0 rounded px-1.5 py-0.5 text-[10px] font-medium ${meta.badgeClass}`}
+                                >
+                                  {t(meta.labelKey)}
+                                </span>
+                                <span className="line-clamp-2 flex-1 text-foreground/90">
+                                  {h.summary}
+                                </span>
+                              </div>
+                              <div className="flex shrink-0 items-center gap-2">
+                                <span className="text-[11px] tabular-nums text-muted-foreground">
+                                  {formatShortDate(h.timestamp, locale)}
+                                </span>
+                                <button
+                                  type="button"
+                                  onClick={() => scrollToTimelineComment(h.id)}
+                                  className="inline-flex items-center gap-0.5 text-[11px] font-medium text-accent hover:underline"
+                                >
+                                  {t("projectStats.jumpToTimeline")}
+                                  <ArrowDownRight size={11} />
+                                </button>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </details>
+                  );
+                })}
+              </div>
+
+              {waveSummary.waves.length > 3 && (
+                <div className="mt-3 flex justify-end">
+                  <button
+                    type="button"
+                    onClick={() => setShowAllWaves((v) => !v)}
+                    className="inline-flex items-center gap-1 text-[11px] font-medium text-accent hover:underline"
+                  >
+                    {showAllWaves ? (
+                      <>
+                        {t("projectStats.showLessWaves")}
+                        <ChevronUp size={12} />
+                      </>
+                    ) : (
+                      <>
+                        {t("projectStats.showAllWaves")} (+{hiddenWavesCount})
+                        <ChevronDown size={12} />
+                      </>
+                    )}
+                  </button>
+                </div>
+              )}
+            </>
+          )}
         </Card>
 
         {/* Comments distribution */}

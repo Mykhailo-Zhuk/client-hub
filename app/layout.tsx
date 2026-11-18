@@ -6,6 +6,7 @@ import { LanguageProvider } from "@/lib/i18n/context";
 import type { Locale } from "@/lib/i18n/types";
 import { Nav } from "@/components/nav";
 import { Footer } from "@/components/footer";
+import { ClarityAnalytics } from "@/components/clarity-analytics";
 import "./globals.css";
 
 const inter = Inter({ subsets: ["latin", "cyrillic"], variable: "--font-geist-sans" });
@@ -88,6 +89,7 @@ export default async function RootLayout({
   return (
     <html lang={initialLocale} suppressHydrationWarning className={`${inter.variable} ${mono.variable} ${lora.variable}`}>
       <body className="min-h-screen font-sans antialiased">
+        <ClarityAnalytics />
         <LanguageProvider initialLocale={initialLocale}>
           <ThemeProvider>
             <div className="flex min-h-screen flex-col">

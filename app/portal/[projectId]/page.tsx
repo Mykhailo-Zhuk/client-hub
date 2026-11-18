@@ -1,15 +1,15 @@
 import { notFound, redirect } from "next/navigation";
 import { cookies } from "next/headers";
-import { ExternalLink, Github, Calendar, ArrowLeft, Clock, Settings } from "lucide-react";
+import { ExternalLink, Github, Calendar, ArrowLeft } from "lucide-react";
 import Link from "next/link";
-import { getProjectById } from "@/lib/projects";
+import { getProjectById, isSampleProject } from "@/lib/projects";
 import { getProjectByIdAsync } from "@/lib/projects-db";
 import { getCommentsByProjectAsync } from "@/lib/comments-db";
 import { verifyPortalToken, signPortalToken } from "@/lib/jwt";
+import { hasCustomPassword } from "@/lib/client-passwords";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Reveal } from "@/components/ui/reveal";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { formatDate } from "@/lib/utils";
 import { LogoutButton } from "../actions";
 import { ClientCommentsTimeline } from "../client-comments-timeline";
@@ -18,6 +18,8 @@ import { ProjectStats } from "./project-stats";
 import { ClientAttention } from "./client-attention";
 import { PortalMounted } from "./portal-mounted";
 import { ClientPortalSettingsForm } from "./client-portal-settings-form";
+import { DefaultPasswordBanner } from "./default-password-banner";
+import { PortalTabs } from "./portal-tabs";
 import LiveStreamViewer from "./live-stream-viewer";
 import type { Comment } from "@/lib/types";
 import { getRequestsByProjectAsync } from "@/lib/requests-db";
@@ -37,12 +39,7 @@ export default async function PortalPage({
   const project = (await getProjectByIdAsync(projectId)) ?? getProjectById(projectId);
   if (!project) notFound();
 
-  const isSampleProject = Boolean(
-    project.isSample ||
-      project.id === "spa-canada" ||
-      project.id === "iron-master" ||
-      project.id === "universal-service-template"
-  );
+  const isSample = isSampleProject(project);
 
   // Stateless JWT auth — works across serverless instances.
   // Prefer the URL ?token= (always available from /api/auth's magicLink);
@@ -58,7 +55,7 @@ export default async function PortalPage({
   let session = token ? await verifyPortalToken(token) : null;
 
   if (!session) {
-    if (isSampleProject) {
+    if (isSample) {
       const demoEmail = project.clientEmail || `demo@${project.id}.example`;
       token = await signPortalToken({ email: demoEmail, projectId: project.id });
       session = { email: demoEmail, projectId: project.id };
@@ -70,13 +67,14 @@ export default async function PortalPage({
 
   console.log(`[portal/${projectId}] auth OK email=${session.email} source=${source}`);
 
-  const comments = await getCommentsByProjectAsync(project.id);
+  const [comments, projectRequests, customPasswordSet, { t }] = await Promise.all([
+    getCommentsByProjectAsync(project.id),
+    getRequestsByProjectAsync(project.id),
+    isSample ? Promise.resolve(true) : hasCustomPassword(project.id),
+    getServerTranslation(),
+  ]);
 
-  // Fetch project requests for the client
-  const projectRequests = await getRequestsByProjectAsync(project.id);
-
-
-  const { t, locale } = await getServerTranslation();
+  const showDefaultPasswordBanner = !isSample && !customPasswordSet;
 
   const dayPercent =
     project.dayCurrent && project.dayTotal
@@ -106,7 +104,7 @@ export default async function PortalPage({
           <LogoutButton />
         </div>
 
-        {isSampleProject && (
+        {isSample && (
           <div className="mb-6 flex items-center gap-3 rounded-xl border border-amber-500/30 bg-amber-500/10 p-4 text-sm text-amber-900 dark:text-amber-200">
             <span className="text-xl">✨</span>
             <div>
@@ -117,6 +115,8 @@ export default async function PortalPage({
             </div>
           </div>
         )}
+
+        {showDefaultPasswordBanner && <DefaultPasswordBanner />}
 
         <Reveal>
           <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
@@ -172,20 +172,9 @@ export default async function PortalPage({
           </Reveal>
         )}
 
-        <div className="mt-8">
-          <Tabs defaultValue="timeline">
-            <TabsList className="mb-6">
-              <TabsTrigger value="timeline" className="gap-2">
-                <Clock size={14} />
-                {t("portal.tabs.timeline")}
-              </TabsTrigger>
-              <TabsTrigger value="settings" className="gap-2">
-                <Settings size={14} />
-                {t("portal.tabs.settings")}
-              </TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="timeline">
+        <PortalTabs
+          timelineContent={
+            <>
               <Reveal delay={0.08}>
                 <div className="mb-8">
                   <ProjectStats project={project} comments={comments as unknown as Comment[]} />
@@ -284,23 +273,22 @@ export default async function PortalPage({
                   )}
                 </div>
               </div>
-            </TabsContent>
-
-            <TabsContent value="settings">
-              <Reveal>
-                <div className="max-w-2xl">
-                  <ClientPortalSettingsForm
-                    projectId={project.id}
-                    initialEmail={project.clientEmail || session.email}
-                    token={token || ""}
-                    initialTelegramChatId={project.clientTelegramChatId}
-                    initialTelegramToken={project.clientTelegramToken}
-                  />
-                </div>
-              </Reveal>
-            </TabsContent>
-          </Tabs>
-        </div>
+            </>
+          }
+          settingsContent={
+            <Reveal>
+              <div className="max-w-2xl">
+                <ClientPortalSettingsForm
+                  projectId={project.id}
+                  initialEmail={project.clientEmail || session.email}
+                  token={token || ""}
+                  initialTelegramChatId={project.clientTelegramChatId}
+                  initialTelegramToken={project.clientTelegramToken}
+                />
+              </div>
+            </Reveal>
+          }
+        />
       </section>
     </PortalMounted>
   );

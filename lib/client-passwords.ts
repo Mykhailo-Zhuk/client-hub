@@ -94,7 +94,7 @@ export function updateProjectsJson(
 /**
  * Returns true if a custom password has been explicitly set for this project.
  */
-async function hasCustomPassword(projectId: string): Promise<boolean> {
+export async function hasCustomPassword(projectId: string): Promise<boolean> {
   // 1. Check Supabase first if configured
   const sb = getSupabaseAdmin();
   if (sb) {
@@ -115,6 +115,18 @@ async function hasCustomPassword(projectId: string): Promise<boolean> {
   // 2. Check local JSON store fallback
   const fileStore = readPasswordsFile();
   if (fileStore[projectId]) return true;
+
+  // 3. Check data/projects.json fallback
+  try {
+    if (fs.existsSync(PROJECTS_FILE)) {
+      const raw = fs.readFileSync(PROJECTS_FILE, 'utf-8');
+      const projects: Project[] = JSON.parse(raw);
+      const match = projects.find((p) => p.id === projectId);
+      if (match?.clientPassword) return true;
+    }
+  } catch {
+    // Ignore JSON read error
+  }
 
   return false;
 }

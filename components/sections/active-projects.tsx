@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { ArrowRight, ExternalLink, Github } from "lucide-react";
-import { getActiveProjects } from "@/lib/projects";
+import { getActiveProjects, isSampleProject, sortSamplesFirst } from "@/lib/projects";
 import type { Project } from "@/lib/types";
 import { Card } from "../ui/card";
 import { Badge } from "../ui/badge";
@@ -11,7 +11,7 @@ import { useLanguage } from "@/lib/i18n/context";
 
 export function ActiveProjects({ projects: initialProjects }: { projects?: Project[] } = {}) {
   const { t } = useLanguage();
-  const projects = initialProjects ?? getActiveProjects();
+  const projects = sortSamplesFirst(initialProjects ?? getActiveProjects());
 
   return (
     <section className="mx-auto max-w-6xl px-4 py-16">
@@ -45,7 +45,7 @@ export function ActiveProjects({ projects: initialProjects }: { projects?: Proje
                       >
                         {p.title}
                       </Link>
-                      {(p.isSample || p.id === "spa-canada") && (
+                      {isSampleProject(p) && (
                         <Badge className="border-amber-500/30 bg-amber-500/10 text-[11px] font-medium text-amber-600 dark:text-amber-400">
                           ✨ {t("projects.sampleBadge")}
                         </Badge>
@@ -59,7 +59,7 @@ export function ActiveProjects({ projects: initialProjects }: { projects?: Proje
                     {p.progress}%
                   </Badge>
                 </div>
-                {(p.isSample || p.id === "spa-canada") && (
+                {isSampleProject(p) && (
                   <div className="mt-3 flex items-center gap-2 rounded-md border border-amber-500/20 bg-amber-500/5 px-2.5 py-1.5 text-xs text-amber-700 dark:text-amber-300">
                     <span className="shrink-0">✨</span>
                     <span>{t("projects.sampleNotice")}</span>

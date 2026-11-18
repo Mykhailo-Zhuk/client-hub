@@ -495,5 +495,133 @@
     "message": "Оновлено маркетингові скрипти GTM/Pixel, оптимізовано мобільний лейаут та проведено редеплой",
     "author": "Mykhailo Zhuk",
     "timestamp": "2024-08-26T18:00:00Z"
+  },
+  {
+    "id": "wf-c8",
+    "projectId": "woman-franch-working",
+    "type": "bug_fix",
+    "message": "Виправлено якірну прокрутку та роботу випадаючих меню навігації, усунено помилки SSR-гідрації React, покращено якість зображень та прибрано горизонтальний overflow у секціях Woman Franch, Mudrik, Maliata та De Massage",
+    "author": "Mykhailo Zhuk",
+    "timestamp": "2026-10-29T20:16:39Z"
+  },
+  {
+    "id": "ghaw-c1",
+    "projectId": "github-activity-wall",
+    "type": "status_update",
+    "message": "Ініціалізація дашборду GitHub Activity Wall: налаштовано Next.js App Router, авторизацію через GitHub OAuth (next-auth v5), інтеграцію з GitHub GraphQL/REST API, теплову карту активності, графіки Recharts, дашборд статистики та Telegram-бота з cron-сповіщеннями",
+    "author": "Mykhailo Zhuk",
+    "timestamp": "2026-05-24T14:21:59Z"
+  },
+  {
+    "id": "ghaw-c2",
+    "projectId": "github-activity-wall",
+    "type": "bug_fix",
+    "message": "Виправлено CSS-змінну --font-mono для JetBrains Mono, синхронізацію стану порогу сповіщень у TelegramSettings через watch(), оновлено .env.local.example, CI-воркфлоу на Node 22 та змерджено PR #1",
+    "author": "Mykhailo Zhuk",
+    "timestamp": "2026-05-24T14:33:42Z"
+  },
+  {
+    "id": "ghaw-c3",
+    "projectId": "github-activity-wall",
+    "type": "deploy",
+    "message": "Міграція сховища з @vercel/kv на @upstash/redis: уніфіковано спільний клієнт Redis.fromEnv() для сесій, кешування даних GitHub, прив'язок Telegram, вебхуків і rate limiting",
+    "author": "Mykhailo Zhuk",
+    "timestamp": "2026-09-19T13:31:42Z"
+  },
+  {
+    "id": "dogs-c1",
+    "projectId": "dogs-path",
+    "type": "status_update",
+    "message": "Ініціалізація PWA-додатку PawPath на Next.js 14: інтегровано Mapbox GL JS із механікою «туману війни» (fog-of-war), геолокацію, сесії прогулянок, сторінки історії, профілю, реєстрації та Service Worker",
+    "author": "Mykhailo Zhuk",
+    "timestamp": "2026-04-04T20:39:41Z"
+  },
+  {
+    "id": "dogs-c2",
+    "projectId": "dogs-path",
+    "type": "milestone",
+    "message": "Підвищено контрастність і яскравість кнопок керування картою (+, -, геолокація), оновлено токен Mapbox та додано брендований логотип, favicon і PWA-іконки в manifest.json",
+    "author": "Mykhailo Zhuk",
+    "timestamp": "2026-04-05T05:51:22Z"
+  },
+  {
+    "id": "dogs-c3",
+    "projectId": "dogs-path",
+    "type": "milestone",
+    "message": "Додано режим паузи прогулянки (idle | walking | paused) із зупинкою GPS-запису без втрати часу, а також фонові push-сповіщення кожні 60 секунд із дистанцією, таймером і кнопкою зупинки в Service Worker",
+    "author": "Mykhailo Zhuk",
+    "timestamp": "2026-04-23T14:15:22Z"
+  },
+  {
+    "id": "dogs-c4",
+    "projectId": "dogs-path",
+    "type": "bug_fix",
+    "message": "Винесено глобальний стан прогулянки в WalkProvider, виправлено помилки в FogOfWarMap, StartWalkButton, useWalkSession, useFogOfWar, storage та сторінці історії прогулянок",
+    "author": "Mykhailo Zhuk",
+    "timestamp": "2026-04-23T20:21:46Z"
+  },
+  {
+    "id": "target-c1",
+    "projectId": "target-landing",
+    "type": "status_update",
+    "message": "Ініціалізація лендінгу на Next.js 14 з Tailwind CSS, кастомними шрифтами (Liberation Sans, Montserrat, Inter, Roboto) та базовою структурою секцій Hero, Cases, Navigation і Footer",
+    "author": "Mykhailo Zhuk",
+    "timestamp": "2024-02-06T17:22:29Z"
+  },
+  {
+    "id": "target-c2",
+    "projectId": "target-landing",
+    "type": "milestone",
+    "message": "Налаштовано форми лідогенерації (SmallForm) з react-hook-form, вибором коду країни для номера телефону, toast-сповіщеннями та API-маршрутом відправки заявок через Nodemailer",
+    "author": "Mykhailo Zhuk",
+    "timestamp": "2024-02-06T17:59:42Z"
+  },
+  {
+    "id": "target-c3",
+    "projectId": "target-landing",
+    "type": "milestone",
+    "message": "Додано API-маршрут для кейсів (/api/cases), інтегровано Skeleton-завантаження в карусель кейсів та виконано фінальне доопрацювання стилів навігації й форм",
+    "author": "Mykhailo Zhuk",
+    "timestamp": "2024-02-06T20:27:00Z"
+  },
+  {
+    "id": "car4you-c1",
+    "projectId": "car4you",
+    "type": "status_update",
+    "message": "Ініціалізація проєкту Car4You Service на Next.js 14 з Tailwind CSS та додавання базових Framer Motion анімацій для головної сторінки",
+    "author": "Mykhailo Zhuk",
+    "timestamp": "2023-11-11T20:09:18Z"
+  },
+  {
+    "id": "car4you-c2",
+    "projectId": "car4you",
+    "type": "milestone",
+    "message": "Створено сторінки «Про нас», «Контакти», «Реалізації» та каталог послуг (ServicesCarousel, RealizationList, DetailedServicesList) з повним наповненням польською мовою в text.tsx",
+    "author": "Mykhailo Zhuk",
+    "timestamp": "2023-11-19T19:27:21Z"
+  },
+  {
+    "id": "car4you-c3",
+    "projectId": "car4you",
+    "type": "milestone",
+    "message": "Розроблено спеціалізовані сторінки та калькулятори-прайси (PriceList, ServiceForm) для послуг видалення вм'ятин PDR, тонування скла, зміни кольору та корекції лаку",
+    "author": "Mykhailo Zhuk",
+    "timestamp": "2023-11-28T13:33:26Z"
+  },
+  {
+    "id": "car4you-c4",
+    "projectId": "car4you",
+    "type": "status_update",
+    "message": "Завершено повну адаптивну верстку сайту (від 320px до десктопу) для хедера, навігації, секцій послуг та відгуків",
+    "author": "Mykhailo Zhuk",
+    "timestamp": "2024-01-01T21:46:49Z"
+  },
+  {
+    "id": "car4you-c5",
+    "projectId": "car4you",
+    "type": "bug_fix",
+    "message": "Виправлено SSR-помилку window is undefined (для клієнтських компонентів і карти Leaflet) та підготовлено продакшен-збірку",
+    "author": "Mykhailo Zhuk",
+    "timestamp": "2024-01-02T21:02:38Z"
   }
 ]

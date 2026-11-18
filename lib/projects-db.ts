@@ -19,6 +19,7 @@ import {
 } from './supabase';
 import projectsData from '@/data/projects.json';
 import { computeEffectiveDayCurrent } from './project-days';
+import { isSampleProject, sortSamplesFirst } from './projects';
 import type { Project } from './types';
 
 type SupabaseProjectRow = {
@@ -83,12 +84,12 @@ function rowToProject(r: SupabaseProjectRow): Project {
     telegramChatId: r.telegram_chat_id ?? jsonFallback?.telegramChatId ?? undefined,
     clientTelegramToken: r.client_telegram_token ?? jsonFallback?.clientTelegramToken ?? undefined,
     clientTelegramChatId: r.client_telegram_chat_id ?? jsonFallback?.clientTelegramChatId ?? undefined,
-    isSample: jsonFallback?.isSample ?? (r.id === 'spa-canada' || r.id === 'iron-master' || r.id === 'universal-service-template'),
+    isSample: isSampleProject({ id: r.id, isSample: jsonFallback?.isSample }),
   };
 }
 
 // ---------- synchronous JSON fallback (legacy) ----------
-const JSON_PROJECTS = projectsData as Project[];
+const JSON_PROJECTS = sortSamplesFirst(projectsData as Project[]);
 
 function getAllProjects(): Project[] {
   return JSON_PROJECTS;
@@ -132,10 +133,10 @@ export async function getProjectsAsync(): Promise<Project[]> {
       syncProjectsToSupabase(missingFromJson).catch((err) =>
         console.warn('[lib/projects-db] auto-sync projects to supabase error:', err)
       );
-      return [...sbProjects, ...missingFromJson];
+      return sortSamplesFirst([...sbProjects, ...missingFromJson]);
     }
 
-    return sbProjects;
+    return sortSamplesFirst(sbProjects);
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : String(err);
     recordSupabaseError(msg);

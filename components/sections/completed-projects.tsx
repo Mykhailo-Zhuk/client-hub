@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { ArrowRight, CheckCircle2, ExternalLink, Github } from "lucide-react";
-import { getCompletedProjects } from "@/lib/projects";
+import { getCompletedProjects, isSampleProject, sortSamplesFirst } from "@/lib/projects";
 import type { Project } from "@/lib/types";
 import { Card } from "../ui/card";
 import { Badge } from "../ui/badge";
@@ -11,7 +11,7 @@ import { useLanguage } from "@/lib/i18n/context";
 
 export function CompletedProjects({ projects: initialProjects }: { projects?: Project[] } = {}) {
   const { t } = useLanguage();
-  const projects = initialProjects ?? getCompletedProjects();
+  const projects = sortSamplesFirst(initialProjects ?? getCompletedProjects());
   if (projects.length === 0) return null;
 
   return (
@@ -24,11 +24,7 @@ export function CompletedProjects({ projects: initialProjects }: { projects?: Pr
       </Reveal>
       <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {projects.map((p, i) => {
-          const isSample = Boolean(
-            p.isSample ||
-              p.id === "iron-master" ||
-              p.id === "universal-service-template"
-          );
+          const isSample = isSampleProject(p);
           return (
             <Reveal key={p.id} delay={i * 0.08}>
               <Card className="flex flex-col justify-between p-5">

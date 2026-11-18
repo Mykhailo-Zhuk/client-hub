@@ -87,6 +87,9 @@ export const en = {
   'portal.settings.passwordMismatch': 'Passwords do not match.',
   'portal.settings.passwordTooShort': 'Password must be at least 3 characters.',
   'portal.settings.invalidEmail': 'Please enter a valid email address.',
+  'portal.defaultPasswordWarning.title': 'Please replace the default password with a stronger one',
+  'portal.defaultPasswordWarning.description': 'This project currently uses the default password. To protect access to your client portal, please open Settings and set a stronger password (letters, numbers, and special characters).',
+  'portal.defaultPasswordWarning.cta': 'Change password',
   'portal.settings.telegramTitle': 'Telegram Notifications',
   'portal.settings.telegramDesc': 'Specify your Telegram Chat ID (and optionally your own Bot Token) to receive instant updates when new comments or requests are posted.',
   'portal.settings.telegramChatIdLabel': 'Telegram Chat ID',
@@ -261,6 +264,10 @@ export const en = {
   'admin.settings.hint.telegramChatId': 'Your personal or group Telegram Chat ID for receiving client comments and requests.',
   'admin.settings.hint.clientTelegramBotToken': 'Optional separate bot token for client alerts. Leave empty to use the project or system bot.',
   'admin.settings.hint.clientTelegramChatId': 'Client Telegram Chat ID where project updates and replies are delivered.',
+  'admin.settings.save': 'Save settings',
+  'admin.settings.saving': 'Saving...',
+  'admin.settings.savedSuccess': 'Project settings saved and synced.',
+  'admin.settings.saveError': 'Failed to save settings',
 
   // Login
   'login.title': 'Track your project',
@@ -372,6 +379,9 @@ export const uk: Record<keyof typeof en, string> = {
   'portal.settings.passwordMismatch': 'Паролі не збігаються.',
   'portal.settings.passwordTooShort': 'Пароль має містити щонайменше 3 символи.',
   'portal.settings.invalidEmail': 'Будь ласка, введіть коректний email.',
+  'portal.defaultPasswordWarning.title': 'Замініть дефолтний пароль на складніший',
+  'portal.defaultPasswordWarning.description': 'Зараз у кабінеті використовується стандартний пароль за замовчуванням. Щоб убезпечити доступ до вашого проєкту, перейдіть у вкладку «Налаштування» та задайте надійніший пароль (латинські літери, цифри та спеціальні знаки).',
+  'portal.defaultPasswordWarning.cta': 'Змінити пароль',
   'portal.settings.telegramTitle': 'Telegram Сповіщення',
   'portal.settings.telegramDesc': 'Вкажіть ваш Telegram Chat ID (та за потреби власний Bot Token), щоб миттєво отримувати сповіщення про нові коментарі чи запити.',
   'portal.settings.telegramChatIdLabel': 'Telegram Chat ID',
@@ -546,6 +556,10 @@ export const uk: Record<keyof typeof en, string> = {
   'admin.settings.hint.telegramChatId': 'Твій особистий або груповий Telegram Chat ID, куди приходитимуть коментарі та запити клієнта.',
   'admin.settings.hint.clientTelegramBotToken': 'Опціональний окремий токен бота для клієнта. Якщо порожньо — використовується бот проєкту або системний.',
   'admin.settings.hint.clientTelegramChatId': 'Telegram Chat ID клієнта, куди надсилаються твої оновлення та відповіді.',
+  'admin.settings.save': 'Зберегти налаштування',
+  'admin.settings.saving': 'Збереження...',
+  'admin.settings.savedSuccess': 'Зміни проєкту збережено та синхронізовано.',
+  'admin.settings.saveError': 'Не вдалося зберегти налаштування',
 
   // Login
   'login.title': 'Слідкуйте за проєктом',

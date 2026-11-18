@@ -160,6 +160,7 @@ async function renderAdminProject(projectId: string) {
     status: p.status as 'active' | 'paused' | 'completed',
     progress: p.progress,
     startDate: p.startDate,
+    isSample: p.isSample,
   }));
 
   const statusColor =

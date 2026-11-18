@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import { Sparkles, Loader2, ArrowUpDown, ChevronDown } from 'lucide-react';
 import { useLanguage } from '@/lib/i18n/context';
+import { isSampleProject } from '@/lib/projects';
 
 export type SortOption =
   | 'newest'
@@ -24,6 +25,7 @@ type Item = {
   status: 'active' | 'completed' | 'paused';
   progress: number;
   startDate?: string | null;
+  isSample?: boolean;
 };
 
 export default function ProjectList({
@@ -93,6 +95,8 @@ export default function ProjectList({
     });
 
     return filtered.sort((a, b) => {
+      const sampleDiff = Number(isSampleProject(b)) - Number(isSampleProject(a));
+      if (sampleDiff !== 0) return sampleDiff;
       switch (sortBy) {
         case 'newest': {
           const dateA = a.startDate ? new Date(a.startDate).getTime() : 0;

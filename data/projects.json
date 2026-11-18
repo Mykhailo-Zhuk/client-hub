@@ -55,10 +55,10 @@
     "clientEmail": "sashasquilts@gmail.com",
     "title": "Sasha's Quilts — Handmade Quilts & Custom Textile Art",
     "description": "An e-commerce showcase and portfolio platform for custom handmade quilts, textile art, and bespoke quilting commissions.",
-    "status": "active",
+    "status": "completed",
     "progress": 100,
-    "dayCurrent": 61,
-    "dayTotal": 61,
+    "dayCurrent": 65,
+    "dayTotal": 65,
     "startDate": "2026-08-01",
     "estimatedEnd": "2026-09-30",
     "tags": [
@@ -245,5 +245,92 @@
     "github": "https://github.com/Mykhailo-Zhuk/tesla-nextjs",
     "demo": "https://tesla-nextjs-mu.vercel.app/",
     "cover": "https://images.unsplash.com/photo-1536700503339-1e4b06520771?w=1200&h=800&fit=crop"
+  },
+  {
+    "id": "github-activity-wall",
+    "client": "GitHub Activity Wall",
+    "clientEmail": "contact@github-activity-wall.example",
+    "title": "GitHub Activity Wall — Дашборд продуктивності",
+    "description": "Дашборд GitHub-продуктивності на Next.js: коміти, PR, issues, інтерактивна теплова карта активності (heatmap), графіки Recharts, авторизація GitHub OAuth (next-auth v5), кешування Upstash Redis, rate limiting та Telegram-сповіщення за розкладом.",
+    "status": "completed",
+    "progress": 100,
+    "startDate": "2026-05-24",
+    "completedDate": "2026-09-19",
+    "tags": [
+      "Next.js",
+      "TypeScript",
+      "Tailwind",
+      "next-auth",
+      "GraphQL",
+      "Upstash Redis",
+      "Recharts",
+      "Telegram Bot"
+    ],
+    "github": "https://github.com/Mykhailo-Zhuk/github-activity-wall",
+    "demo": "https://github-activity-wall.vercel.app/"
+  },
+  {
+    "id": "dogs-path",
+    "client": "PawPath",
+    "clientEmail": "contact@dogs-path.example",
+    "title": "PawPath — Інтерактивна карта прогулянок із собакою",
+    "description": "PWA-додаток на Next.js 14 та Mapbox GL JS із механікою «туману війни» (fog-of-war) для дослідження району під час прогулянок із собакою: GPS-трекінг маршруту, пауза/відновлення прогулянки, історія, локальне збереження та фонові push-сповіщення через Service Worker.",
+    "status": "completed",
+    "progress": 100,
+    "startDate": "2026-04-04",
+    "completedDate": "2026-04-23",
+    "tags": [
+      "Next.js",
+      "TypeScript",
+      "Mapbox GL",
+      "PWA",
+      "Geolocation",
+      "Service Worker",
+      "Tailwind",
+      "Zod"
+    ],
+    "github": "https://github.com/Mykhailo-Zhuk/dogs-path"
+  },
+  {
+    "id": "target-landing",
+    "client": "Target Traffic Agency",
+    "clientEmail": "contact@target-landing.example",
+    "title": "Target Landing — Лендінг трафік-агенції для інфобізнесу",
+    "description": "Промо-лендінг для залучення клієнтів на налаштування таргетованої реклами та трафіку із соцмереж: карусель кейсів клієнтів (Embla Carousel) з динамічним API-завантаженням та skeleton-плейсхолдерами, форми заявок із міжнародним телефонним вводом і відправкою листів через Nodemailer.",
+    "status": "completed",
+    "progress": 100,
+    "startDate": "2024-02-06",
+    "completedDate": "2024-02-06",
+    "tags": [
+      "Next.js",
+      "TypeScript",
+      "Tailwind",
+      "Nodemailer",
+      "Embla Carousel",
+      "React Hook Form",
+      "Landing"
+    ],
+    "github": "https://github.com/Mykhailo-Zhuk/target_landing"
+  },
+  {
+    "id": "car4you",
+    "client": "Car4You Service (Warszawa)",
+    "clientEmail": "contact@car4you.example",
+    "title": "Car4You Service — Сайт автосервісу та детейлінгу (PL)",
+    "description": "Багатосторінковий веб-сайт польською мовою для автосервісу та детейлінгу Car4You у Варшаві: сторінки послуг (PDR видалення вм'ятин, тонування, зміна кольору, корекція лаку), прайс-листи, галерея реалізацій, інтерактивна мапа Leaflet, анімації Framer Motion та форми оцінки послуг.",
+    "status": "completed",
+    "progress": 100,
+    "startDate": "2023-11-05",
+    "completedDate": "2024-01-02",
+    "tags": [
+      "Next.js",
+      "TypeScript",
+      "Tailwind",
+      "Framer Motion",
+      "Leaflet",
+      "Auto Service",
+      "React Hook Form"
+    ],
+    "github": "https://github.com/Mykhailo-Zhuk/car4you"
   }
 ]

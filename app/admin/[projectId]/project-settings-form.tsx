@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
-import { Info, Loader2, Save } from 'lucide-react';
+import { AlertCircle, CheckCircle2, Info, Loader2, Save } from 'lucide-react';
 import { useLanguage } from '@/lib/i18n/context';
 
 type Project = {
@@ -44,40 +44,63 @@ export default function ProjectSettingsForm({
   const [clientTelegramToken, setClientTelegramToken] = useState(project.client_telegram_token ?? '');
   const [clientTelegramChatId, setClientTelegramChatId] = useState(project.client_telegram_chat_id ?? '');
   const [pending, startTransition] = useTransition();
-  const [feedback, setFeedback] = useState<string | null>(null);
+  const [feedback, setFeedback] = useState<{
+    type: 'success' | 'error';
+    text: string;
+    savedAt?: string;
+  } | null>(null);
   const router = useRouter();
 
   function save() {
     setFeedback(null);
     startTransition(async () => {
-      const res = await fetch('/api/projects/update', {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({
-          projectId: project.id,
-          title: title.trim(),
-          client_name: clientName.trim(),
-          client_email: clientEmail.trim() || null,
-          client_password: clientPassword.trim() || undefined,
-          status,
-          progress,
-          day_current: dayCurrent,
-          day_total: dayTotal,
-          demo: demo.trim() || null,
-          github: github.trim() || null,
-          telegram_bot_token: telegramBotToken.trim() || null,
-          telegram_chat_id: telegramChatId.trim() || null,
-          client_telegram_token: clientTelegramToken.trim() || null,
-          client_telegram_chat_id: clientTelegramChatId.trim() || null,
-        }),
-      });
-      if (!res.ok) {
-        const d = await res.json().catch(() => ({}));
-        setFeedback(`❌ ${d.error ?? 'failed'}`);
-        return;
+      try {
+        const res = await fetch('/api/projects/update', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({
+            projectId: project.id,
+            title: title.trim(),
+            client_name: clientName.trim(),
+            client_email: clientEmail.trim() || null,
+            client_password: clientPassword.trim() || undefined,
+            status,
+            progress,
+            day_current: dayCurrent,
+            day_total: dayTotal,
+            demo: demo.trim() || null,
+            github: github.trim() || null,
+            telegram_bot_token: telegramBotToken.trim() || null,
+            telegram_chat_id: telegramChatId.trim() || null,
+            client_telegram_token: clientTelegramToken.trim() || null,
+            client_telegram_chat_id: clientTelegramChatId.trim() || null,
+          }),
+        });
+        if (!res.ok) {
+          const d = await res.json().catch(() => ({}));
+          setFeedback({
+            type: 'error',
+            text: d.error ?? t('admin.settings.saveError'),
+          });
+          return;
+        }
+        setClientPassword('');
+        setFeedback({
+          type: 'success',
+          text: t('admin.settings.savedSuccess'),
+          savedAt: new Date().toLocaleTimeString([], {
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+          }),
+        });
+        router.refresh();
+      } catch (err: any) {
+        setFeedback({
+          type: 'error',
+          text: err?.message ?? t('admin.settings.saveError'),
+        });
       }
-      setFeedback('✅ Saved');
-      router.refresh();
     });
   }
 
@@ -205,18 +228,49 @@ export default function ProjectSettingsForm({
         </Field>
       </div>
 
-      <div className="flex items-center gap-3">
+      {feedback && (
+        <div
+          role="status"
+          className={`flex items-center justify-between gap-3 rounded-lg border px-3.5 py-2.5 text-xs transition-all ${
+            feedback.type === 'success'
+              ? 'border-emerald-500/40 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300'
+              : 'border-red-500/40 bg-red-500/10 text-red-700 dark:text-red-300'
+          }`}
+        >
+          <div className="flex items-center gap-2 font-medium">
+            {feedback.type === 'success' ? (
+              <CheckCircle2 size={15} className="shrink-0 text-emerald-500" />
+            ) : (
+              <AlertCircle size={15} className="shrink-0 text-red-500" />
+            )}
+            <span>{feedback.text}</span>
+          </div>
+          {feedback.savedAt && (
+            <span className="shrink-0 font-mono text-[11px] opacity-75">
+              {feedback.savedAt}
+            </span>
+          )}
+        </div>
+      )}
+
+      <div className="flex items-center justify-end gap-3 pt-1">
         <button
           onClick={save}
           disabled={pending}
-          className="inline-flex items-center gap-2 rounded-md bg-accent px-4 py-2 text-sm font-medium text-accent-foreground hover:opacity-90 disabled:opacity-50"
+          className="inline-flex items-center gap-2 rounded-md bg-accent px-4 py-2 text-sm font-medium text-accent-foreground transition-opacity hover:opacity-90 disabled:opacity-50"
         >
-          {pending ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
-          Save settings
+          {pending ? (
+            <>
+              <Loader2 size={14} className="animate-spin" />
+              {t('admin.settings.saving')}
+            </>
+          ) : (
+            <>
+              <Save size={14} />
+              {t('admin.settings.save')}
+            </>
+          )}
         </button>
-        {feedback && (
-          <div className="text-xs text-muted-foreground">{feedback}</div>
-        )}
       </div>
     </div>
   );

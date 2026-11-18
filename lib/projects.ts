@@ -1,8 +1,30 @@
 import projectsData from "@/data/projects.json";
 import type { Project } from "./types";
 
+const SAMPLE_PROJECT_IDS = new Set([
+  "spa-canada",
+  "iron-master",
+  "universal-service-template",
+]);
+
+/** Return true when a project is an open sample showcase. */
+export function isSampleProject(
+  project: Pick<Project, "id" | "isSample">
+): boolean {
+  return Boolean(project.isSample || SAMPLE_PROJECT_IDS.has(project.id));
+}
+
+/** Return a copy of `projects` with sample projects placed first, preserving relative order. */
+export function sortSamplesFirst<T extends Pick<Project, "id" | "isSample">>(
+  projects: T[]
+): T[] {
+  return [...projects].sort(
+    (a, b) => Number(isSampleProject(b)) - Number(isSampleProject(a))
+  );
+}
+
 export function getAllProjects(): Project[] {
-  return projectsData as Project[];
+  return sortSamplesFirst(projectsData as Project[]);
 }
 
 export function getActiveProjects(): Project[] {

@@ -6,6 +6,7 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Reveal } from '@/components/ui/reveal';
 import { useLanguage } from '@/lib/i18n/context';
+import { isSampleProject } from '@/lib/projects';
 import type { Project } from '@/lib/types';
 import {
   ArrowUpDown,
@@ -107,8 +108,10 @@ export function AdminProjectsList({
       return true;
     });
 
-    // Sorting
+    // Sorting (sample projects always appear first)
     return filtered.sort((a, b) => {
+      const sampleDiff = Number(isSampleProject(b)) - Number(isSampleProject(a));
+      if (sampleDiff !== 0) return sampleDiff;
       switch (sortBy) {
         case 'newest': {
           const dateA = a.startDate ? new Date(a.startDate).getTime() : 0;
